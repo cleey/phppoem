@@ -8,5 +8,4 @@ author： **cleey**
 home：http://www.cleey.com/
 
 
-QQ群：272357570  
-点击链接加入群：http://jq.qq.com/?_wv=1027&k=Yrqb02
+QQ群：272357570
