@@ -47,7 +47,7 @@ class Cleey{
 		$url = array();
 		if( isset($_SERVER['PATH_INFO']) ){
 			$_URL = preg_replace('/index.php/', '', $_SERVER['PATH_INFO']); // 去除index.php
-			$_EXT = pathinfo($_URL,PATH_INFO_EXTENSION);  // 获取url后缀
+			$_EXT = pathinfo($_URL,PATHINFO_EXTENSION);  // 获取url后缀
 			if( $_EXT ) $_URL = preg_replace('/'.$_EXT.'$/i', '', $_URL); // 删除url后缀
 			$url = explode('/', $_URL); // /Home/Index/index
 		}

@@ -4,7 +4,7 @@ namespace Cleey;
 class Db{
 
 	private static $_ins;
-	private $db = null;
+	protected $_conn = null;
 
 	static function getIns(){
 		if( !(self::$_ins instanceof self) )
@@ -19,16 +19,37 @@ class Db{
 		$user = C('DB_USER');
 		$pass = C('DB_PASS');
 		$dsn = "{$type}:host={$host};dbname={$name};charset=utf8";
-		$this->db  = new \PDO($dsn,$user,$pass) or die('数据库连接失败');
+		$this->_conn  = new \PDO($dsn,$user,$pass) or die('数据库连接失败');
 	}
 
-	public function query($sql){
+	function select($sql){
 		$time = microtime(1);
-		if( is_null($this->db) ) $this->connect();
-		$re = $this->db->query($sql);
+		if( is_null($this->_conn) ) $this->connect();
+		$re = $this->_conn->query($sql);
 		$time = microtime(1)-$time;
 		Log::push("{$sql} [{$time}ms]");
 		return $re->fetchAll();
+	}
+	function insert($sql,$bind){ return $this->exec($sql,$bind,'insert'); }
+	function update($sql,$bind){ return $this->exec($sql,$bind,'update'); }
+	function delete($sql,$bind){ return $this->exec($sql,$bind,'delete'); }
+
+	function exec($sql,$bind,$flag=''){
+		$time = microtime(1);
+		if( is_null($this->_conn) ) $this->connect();
+
+		$pre = $this->_conn->prepare($sql);
+		$re  = $pre->execute($bind);
+		
+		$time = microtime(1)-$time;
+		Log::push("{$sql} [{$time}ms]");
+
+		switch ($flag) {
+			case 'insert': return $this->_conn->lastInsertId(); break;
+			case 'update': return $pre->rowCount(); break;
+			case 'delete': return $pre->rowCount(); break;
+			default: break;
+		}
 	}
 }
 
