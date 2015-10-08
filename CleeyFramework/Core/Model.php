@@ -13,6 +13,11 @@ class Model{
 		$this->tb_name = $tb_name;
 	}
 
+	function _sql() {
+		return $this->_sql;
+	}
+
+
 	function query($sql) {
 		return Db::getIns()->query($sql);
 	}
@@ -33,22 +38,30 @@ class Model{
 		return $this;
 	}
 
-	function insert($data=null){
+	function add($data=null){
 		if( $data == null ){ return; }
 		// INSERT INTO more (id, NaMe) values (?, ?)
 		foreach ($data as $k => $v) {
 			$keys .= "`$k`,";
 			$vals .= ":$k,";
-			$bind[":$k"] = $v;
+			$this->_bind[":$k"] = $v;
 		}
 		$keys = substr($keys, 0,-1);
 		$vals = substr($vals, 0,-1);
 		$this->_sql  = 'INSERT INTO '.$this->tb_name." ($keys) VALUES ($vals)";
-		return Db::getIns()->insert($this->_sql,$bind);
+		$this->setBind();
+		$info = Db::getIns()->insert($this->_sql,$this->_bind);
+		$this->afterSql();
+		return $info;
 	}
 
-	function update($data=null){
+	function save($data=null){
 		if( $data == null ){ return; }
+		if( isset($data['id']) ){
+			$this->where(array('id'=>$data['id']));
+			unset($data['id']);
+		}
+		if( empty($this->_where) ) return false;
 		foreach ($data as $k => $v) {
 			$keys .= "`$k`=:$k,";
 			$bind[":$k"] = $v;
@@ -58,25 +71,64 @@ class Model{
 
 		$this->_sql  = 'UPDATE '.$this->tb_name." SET {$keys}";
 		$this->setWhere();
-		// CO($this->_sql,1);
-		// CO($this->_bind);
-		return Db::getIns()->update($this->_sql,$this->_bind);
+		$this->setBind();
+		$info = Db::getIns()->update($this->_sql,$this->_bind);
+		$this->afterSql();
+		return $info;
 	}
 
-	function delete(){
+	function del(){
 		$this->_sql  = 'DELETE FROM '.$this->tb_name;
 		$this->setWhere();
-		return Db::getIns()->delete($this->_sql,$this->_bind);
+		$this->setBind();
+		$info = Db::getIns()->delete($this->_sql,$this->_bind);
+		$this->afterSql();
+		return $info;
 	}
 
 	function select(){
-		$sql = 'SELECT * FROM `'.$this->tb_name.'`';
+		$this->_sql = 'SELECT * FROM `'.$this->tb_name.'`';
 		$this->setWhere();
 		$this->setOrder();
 		$this->setLimit();
-		return Db::getIns()->select($this->_sql);
+		$this->setBind();
+		$info = Db::getIns()->select($this->_sql,$this->_bind);
+		$this->afterSql();
+		return $info;
 	}
 
+	function count(){
+		$this->_sql = 'SELECT count(*) as num FROM `'.$this->tb_name.'`';
+		$this->setWhere();
+		$this->setOrder();
+		$this->setLimit();
+		$this->setBind();
+		$info = Db::getIns()->select($this->_sql,$this->_bind);
+		$this->afterSql();
+		return $info[0]['num'];
+	}
+
+	function find(){
+		$info = $this->select();
+		return $info[0];
+	}
+
+
+	protected function afterSql(){
+		foreach ($this->_bind  as $key => $value) {
+			$this->_sql = str_replace($key, $value, $this->_sql);
+		}
+		$this->_where = array();
+		$this->_limit = '';
+		$this->_order = '';
+		$this->_bind  = array();
+		// CO( $this->_sql );
+	}
+	protected function setBind(){
+		foreach ($this->_bind as $k => $v) {
+			$this->_bind[$k] = addslashes($v);
+		}
+	}
 	protected function setWhere(){
 		if( empty($this->_where) ) return false;
 		$str = '';
@@ -86,15 +138,20 @@ class Model{
 			unset($this->_where['_logic']);
 		}
 		foreach ($this->_where as $k => $v) {
-			$keys[] = "`$k`=:$k";
-			$bind[":$k"] = $v;
+			if( is_array($v) ){
+				$keys[] = "`$k`".$v[0].":$k";
+				$bind[":$k"] = $v[1];
+			}else{
+				$keys[] = "`$k`=:$k";
+				$bind[":$k"] = $v;
+			}
 		}
 		$this->_sql .= ' WHERE '.implode($logic, $keys);
 		$this->_bind = array_merge($this->_bind,$bind);
 	}
 
 	protected function setOrder(){
-		if( empty($this->_limit) ) return false;
+		if( empty($this->_order) ) return false;
 		$this->_sql .= ' ORDER BY '.$this->_order;
 	}
 

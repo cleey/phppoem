@@ -27,7 +27,7 @@ class Cleey{
 		if( strstr($class,'/',true) == 'Cleey' ) $file = CORE_PATH.strstr($class,'/').'.php';
 		else $file = APP_PATH.$class.'.php';
 
-		if( !is_file($file) ) CO( "自动加载Cleey::autoload ：找不到类 ".$file );
+		if( !is_file($file) ) \Cleey\Cleey::halt( "自动加载Cleey::autoload ：找不到类 ".$file );
 		include $file;
 	}
 
@@ -57,20 +57,23 @@ class Cleey{
 
 		define('__APP__' , $_SERVER['SCRIPT_NAME']); // 项目入口文件 */index.php
 		define('__ROOT__' , dirname(__APP__));  // 顶级web目录
+		define('CF_CLASS_URL' , $_SERVER['SCRIPT_NAME'].'/'.CF_MODULE.'/'.CF_CLASS);  // 顶级web目录
 	}
 
 	// 加载方法
 	static function func(){
 		include CORE_FUNC; // 核心库
 		include APP_FUNC ; // App公共
-		include APP_PATH.CF_MODULE.'/Common/function.php'; // 请求模块
+		$file = APP_PATH.CF_MODULE.'/Common/function.php';
+		if( is_file($file) ) include $file; // 请求模块
 	}
 
 	// 加载配置
 	static function conf(){
 		C(include CORE_CONF);  // 核心库
 		C(include APP_CONF );  // App公共
-		C(include APP_PATH.CF_MODULE.'/Common/config.php'); // 请求模块
+		$file = APP_PATH.CF_MODULE.'/Common/config.php';
+		if( is_file($file) ) C(include $file); // 请求模块
 	}
 
 	// 加载配置
@@ -84,6 +87,7 @@ class Cleey{
 
 	// 结束
 	static function end(){
+		return;
 		self::$time['CLEEY_TIME'] = microtime(1) - self::$time['CLEEY_TIME'];
 
 		echo '<br>=============== SYS ===============';

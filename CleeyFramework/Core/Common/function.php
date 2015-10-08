@@ -3,7 +3,7 @@
 
 // 获取参数Get 和 Post
 function I($param){
-	return addslashes( trim( isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:'' ) ) );
+	return htmlspecialchars( trim( isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:'' ) ) );
 }
 
 // 获取参数Get 和 Post
@@ -41,7 +41,7 @@ function C($name=null,$value=null){
 	if( empty($name) ) return null;
 	if( is_string($name) ){
 		if( $value != null ) $config[$name] = $value;
-		else return $config[$name];
+		else return isset($config[$name]) ? $config[$name] : null;
 	}
 	if( is_array($name) ) $config = array_merge($config,$name);
 	return null;
@@ -70,16 +70,53 @@ function CA($code,$info='',$more='',$upd_url=0){
 }
 
 // 日志
-function Say($info){
+function L($info){
 	\Cleey\Log::push($info,'DEBUG');
 }
 
 // Model
 function M($tb){
-	$m = new \Cleey\Model($tb);
-	return $m;
+	static $model;
+	if( !isset($model[$tb]) ) $model[$tb] = new \Cleey\Model($tb);
+	return $model[$tb];
 }
 
+// Model
+function F($key,$value=null,$append=0){
+	$key = APP_CACHE.$key.'.php';
+	if( !is_dir(APP_CACHE) ) mkdir(APP_CACHE);
+	if( $value === null) return \Cleey\Cache::get($key);
+	else{
+		\Cleey\Cache::set($key,$value,$append);
+		return $key;
+	}
+}
+
+// 扩展包
+function Vendor($require_class,$ext='.php'){
+	static $_file = array();
+	if( class_exists($require_class) ) return true;
+	if( isset($_file[$require_class]) ) return true;
+	$file = VENDOR_PATH.$require_class.$ext;
+	if( !is_file($file) ){\Cleey\Cleey::halt('文件不存在: '.$file);}
+	$_file[$require_class] = true;
+	require $file;
+}
+
+function SafePage($m,$url='',$listnum=15){
+	$page = intval( I('p')) ? intval( I('p')) : 1;
+	$tm  = clone $m;
+	$total = $tm->count(); // 总记录数
+	$list = $m->limit( ($page-1)*$listnum ,$listnum )->select();  // 结果列表
+	$info['total'] = $total; // 总记录数
+	$info['np'] = $page;  // 当前页
+	$info['tp'] = ceil((int)$info['total']/(int)$listnum);  //总页数
+	$info['url'] = $url;  //url
+
+	$info['list'] = $list;
+	$info['page'] = $page;
+	return $info;
+}
 
 
  ?>
