@@ -22,14 +22,16 @@ class Db{
 		$this->_conn  = new \PDO($dsn,$user,$pass) or die('数据库连接失败');
 	}
 
-	function select($sql){
+	function query($sql){
 		$time = microtime(1);
 		if( is_null($this->_conn) ) $this->connect();
 		$re = $this->_conn->query($sql);
 		$time = microtime(1)-$time;
 		Log::push("{$sql} [{$time}ms]");
-		return $re->fetchAll();
+		if( $re == false ) return null;
+		return $re->fetchAll(\PDO::FETCH_ASSOC);
 	}
+	function select($sql,$bind){ return $this->exec($sql,$bind,'select'); }
 	function insert($sql,$bind){ return $this->exec($sql,$bind,'insert'); }
 	function update($sql,$bind){ return $this->exec($sql,$bind,'update'); }
 	function delete($sql,$bind){ return $this->exec($sql,$bind,'delete'); }
@@ -39,7 +41,8 @@ class Db{
 		if( is_null($this->_conn) ) $this->connect();
 
 		$pre = $this->_conn->prepare($sql);
-		$re  = $pre->execute($bind);
+		foreach ($bind as $k => $v) $pre->bindValue($k,$v);
+		$re  = $pre->execute();
 		
 		$time = microtime(1)-$time;
 		Log::push("{$sql} [{$time}ms]");
@@ -48,6 +51,7 @@ class Db{
 			case 'insert': return $this->_conn->lastInsertId(); break;
 			case 'update': return $pre->rowCount(); break;
 			case 'delete': return $pre->rowCount(); break;
+			case 'select': return $pre->fetchAll(\PDO::FETCH_ASSOC); break;
 			default: break;
 		}
 	}
