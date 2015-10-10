@@ -159,10 +159,39 @@ function pageHtml($np,$tp,$url,$num=5){
 	}
 	return $html;
 }
+// cookie
+function cookie($name='',$value='',$option=null){
+	if( empty($name) ) return $_COOKIE;
+	$cfg = array(
+        'prefix'    =>  C('COOKIE_PREFIX'), // cookie 名称前缀
+        'expire'    =>  C('COOKIE_EXPIRE'), // cookie 保存时间
+        'path'      =>  C('COOKIE_PATH'), // cookie 保存路径
+        'domain'    =>  C('COOKIE_DOMAIN'), // cookie 有效域名
+        'secure'    =>  C('COOKIE_SECURE'), //  cookie 启用安全传输
+        'httponly'  =>  C('COOKIE_HTTPONLY'), // httponly设置
+    );
+	$name = $cfg['prefix'].$name;
+	if( $value === '') return $_COOKIE[$name];
 
+    if( !is_null($option) ){
+    	if(is_numeric($option)) $cfg['expire'] = $option;
+    	else if( is_string($option) ){
+    		parse_str($option,$option);
+    		$cfg = array_merge($cfg,$option);
+    	}
+    }
+
+	if( is_null($value) ) {
+		$cfg['expire'] = time()-3600;
+		unset($_COOKIE[$name]);
+	}
+	setcookie($name,$value,$cfg['expire'],$cfg['path'],$cfg['domain'],$cfg['secure'],$cfg['httponly']);
+}
+
+// session的使用
 function session($name='',$value=''){
-	if( $value==''){
-		if( $name == '') return $_SESSION ;
+	if( $value===''){
+		if( $name === '') return $_SESSION ;
 		else if( strpos($name, '[') === 0 ){
 			switch ($name) {
 				case '[pause]': session_write_close(); break;
@@ -175,6 +204,7 @@ function session($name='',$value=''){
 			unset($_SESSION);
 		}else{
 			if( strpos($name, '.') ){
+				$name = C('SESSION_PREFIX').$name;
 				list($k1,$k2) = explode('.',$name);
 				return isset($_SESSION[$k1][$k2]) ? $_SESSION[$k1][$k2] : NULL;
 			}else return $_SESSION[$name];
@@ -182,6 +212,7 @@ function session($name='',$value=''){
 	}elseif( is_null($value) ){
 		unset($_SESSION[$value]);
 	}else{ // 设置 $name
+		$name = C('SESSION_PREFIX').$name;
 		if( strpos($name, '.') ){
 			list($k1,$k2) = explode('.',$name);
 			$_SESSION[$k1][$k2] = $value;
