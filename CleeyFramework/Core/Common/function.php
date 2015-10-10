@@ -37,10 +37,9 @@ function ParamError($key){
 // 读取和加载配置文件
 function C($name=null,$value=null){
 	static $config = array();
-	if( is_null($name) ) return $config;
-	if( empty($name) ) return null;
+	if( empty($name) ) return $config;
 	if( is_string($name) ){
-		if( $value != null ) $config[$name] = $value;
+		if( !is_null($value) ) $config[$name] = $value;
 		else return isset($config[$name]) ? $config[$name] : null;
 	}
 	if( is_array($name) ) $config = array_merge($config,$name);
@@ -103,7 +102,7 @@ function Vendor($require_class,$ext='.php'){
 	require $file;
 }
 
-function SafePage($m,$url='',$listnum=15){
+function P($m,$url='',$listnum=15){
 	$page = intval( I('p')) ? intval( I('p')) : 1;
 	$tm  = clone $m;
 	$total = $tm->count(); // 总记录数
@@ -115,8 +114,95 @@ function SafePage($m,$url='',$listnum=15){
 
 	$info['list'] = $list;
 	$info['page'] = $page;
+	$info['html'] = pageHtml($page,$info['tp'],$url);
 	return $info;
 }
 
+function pageHtml($np,$tp,$url,$num=5){
+// $np = 4;
+// $tp = 10;
+// header('Content-Type:text/html;charset=utf-8');
+	$np	 = (int)$np;   // 当前页
+	$tp  = (int)$tp;   // 总页数
+	$up	 = $np-1;   // 上一页
+	$dp  = $np+1;   // 下一页
+	$f 	 = ($np == 1)?'disabled':'';   // 是否为首页
+	$e 	 = ($np == $tp)?'disabled':'';  // 是否问尾页
+	$html = '';
+	if( $tp > 0){
+		$html .= '<ul class="pagination fr">';
+		// $html .= "<li> <span>共 $total 条 </span> </li>";
+		// $html .= "<li> <span>当前 $np / $tp 页</span> </li>";
+		if($np !=1){
+			$html .= "<li class='{$f}'><a href='$url?p=1&&$clin_page_str'> << </a></li>";
+			$html .= "<li class='{$f}'><a href='$url?p=$up&&$clin_page_str'> < </a></li>";
+		}
+		$sep = floor($num/2);
+		$begin = 1;
+		if( $tp >= $num ){
+			if($np > $sep && $np < ($tp - $sep) ){ $begin = $np - $sep;}
+			else if($np >= ($tp - $sep) ){ $begin = $tp - $num + 1; }
+		}else{
+			$num = $tp;
+		}
+		$sum = 0;
+		for ($i=$begin; $i < $num+$begin; $i++) { 
+			$cp = ($np == $i) ? 'class="disabled"':''; //'.$cp.'
+			$tu = ($np == $i) ? 'javascript:void(0);' : $url."?p=$i&&$clin_page_str";
+			$html .= "<li $cp><a href='$tu'>$i</a></li>";
+		}
+		if($np != $tp){
+			$html .= "<li class='{$e}'><a href='{$url}?p={$dp}&&{$clin_page_str}'> > </a></li>";
+			$html .= "<li class='{$e}'><a href='{$url}?p={$tp}&&{$clin_page_str}'> >> </a></li>";
+		}
+		$html .= "</ul>";
+	}
+	return $html;
+}
 
- ?>
+function session($name='',$value=''){
+	if( $value==''){
+		if( $name == '') return $_SESSION ;
+		else if( strpos($name, '[') === 0 ){
+			switch ($name) {
+				case '[pause]': session_write_close(); break;
+				case '[start]': session_start(); break;
+				case '[destroy]': session_unset();session_destroy(); break;
+				case '[regenerate]': session_regenerate_id(); break;
+				default: break;
+			}
+		}elseif( is_null($name) ){
+			unset($_SESSION);
+		}else{
+			if( strpos($name, '.') ){
+				list($k1,$k2) = explode('.',$name);
+				return isset($_SESSION[$k1][$k2]) ? $_SESSION[$k1][$k2] : NULL;
+			}else return $_SESSION[$name];
+		}
+	}elseif( is_null($value) ){
+		unset($_SESSION[$value]);
+	}else{ // 设置 $name
+		if( strpos($name, '.') ){
+			list($k1,$k2) = explode('.',$name);
+			$_SESSION[$k1][$k2] = $value;
+		}else $_SESSION[$name] = $value;
+	}
+}
+
+function layout($flag){
+	if( $flag !== false ){
+		C('LAYOUT_ON',true);
+		if( is_string($flag) ) C('LAYOUT',$flag);
+	}else C('LAYOUT_ON',false);
+}
+
+// 计时函数
+function T($key,$end=''){
+	static $time = array(); // 计时
+	if( empty($key) ) return;
+	if( $end === 1 && isset($time[$key]) ) return  microtime(1)-$time[$key];
+	if( !empty($end) ) return  $time[$end]-$time[$key];
+	$time[$key] = microtime(1);
+}
+
+?>

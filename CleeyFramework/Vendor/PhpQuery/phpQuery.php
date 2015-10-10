@@ -207,6 +207,7 @@ class DOMDocumentWrapper {
 		}
 	}
 	protected function loadMarkup($markup) {
+
 		$loaded = false;
 		if ($this->contentType) {
 			self::debug("Load markup for content type {$this->contentType}");
@@ -232,6 +233,7 @@ class DOMDocumentWrapper {
 			}
 		} else {
 			// content type autodetection
+			// CO($this->isXML($markup));
 			if ($this->isXML($markup)) {
 				phpQuery::debug("Loading XML, isXML() == true");
 				$loaded = $this->loadMarkupXML($markup);
@@ -4764,6 +4766,7 @@ abstract class phpQuery {
 	 */
 	public static function newDocumentFile($file, $contentType = null) {
 		$documentID = self::createDocumentWrapper(
+			// $file, $contentType
 			file_get_contents($file), $contentType
 		);
 		return new phpQueryObject($documentID);

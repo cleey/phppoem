@@ -57,7 +57,8 @@ class Cleey{
 
 		define('__APP__' , $_SERVER['SCRIPT_NAME']); // 项目入口文件 */index.php
 		define('__ROOT__' , dirname(__APP__));  // 顶级web目录
-		define('CF_CLASS_URL' , $_SERVER['SCRIPT_NAME'].'/'.CF_MODULE.'/'.CF_CLASS);  // 顶级web目录
+		define('CF_CLASS_URL' , $_SERVER['SCRIPT_NAME'].'/'.CF_MODULE.'/'.CF_CLASS);  // class url
+		define('CF_METHOD_URL' , $_SERVER['SCRIPT_NAME'].'/'.CF_MODULE.'/'.CF_CLASS.'/'.CF_METHOD);  // method url
 	}
 
 	// 加载方法
@@ -78,6 +79,7 @@ class Cleey{
 
 	// 加载配置
 	static function exec(){
+		if( C('SESSION_AUTO_START') ){ session('[start]') ; }
 		self::$time['APP_TIME'] = microtime(1);
 
 		self::instance(CF_MODULE.'\\Controller\\'.CF_CLASS, CF_METHOD); // 执行操作
