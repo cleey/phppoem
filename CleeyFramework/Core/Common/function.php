@@ -81,24 +81,26 @@ function M($tb){
 }
 
 // 文件缓存
-function F($key,$value=null,$append=0){
-	$key = APP_CACHE.$key.'.php';
-	if( !is_dir(APP_CACHE) ) mkdir(APP_CACHE);
+function F($key='',$value='',$append=0){
+	if( empty($key) ) return null;
+
 	$obj = \Cleey\Cache::getIns('File');
-	if( $value === null) return $obj->get($key);
-	else{
-		$obj->set($key,$value,$append);
-		return $key;
-	}
+	if( $value === '') return $obj->get($key);
+	else if( is_null($value) ) return $obj->del($key);
+	else return $obj->set($key,$value,$append);
 }
 
-// Redis，文件缓存
-function S($key,$value=null,$options=null){
-	if( !is_dir(APP_CACHE) ) mkdir(APP_CACHE);
+// 文件缓存
+function S($key='',$value='',$options=null){
 	$config = is_array($options) ? $options :null ; 
+	if( is_null($key) ) \Cleey\Cache::delIns();  // 删除实例
+
 	$expire = is_numeric($options) ? $options : null;
-	$obj = \Cleey\Cache::getIns($config);
-	if( $value === null) return $obj->get($key);
+	$obj = \Cleey\Cache::getIns('',$config);
+	if( $key === '' ){ return $obj->_ins; } // 返回实例
+
+	if( $value === '') return $obj->get($key);
+	else if( is_null($value) ) return $obj->del($key);
 	else return $obj->set($key,$value,$expire);
 }
 

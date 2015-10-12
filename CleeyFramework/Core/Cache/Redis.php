@@ -17,11 +17,14 @@ class Redis{
 	}
 	
 	public function get($key){
-		return $this->_ins->get($key);
+		$data= $this->_ins->get($key);
+		$json= json_decode( $value, true );
+		return $json === NULL ? $data : $json;
 	}
 
 	public function set($key,$value,$expire=null){
 		if( is_null($expire) ) $expire = $this->_option['expire'];
+		$value = is_object($value) || is_array($value) ? json_encode($value) : $value;
 		return $this->_ins->set($key,$value,$expire);
 	}
 
