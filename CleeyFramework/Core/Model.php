@@ -5,6 +5,7 @@ class Model{
 	protected $_where = array();
 	protected $_limit = '';
 	protected $_order = '';
+	protected $_group = '';
 	protected $_bind  = array();
 	protected $_sql   = '';
 	
@@ -37,6 +38,10 @@ class Model{
 		$this->_order = $str;
 		return $this;
 	}
+	function group($str){
+		$this->_group = $str;
+		return $this;
+	}
 
 	function add($data=null){
 		if( $data == null ){ return; }
@@ -49,7 +54,6 @@ class Model{
 		$keys = substr($keys, 0,-1);
 		$vals = substr($vals, 0,-1);
 		$this->_sql  = 'INSERT INTO '.$this->tb_name." ($keys) VALUES ($vals)";
-		$this->setBind();
 		$info = Db::getIns()->insert($this->_sql,$this->_bind);
 		$this->afterSql();
 		return $info;
@@ -71,7 +75,6 @@ class Model{
 
 		$this->_sql  = 'UPDATE '.$this->tb_name." SET {$keys}";
 		$this->setWhere();
-		$this->setBind();
 		$info = Db::getIns()->update($this->_sql,$this->_bind);
 		$this->afterSql();
 		return $info;
@@ -80,7 +83,6 @@ class Model{
 	function del(){
 		$this->_sql  = 'DELETE FROM '.$this->tb_name;
 		$this->setWhere();
-		$this->setBind();
 		$info = Db::getIns()->delete($this->_sql,$this->_bind);
 		$this->afterSql();
 		return $info;
@@ -89,9 +91,9 @@ class Model{
 	function select(){
 		$this->_sql = 'SELECT * FROM `'.$this->tb_name.'`';
 		$this->setWhere();
+		$this->setGroup();
 		$this->setOrder();
 		$this->setLimit();
-		$this->setBind();
 		$info = Db::getIns()->select($this->_sql,$this->_bind);
 		$this->afterSql();
 		return $info;
@@ -100,9 +102,9 @@ class Model{
 	function count(){
 		$this->_sql = 'SELECT count(*) as num FROM `'.$this->tb_name.'`';
 		$this->setWhere();
+		$this->setGroup();
 		$this->setOrder();
 		$this->setLimit();
-		$this->setBind();
 		$info = Db::getIns()->select($this->_sql,$this->_bind);
 		$this->afterSql();
 		return $info[0]['num'];
@@ -124,11 +126,7 @@ class Model{
 		$this->_bind  = array();
 		// CO( $this->_sql );
 	}
-	protected function setBind(){
-		foreach ($this->_bind as $k => $v) {
-			$this->_bind[$k] = addslashes($v);
-		}
-	}
+
 	protected function setWhere(){
 		if( empty($this->_where) ) return false;
 		$str = '';
@@ -139,7 +137,8 @@ class Model{
 		}
 		foreach ($this->_where as $k => $v) {
 			if( is_array($v) ){
-				$keys[] = "`$k`".$v[0].":$k";
+				$keys[] = "`$k` ".$v[0]." :$k";
+				if( strcasecmp($v[0],'IN')==0 && is_array($v[1]) ) $v[1] = implode(',', $v[1]);
 				$bind[":$k"] = $v[1];
 			}else{
 				$keys[] = "`$k`=:$k";
@@ -158,6 +157,11 @@ class Model{
 	protected function setLimit(){
 		if( empty($this->_limit) ) return false;
 		$this->_sql .= ' LIMIT '.$this->_limit;
+	}
+
+	protected function setGroup(){
+		if( empty($this->_group) ) return false;
+		$this->_sql .= ' GROUP BY '.$this->_group;
 	}
 }
 
