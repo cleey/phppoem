@@ -80,15 +80,26 @@ function M($tb){
 	return $model[$tb];
 }
 
-// Model
+// 文件缓存
 function F($key,$value=null,$append=0){
 	$key = APP_CACHE.$key.'.php';
 	if( !is_dir(APP_CACHE) ) mkdir(APP_CACHE);
-	if( $value === null) return \Cleey\Cache::get($key);
+	$obj = \Cleey\Cache::getIns('File');
+	if( $value === null) return $obj->get($key);
 	else{
-		\Cleey\Cache::set($key,$value,$append);
+		$obj->set($key,$value,$append);
 		return $key;
 	}
+}
+
+// Redis，文件缓存
+function S($key,$value=null,$options=null){
+	if( !is_dir(APP_CACHE) ) mkdir(APP_CACHE);
+	$config = is_array($options) ? $options :null ; 
+	$expire = is_numeric($options) ? $options : null;
+	$obj = \Cleey\Cache::getIns($config);
+	if( $value === null) return $obj->get($key);
+	else return $obj->set($key,$value,$expire);
 }
 
 // 扩展包
