@@ -34,13 +34,14 @@ class Log{
 		foreach ($files as $key=>$file){
             $files[$key] = $file.' ( '.number_format(filesize($file)/1024,2).' KB )';
         }
-        $time = \Cleey\Cleey::$time;
+        $cltime = T('CLEEY_TIME',-1);
         $trace_tmp['SYS'] = array(
-			"总吞吐量" => number_format(1/$time['CLEEY_TIME'],2).' req/s' ,
-        	"总共时间" => $time['CLEEY_TIME'].' s' ,
-			"框架加载" => ($time['CLEEY_TIME'] - $time['APP_TIME']).' s' ,
-			"App时间"  => $time['APP_TIME'].' s' ,
-			"内存使用" => (memory_get_usage()/1024/1024).' MB' ,
+			"请求信息" => $_SERVER['REQUEST_METHOD'].' '.strip_tags($_SERVER['REQUEST_URI']).' '.$_SERVER['SERVER_PROTOCOL'].' '.date('Y-m-d H:i:s',$_SERVER['REQUEST_TIME']),
+			"总吞吐量" => number_format(1/$cltime,2).' req/s' ,
+        	"总共时间" => number_format($cltime,5).' s' ,
+			"框架加载" => number_format(($cltime - T('CF_EXEC_TIME',-1)),5).' s (func:' .number_format(T('CF_FUNC_TIME',-1)*1000,2).'ms conf:'.number_format(T('CF_CONF_TIME',-1)*1000,2).'ms)',
+			"App时间"  => number_format(T('CF_EXEC_TIME',-1),5).' s (compile:'.number_format(T('CF_COMPILE_TIME',-1)*1000,2).' ms)' ,
+			"内存使用" => number_format(memory_get_usage()/1024/1024,5).' MB' ,
 			'文件加载' =>count($files),
 			'会话信息' => 'SESSION_ID='.session_id()
 		);
@@ -57,6 +58,7 @@ class Log{
 		foreach ($arr as $key => $value) {
 			$trace[$value] = $trace_tmp[$key];
 		}
+		$totalTime = $cltime;
 		include CORE_PATH.'Tpl/trace.php';
 	}
 }

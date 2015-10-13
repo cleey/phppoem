@@ -241,12 +241,20 @@ function layout($flag){
 }
 
 // 计时函数
-function T($key,$end=''){
+function T($key,$end='',$settime=null){
 	static $time = array(); // 计时
-	if( empty($key) ) return;
-	if( $end === 1 && isset($time[$key]) ) return  microtime(1)-$time[$key];
-	if( !empty($end) ) return  $time[$end]-$time[$key];
-	$time[$key] = microtime(1);
+	if( empty($key) ) return $time;
+	if( !is_null($settime) ){
+		$time[$key] = $settime;
+		return ;
+	}
+	if( $end === -1 )return  $time[$key];  // 返回key
+	else if( $end === 1 ) return  microtime(1)-$time[$key];  // 返回上次key到这次结果
+	else if( $end === 0 ) $time[$key] = microtime(1)-$time[$key]; // 记录上次key到这次时间
+	else if( !empty($end) ){
+		if( !isset($time[$end]) ) $time[$end] = microtime(1);
+		return $time[$end]-$time[$key];
+	}else $time[$key] = microtime(1);
 }
 
 ?>

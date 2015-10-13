@@ -4,7 +4,6 @@ namespace Cleey;
 class Cleey{
 	
 	private static $instance = array(); // 实例化的类和方法
-	public static $time = array(); // 计时
 	
 	static function start(){
 		spl_autoload_register('\Cleey\Cleey::autoload'); // 自动加载，没有找到本地类的
@@ -12,12 +11,12 @@ class Cleey{
 		set_error_handler('\Cleey\Cleey::appError');
 		set_exception_handler('\Cleey\Cleey::appException');
 
-		self::$time['CLEEY_TIME'] = microtime(1);
+		$btime = microtime(1);
 		self::route(); // 路由管理
 		self::func();  // 函数库
 		self::conf();  // 配置文件
 		self::exec();  // 执行操作
-		self::end();   // 结束
+		self::end($btime);   // 结束
 	}
 
 	// 没找到类，自动到这里加载
@@ -63,40 +62,36 @@ class Cleey{
 
 	// 加载方法
 	static function func(){
+		$time = microtime(1);
 		include CORE_FUNC; // 核心库
 		include APP_FUNC ; // App公共
 		$file = APP_PATH.CF_MODULE.'/Common/function.php';
 		if( is_file($file) ) include $file; // 请求模块
+		T('CF_FUNC_TIME','', microtime(1) - $time);
 	}
 
 	// 加载配置
 	static function conf(){
+		T('CF_CONF_TIME');
 		C(include CORE_CONF);  // 核心库
 		C(include APP_CONF );  // App公共
 		$file = APP_PATH.CF_MODULE.'/Common/config.php';
 		if( is_file($file) ) C(include $file); // 请求模块
+		T('CF_CONF_TIME',0);
 	}
 
 	// 加载配置
 	static function exec(){
+		T('CF_EXEC_TIME');
 		if( C('SESSION_AUTO_START') ){ session('[start]') ; }
-		self::$time['APP_TIME'] = microtime(1);
-
 		self::instance(CF_MODULE.'\\Controller\\'.CF_CLASS, CF_METHOD); // 执行操作
-
-		self::$time['APP_TIME'] = microtime(1) - self::$time['APP_TIME'];
+		T('CF_EXEC_TIME',0);
 	}
 
 	// 结束
-	static function end(){
+	static function end($time){
 		// return;
-		self::$time['CLEEY_TIME'] = microtime(1) - self::$time['CLEEY_TIME'];
-
-		Log::trace('SYS',"总共时间：".self::$time['CLEEY_TIME'].' s' );
-		Log::trace('SYS',"吞吐量  ：".number_format(1/self::$time['CLEEY_TIME'],2).' req/s' );
-		Log::trace('SYS',"框架加载：".(self::$time['CLEEY_TIME'] - self::$time['APP_TIME']).' s' );
-		Log::trace('SYS',"App时间：".self::$time['APP_TIME'].' s' );
-		Log::trace('SYS',"内存使用：".(memory_get_usage()/1024/1024).' MB' );
+		T('CLEEY_TIME','', microtime(1) - $time);
 		// Log::down();
 		Log::show();
 	}
