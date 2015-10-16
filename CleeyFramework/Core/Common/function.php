@@ -81,24 +81,26 @@ function M($tb){
 }
 
 // 文件缓存
-function F($key,$value=null,$append=0){
-	$key = APP_CACHE.$key.'.php';
-	if( !is_dir(APP_CACHE) ) mkdir(APP_CACHE);
+function F($key='',$value='',$append=0){
+	if( empty($key) ) return null;
+
 	$obj = \Cleey\Cache::getIns('File');
-	if( $value === null) return $obj->get($key);
-	else{
-		$obj->set($key,$value,$append);
-		return $key;
-	}
+	if( $value === '') return $obj->get($key);
+	else if( is_null($value) ) return $obj->del($key);
+	else return $obj->set($key,$value,$append);
 }
 
-// Redis，文件缓存
-function S($key,$value=null,$options=null){
-	if( !is_dir(APP_CACHE) ) mkdir(APP_CACHE);
+// 文件缓存
+function S($key='',$value='',$options=null){
 	$config = is_array($options) ? $options :null ; 
+	if( is_null($key) ) \Cleey\Cache::delIns();  // 删除实例
+
 	$expire = is_numeric($options) ? $options : null;
-	$obj = \Cleey\Cache::getIns($config);
-	if( $value === null) return $obj->get($key);
+	$obj = \Cleey\Cache::getIns('',$config);
+	if( $key === '' ){ return $obj->_ins; } // 返回实例
+
+	if( $value === '') return $obj->get($key);
+	else if( is_null($value) ) return $obj->del($key);
 	else return $obj->set($key,$value,$expire);
 }
 
@@ -239,12 +241,20 @@ function layout($flag){
 }
 
 // 计时函数
-function T($key,$end=''){
+function T($key,$end='',$settime=null){
 	static $time = array(); // 计时
-	if( empty($key) ) return;
-	if( $end === 1 && isset($time[$key]) ) return  microtime(1)-$time[$key];
-	if( !empty($end) ) return  $time[$end]-$time[$key];
-	$time[$key] = microtime(1);
+	if( empty($key) ) return $time;
+	if( !is_null($settime) ){
+		$time[$key] = $settime;
+		return ;
+	}
+	if( $end === -1 )return  $time[$key];  // 返回key
+	else if( $end === 1 ) return  microtime(1)-$time[$key];  // 返回上次key到这次结果
+	else if( $end === 0 ) $time[$key] = microtime(1)-$time[$key]; // 记录上次key到这次时间
+	else if( !empty($end) ){
+		if( !isset($time[$end]) ) $time[$end] = microtime(1);
+		return $time[$end]-$time[$key];
+	}else $time[$key] = microtime(1);
 }
 
 ?>

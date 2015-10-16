@@ -4,6 +4,8 @@ return array(
 	'CF_VERSION' => 'beta1.0',
 	'LAYOUT_ON' => true,
 
+	'RUNTIME_PATH' => 'Runtime/',
+
 	'SESSION_PREFIX' => '',
 	'SESSION_AUTO_START' => true,
 

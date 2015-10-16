@@ -26,9 +26,11 @@ class View{
 			$layfile = $this->parseTpl($layfile);
 			$content = str_replace('{__LAYOUT__}', $content, file_get_contents($layfile));
 		}
-
+		T('CF_COMPILE_TIME');
 		$content = $this->compiler($content); // 模板编译
 		$content = $this->strip_whitespace($content); // 去掉空格什么的
+		T('CF_COMPILE_TIME',0);
+
 		$filekey = md5($tpl); // 文件名
 		$c_w_v_tpl = F($filekey,$content);
 
@@ -68,15 +70,20 @@ class View{
 
 	// 编辑文件
 	protected function compiler($content){
-		$key = array(
-				'/{(.*)}/' => '<?php \\1 ?>'
-			);
 		// 添加安全代码 代表入口文件进入的
         $content =  '<?php if (!defined(\'CLEEY_PATH\')) exit();?>'.$content;
         // 优化生成的php代码
         $content = str_replace('?><?php','',$content);
-        // echo $content;
-        // echo $content;exit;
+        // 匹配 {$vo['info']}
+        $content = preg_replace_callback('/{\$(\w+)}/',
+        	function($matches){return '<?php echo $'.$matches[1].';?>'; } ,
+        	$content);
+        // 匹配 <include file=""/>
+        $content = preg_replace_callback(
+        	'/<include file="(\w+)"[ ]*\/>/',
+        	function($matches){return '<?php include '.$this->parseTpl($matches[1]).'; ?>'; } ,
+        	$content);
+        // CO($content);
         return $content;
 	}
 

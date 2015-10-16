@@ -37,12 +37,12 @@ class ShowPageTraceBehavior {
         $trace  =   array();
         $base   =   array(
             '请求信息'  =>  date('Y-m-d H:i:s',$_SERVER['REQUEST_TIME']).' '.$_SERVER['SERVER_PROTOCOL'].' '.$_SERVER['REQUEST_METHOD'].' : '.__SELF__,
-            '运行时间'  =>  $this->showTime(),
+            // '运行时间'  =>  $this->showTime(),
             '吞吐率'    =>  number_format(1/G('beginTime','viewEndTime'),2).'req/s',
             '内存开销'  =>  MEMORY_LIMIT_ON?number_format((memory_get_usage() - $GLOBALS['_startUseMems'])/1024,2).' kb':'不支持',
-            '查询信息'  =>  N('db_query').' queries '.N('db_write').' writes ',
+            // '查询信息'  =>  N('db_query').' queries '.N('db_write').' writes ',
             '文件加载'  =>  count(get_included_files()),
-            '缓存信息'  =>  N('cache_read').' gets '.N('cache_write').' writes ',
+            // '缓存信息'  =>  N('cache_read').' gets '.N('cache_write').' writes ',
             '配置加载'  =>  count(C()),
             '会话信息'  =>  'SESSION_ID='.session_id(),
             );
@@ -102,7 +102,7 @@ class ShowPageTraceBehavior {
         unset($files,$info,$base);
         // 调用Trace页面模板
         ob_start();
-        include C('TMPL_TRACE_FILE')?C('TMPL_TRACE_FILE'):THINK_PATH.'Tpl/page_trace.tpl';
+        include CORE_PATH.'Tpl/trace.tpl';
         return ob_get_clean();
     }
 
