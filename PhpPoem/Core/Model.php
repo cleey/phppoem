@@ -1,7 +1,8 @@
 <?php
-namespace Cleey;
+namespace Poem;
 
 class Model{
+	protected $_field = '*';
 	protected $_where = array();
 	protected $_limit = '';
 	protected $_order = '';
@@ -20,7 +21,15 @@ class Model{
 
 
 	function query($sql) {
-		return Db::getIns()->query($sql);
+		$this->_sql = $sql;
+		$info = Db::getIns()->query($sql);
+		$this->afterSql();
+		return $info;
+	}
+
+	function field($str){
+		$this->_field = $str;
+		return $this;
 	}
 
 	function where($arr){
@@ -43,7 +52,7 @@ class Model{
 		return $this;
 	}
 
-	function add($data=null){
+	function insert($data=null){
 		if( $data == null ){ return; }
 		// INSERT INTO more (id, NaMe) values (?, ?)
 		foreach ($data as $k => $v) {
@@ -59,7 +68,7 @@ class Model{
 		return $info;
 	}
 
-	function save($data=null){
+	function update($data=null){
 		if( $data == null ){ return; }
 		if( isset($data['id']) ){
 			$this->where(array('id'=>$data['id']));
@@ -80,7 +89,7 @@ class Model{
 		return $info;
 	}
 
-	function del(){
+	function delete(){
 		$this->_sql  = 'DELETE FROM '.$this->tb_name;
 		$this->setWhere();
 		$info = Db::getIns()->delete($this->_sql,$this->_bind);
@@ -89,7 +98,7 @@ class Model{
 	}
 
 	function select(){
-		$this->_sql = 'SELECT * FROM `'.$this->tb_name.'`';
+		$this->_sql = 'SELECT '.$this->_field.' FROM `'.$this->tb_name.'`';
 		$this->setWhere();
 		$this->setGroup();
 		$this->setOrder();
@@ -120,9 +129,12 @@ class Model{
 		foreach ($this->_bind  as $key => $value) {
 			$this->_sql = str_replace($key, $value, $this->_sql);
 		}
+		$time = number_format(T('poem_db_exec',-1)*1000,2);
+		Log::trace('SQL',$this->_sql."[{$time}ms]");
 		$this->_where = array();
 		$this->_limit = '';
 		$this->_order = '';
+		$this->_field = '*';
 		$this->_bind  = array();
 		// CO( $this->_sql );
 	}

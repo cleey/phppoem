@@ -1,14 +1,14 @@
 <?php 
-namespace Cleey\Cache;
+namespace Poem\Cache;
 
 class Redis{
 	public $_ins;
 	protected $_option;
 	function __construct($option=array()){
 		$option = array_merge( array(
-			'host'=>C('REDIS_HOST') ? : '127.0.0.1',
-			'port'=>C('REDIS_PORT') ? : 6379,
-			'expire'=>C('REDIS_EXPIRE') ? : 0,
+			'host'=>config('REDIS_HOST') ? : '127.0.0.1',
+			'port'=>config('REDIS_PORT') ? : 6379,
+			'expire'=>config('REDIS_EXPIRE') ? : 0,
 			)
 		,$option);
 		$this->_option = $option;

@@ -9,7 +9,7 @@
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 namespace Behavior;
-use CLeey\Log;
+use Poem\Log;
 /**
  * 系统行为扩展：页面Trace显示输出
  */

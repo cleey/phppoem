@@ -2,40 +2,35 @@
 
 
 // 获取参数Get 和 Post
-function I($param){
+function i($param){
 	return htmlspecialchars( trim( isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:'' ) ) );
 }
 
 // 获取参数Get 和 Post
-function GP($param,$flag = 0){
-	$arr  = explode(',', $param);
+function gp($param,$flag = 0){
+	$arr = explode(',', $param);
 
 	// 分解 | key和val
 	foreach ($arr as $value) {
 		$k = explode('|',$value);
 		$v = I($k[0]);
-		if( $flag == 0 && $v==='' ) return ParamError($k);
+		if( $flag == 0 && $v==='' ) return gp_err($k);
 		$params[ $k[0] ] = $v;
 	}
 
 	return count($params) == 1 ? current($params) : $params;
 }
 
-function ParamError($key){
-	$info = array();
-	$info['CP'] = true;
-	$info['key'] = $key[0];
-	if( isset($key[1]) ) $flag = $key[1];
+function gp_err($key){
+	$flag = isset($key[1]) ? $key[1] :$key[0];
 	$tmp = "{$flag} , 不能为空";
-	if ( IS_AJAX ){ CA(0,$tmp,'Parameter cannot be null'); }
-	$info['msg'] = $tmp;
-	$info['val'] = $flag;
-	// $this->error($tmp) ;exit;
-	return $info;
+	if ( IS_AJAX ){ ajax(0,$tmp,'Parameter cannot be null'); }
+	v_err($tmp);
+	// return $info;
 }
 
 // 读取和加载配置文件
-function C($name=null,$value=null){
+function config($name=null,$value=null){
 	static $config = array();
 	if( empty($name) ) return $config;
 	if( is_string($name) ){
@@ -47,7 +42,7 @@ function C($name=null,$value=null){
 }
 
 // 输出
-function CO($var,$flag=0){
+function co($var,$flag=0){
 	echo "<pre>";
 	var_dump($var);
 	echo "</pre>";
@@ -55,7 +50,7 @@ function CO($var,$flag=0){
 }
 
 // 返回ajax
-function CA($code,$info='',$more='',$upd_url=0){
+function ajax($code,$info='',$more='',$upd_url=0){
 	$re['code'] = $code;
 	$re['info'] = $info;
 	$re['more'] = $more;
@@ -69,34 +64,52 @@ function CA($code,$info='',$more='',$upd_url=0){
 }
 
 // 日志
-function L($info){
-	\Cleey\Log::push($info,'DEBUG');
+function l($info){
+	\Poem\Log::push($info,'DEBUG');
 }
 
 // Model
-function M($tb){
+function m($tb){
 	static $model;
-	if( !isset($model[$tb]) ) $model[$tb] = new \Cleey\Model($tb);
+	if( !isset($model[$tb]) ) $model[$tb] = new \Poem\Model($tb);
 	return $model[$tb];
 }
 
+// View
+function v($tpl=''){
+	$view = \Poem\Poem::instance('Poem\View');
+	$view->display($tpl);
+}
+function assign($key,$value=''){
+	$view = \Poem\Poem::instance('Poem\View');
+	$view->assign($key,$value);
+}
+function v_ok($info,$url='',$second=false){
+	$view = \Poem\Poem::instance('Poem\View');
+	$view->autoJump($info,$url,$second,1);
+}
+function v_err($info,$url='',$second=false){
+	$view = \Poem\Poem::instance('Poem\View');
+	$view->autoJump($info,$url,$second,0);
+}
+
 // 文件缓存
-function F($key='',$value='',$append=0){
+function f($key='',$value='',$append=0){
 	if( empty($key) ) return null;
 
-	$obj = \Cleey\Cache::getIns('File');
+	$obj = \Poem\Cache::getIns('File');
 	if( $value === '') return $obj->get($key);
 	else if( is_null($value) ) return $obj->del($key);
 	else return $obj->set($key,$value,$append);
 }
 
 // 文件缓存
-function S($key='',$value='',$options=null){
+function s($key='',$value='',$options=null){
 	$config = is_array($options) ? $options :null ; 
-	if( is_null($key) ) \Cleey\Cache::delIns();  // 删除实例
+	if( is_null($key) ) \Poem\Cache::delIns();  // 删除实例
 
 	$expire = is_numeric($options) ? $options : null;
-	$obj = \Cleey\Cache::getIns('',$config);
+	$obj = \Poem\Cache::getIns('',$config);
 	if( $key === '' ){ return $obj->_ins; } // 返回实例
 
 	if( $value === '') return $obj->get($key);
@@ -105,17 +118,17 @@ function S($key='',$value='',$options=null){
 }
 
 // 扩展包
-function Vendor($require_class,$ext='.php'){
+function vendor($require_class,$ext='.php'){
 	static $_file = array();
 	if( class_exists($require_class) ) return true;
 	if( isset($_file[$require_class]) ) return true;
 	$file = VENDOR_PATH.$require_class.$ext;
-	if( !is_file($file) ){\Cleey\Cleey::halt('文件不存在: '.$file);}
+	if( !is_file($file) ){\Poem\Poem::halt('文件不存在: '.$file);}
 	$_file[$require_class] = true;
 	require $file;
 }
 
-function P($m,$url='',$listnum=15){
+function p($m,$url='',$listnum=15){
 	$page = intval( I('p')) ? intval( I('p')) : 1;
 	$tm  = clone $m;
 	$total = $tm->count(); // 总记录数
@@ -176,12 +189,12 @@ function pageHtml($np,$tp,$url,$num=5){
 function cookie($name='',$value='',$option=null){
 	if( empty($name) ) return $_COOKIE;
 	$cfg = array(
-        'prefix'    =>  C('COOKIE_PREFIX'), // cookie 名称前缀
-        'expire'    =>  C('COOKIE_EXPIRE'), // cookie 保存时间
-        'path'      =>  C('COOKIE_PATH'), // cookie 保存路径
-        'domain'    =>  C('COOKIE_DOMAIN'), // cookie 有效域名
-        'secure'    =>  C('COOKIE_SECURE'), //  cookie 启用安全传输
-        'httponly'  =>  C('COOKIE_HTTPONLY'), // httponly设置
+        'prefix'    =>  config('COOKIE_PREFIX'), // cookie 名称前缀
+        'expire'    =>  config('COOKIE_EXPIRE'), // cookie 保存时间
+        'path'      =>  config('COOKIE_PATH'), // cookie 保存路径
+        'domain'    =>  config('COOKIE_DOMAIN'), // cookie 有效域名
+        'secure'    =>  config('COOKIE_SECURE'), //  cookie 启用安全传输
+        'httponly'  =>  config('COOKIE_HTTPONLY'), // httponly设置
     );
 	$name = $cfg['prefix'].$name;
 	if( $value === '') return $_COOKIE[$name];
@@ -217,7 +230,7 @@ function session($name='',$value=''){
 			unset($_SESSION);
 		}else{
 			if( strpos($name, '.') ){
-				$name = C('SESSION_PREFIX').$name;
+				$name = config('SESSION_PREFIX').$name;
 				list($k1,$k2) = explode('.',$name);
 				return isset($_SESSION[$k1][$k2]) ? $_SESSION[$k1][$k2] : NULL;
 			}else return $_SESSION[$name];
@@ -225,7 +238,7 @@ function session($name='',$value=''){
 	}elseif( is_null($value) ){
 		unset($_SESSION[$value]);
 	}else{ // 设置 $name
-		$name = C('SESSION_PREFIX').$name;
+		$name = config('SESSION_PREFIX').$name;
 		if( strpos($name, '.') ){
 			list($k1,$k2) = explode('.',$name);
 			$_SESSION[$k1][$k2] = $value;
@@ -235,13 +248,13 @@ function session($name='',$value=''){
 
 function layout($flag){
 	if( $flag !== false ){
-		C('LAYOUT_ON',true);
-		if( is_string($flag) ) C('LAYOUT',$flag);
-	}else C('LAYOUT_ON',false);
+		config('LAYOUT_ON',true);
+		if( is_string($flag) ) config('LAYOUT',$flag);
+	}else config('LAYOUT_ON',false);
 }
 
 // 计时函数
-function T($key,$end='',$settime=null){
+function t($key,$end='',$settime=null){
 	static $time = array(); // 计时
 	if( empty($key) ) return $time;
 	if( !is_null($settime) ){
@@ -255,6 +268,29 @@ function T($key,$end='',$settime=null){
 		if( !isset($time[$end]) ) $time[$end] = microtime(1);
 		return $time[$end]-$time[$key];
 	}else $time[$key] = microtime(1);
+}
+
+function jump($url){
+	header("Location: $url");
+	exit;
+}
+
+function u($tpl){
+	if( strpos($tpl, '//') !== false ) return $tpl;
+	// list($module,$class,$func) = explode('\\', get_class($this) );
+	$tpl = $tpl != '' ? $tpl : POEM_FUNC;
+
+	if( strpos($tpl,'@') !== false ){ // 模块 Home@Index/index
+		list($module,$tpl) = explode('@', $tpl );
+		$url = POEM_URL.'/'.$module.'/'.$tpl; // html文件路径
+	}elseif( strpos($tpl,':') !== false ){ // 指定文件夹 Index/index
+		$tpl = str_replace(':', '/', $tpl);
+		$url = POEM_MODULE_URL.'/'.$tpl; // html文件路径
+	}else{
+		$url = POEM_CTL_URL.'/'.$tpl; // html文件路径
+	}
+
+	return $url;
 }
 
 ?>

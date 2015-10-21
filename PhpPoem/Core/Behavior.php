@@ -1,5 +1,5 @@
 <?php
-namespace Cleey;
+namespace Poem;
 /**
  * ThinkPHP Behavior基础类
  */

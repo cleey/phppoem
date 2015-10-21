@@ -1,5 +1,5 @@
 <?php 
-namespace Cleey;
+namespace Poem;
 
 class View{
 
@@ -19,25 +19,22 @@ class View{
 
 	function fetch($tpl=''){
 		// 模板文件
+		T('POEM_COMPILE_TIME');
 		$tpl     = $this->parseTpl($tpl);
 		$content = file_get_contents($tpl);
 		// 开启页面布局
-		if( ($layfile=C('LAYOUT')) && C('LAYOUT_ON') === true ){
+		if( ($layfile=config('LAYOUT')) && config('LAYOUT_ON') === true ){
 			$layfile = $this->parseTpl($layfile);
 			$content = str_replace('{__LAYOUT__}', $content, file_get_contents($layfile));
 		}
-		T('CF_COMPILE_TIME');
 		$content = $this->compiler($content); // 模板编译
 		$content = $this->strip_whitespace($content); // 去掉空格什么的
-		T('CF_COMPILE_TIME',0);
-
 		$filekey = md5($tpl); // 文件名
 		$c_w_v_tpl = F($filekey,$content);
-
+		T('POEM_COMPILE_TIME',0);
 		// 模板变量
 		if( !empty($this->html_vars) ) extract($this->html_vars);
 		$this->html_vars = array(); // 清空
-
 		// 缓冲区
 		ob_start();
 		ob_implicit_flush(0);
@@ -52,15 +49,16 @@ class View{
 		if( is_file($tpl) ) return $tpl;
 
 		// list($module,$class,$func) = explode('\\', get_class($this) );
-		$tpl = $tpl != '' ? $tpl : CF_METHOD;
+		$tpl = $tpl != '' ? $tpl : POEM_FUNC;
 
 		if( strpos($tpl,'@') !== false ){ // 模块 Home@Index/index
 			list($module,$tpl) = explode('@', $tpl );
 			$file = APP_PATH."{$module}/View/{$tpl}.html"; // html文件路径
-		}elseif( strpos($tpl,'/') !== false ){ // 指定文件夹 Index/index
-			$file = APP_PATH.CF_MODULE."/View/{$tpl}.html"; // html文件路径
+		}elseif( strpos($tpl,':') !== false ){ // 指定文件夹 Index/index
+			$tpl = str_replace(':', '/', $tpl);
+			$file = APP_PATH.POEM_MODULE."/View/{$tpl}.html"; // html文件路径
 		}else{
-			$file = APP_PATH.CF_MODULE."/View/".CF_CLASS."/{$tpl}.html"; // html文件路径
+			$file = APP_PATH.POEM_MODULE."/View/".POEM_CTL."/{$tpl}.html"; // html文件路径
 		}
 
 		is_file($file) or die('文件不存在'.$file);
@@ -71,18 +69,28 @@ class View{
 	// 编辑文件
 	protected function compiler($content){
 		// 添加安全代码 代表入口文件进入的
-        $content =  '<?php if (!defined(\'CLEEY_PATH\')) exit();?>'.$content;
+        $content =  '<?php if (!defined(\'POEM_PATH\')) exit();?>'.$content;
         // 优化生成的php代码
         $content = str_replace('?><?php','',$content);
+
         // 匹配 {$vo['info']}
-        $content = preg_replace_callback('/{\$(\w+)}/',
+        $content = preg_replace_callback('/{\$([\w\[\]\'"]+)}/',
         	function($matches){return '<?php echo $'.$matches[1].';?>'; } ,
         	$content);
+
         // 匹配 <include file=""/>
         $content = preg_replace_callback(
-        	'/<include file="(\w+)"[ ]*\/>/',
-        	function($matches){return '<?php include '.$this->parseTpl($matches[1]).'; ?>'; } ,
+        	'/<include[ ]*file=[\'"](.+)[\'"][ ]*\/>/',
+        	function($matches){return '<?php include "'.$this->parseTpl($matches[1]).'"; ?>'; } ,
         	$content);
+        
+        // 匹配 <each key="" as=""></each>
+		$content = preg_replace_callback(
+			'/<each[ ]+key=[\'"](.+)[\'"][ ]*as=[\'"](.+)[\'"][ ]*>/',
+			function($matches){return '<?php foreach( $'.$matches[1].' as $'.$matches[2].'){ ?>'; } ,
+			$content);
+		$content = str_replace('</each>', '<?php } ?>', $content);
+
         // CO($content);
         return $content;
 	}
@@ -90,6 +98,7 @@ class View{
 	// 页面跳转
 	function autoJump($info,$url='',$second=false,$status=1){
 		$key = $status == 1 ? 'message' : 'error';
+		if( $url != '' ) $url = u($url);
 		$url = $url ? $url : ($status == 1 ? $_SERVER["HTTP_REFERER"] : 'javascript:history.back(-1);');
 		if( !$second ) $second = $status == 1 ? 1 : 3;
 		$this->assign($key,$info);
@@ -125,10 +134,10 @@ class View{
 						}
 						break;
 					case T_START_HEREDOC:
-						$stripStr .= "<<<Cleey\n";
+						$stripStr .= "<<<Poem\n";
 						break;
 					case T_END_HEREDOC:
-						$stripStr .= "Cleey;\n";
+						$stripStr .= "Poem;\n";
 						for($k = $i+1; $k < $j; $k++) {
 							if(is_string($tokens[$k]) && $tokens[$k] == ';') {
 								$i = $k;

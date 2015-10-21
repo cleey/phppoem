@@ -1,5 +1,5 @@
 <style>
-.tpl-e{ padding: 24px 48px;font-family: '微软雅黑'; color: #333; font-size: 16px;}
+.tpl-e{ padding: 40px 48px 0;font-family: '微软雅黑'; color: #333; font-size: 16px;}
 .tpl-e h1{ font-size: 80px; font-weight: normal; line-height: 120px; margin-bottom: 12px;float: left;margin: 0 40px 0 0;}
 .tpl-e .jump{ padding-top: 10px;margin: 10px 0;}
 .tpl-e .jump a{ color: #333;text-decoration: underline;}

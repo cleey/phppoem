@@ -1,11 +1,11 @@
 <?php 
-namespace Cleey;
+namespace Poem;
 class Controller{
 
 	protected $view; // view 类
 	
 	function __construct(){
-		$this->view = Cleey::instance('Cleey\View');
+		$this->view = Poem::instance('Poem\View');
 	}
 	// 展示页面
 	function display($tpl=''){

@@ -1,11 +1,11 @@
 <?php 
-namespace Cleey\Cache;
+namespace Poem\Cache;
 
 class File{
 	protected $_prefix;
 
 	function __construct(){
-		$path = APP_PATH.C('RUNTIME_PATH');
+		$path = APP_PATH.config('RUNTIME_PATH');
 		if( !is_dir($path) ) mkdir($path);
 		$this->_prefix = $path;
 	}
