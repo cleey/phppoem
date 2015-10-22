@@ -5,25 +5,36 @@ class Db{
 
 	private static $_ins;
 	protected $_conn = null;
+	protected $_conn_cfg = array();
 
-	static function getIns(){
-		if( !(self::$_ins instanceof self) )
-			self::$_ins = new self();
-		return self::$_ins;
+	static function getIns($config=array()){
+
+		$key = md5(serialize($config));
+
+		if( !(self::$_ins[$key] instanceof self) )
+			self::$_ins[$key] = new self();
+		self::$_ins[$key]->_conn_cfg = $config;
+		return self::$_ins[$key];
 	}
 
 	private function connect(){
-		$type = config('DB_TYPE');
-		$host = config('DB_HOST');
-		$name = config('DB_NAME');
-		$user = config('DB_USER');
-		$pass = config('DB_PASS');
-		$dsn = "{$type}:host={$host};dbname={$name};charset=utf8";
+		$type = $this->_conn_cfg['DB_TYPE'];
+		$host = $this->_conn_cfg['DB_HOST'];
+		$port = $this->_conn_cfg['DB_PORT'];
+		$name = $this->_conn_cfg['DB_NAME'];
+		$user = $this->_conn_cfg['DB_USER'];
+		$pass = $this->_conn_cfg['DB_PASS'];
+		$char = $this->_conn_cfg['DB_CHARSET'];
+		$dsn = "{$type}:host={$host};port={$port};dbname={$name};charset={$char}";
 		T('poem_db_exec');
 		$this->_conn  = new \PDO($dsn,$user,$pass) or die('数据库连接失败');
 		$time = number_format(T('poem_db_exec',1)*1000,2);
 
 		Log::trace('SQL',"PDO连接 [{$time}ms]");
+	}
+
+	function close(){
+		$this->_conn = NULL;
 	}
 
 	function query($sql){

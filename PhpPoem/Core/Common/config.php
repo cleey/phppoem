@@ -4,6 +4,15 @@ return array(
 	'CF_VERSION' => 'beta1.0',
 	'LAYOUT_ON' => true,
 
+	// 数据库配置
+	'DB_TYPE' => 'mysql',
+	'DB_HOST' => 'localhost',
+	'DB_PORT' => '3306',
+	'DB_NAME' => '',
+	'DB_USER' => '',
+	'DB_PASS' => '',
+	'DB_CHARSET' => 'utf8',
+
 	'RUNTIME_PATH' => 'Runtime/',
 
 	'SESSION_PREFIX' => '',

@@ -46,7 +46,8 @@ function co($var,$flag=0){
 	echo "<pre>";
 	var_dump($var);
 	echo "</pre>";
-	if( $flag == 0 ) exit;
+	if( $flag == 0 ) \Poem\Poem::end();
+	// if( $flag == 0 ) exit;
 }
 
 // 返回ajax
@@ -69,9 +70,9 @@ function l($info){
 }
 
 // Model
-function m($tb){
+function m($tb='',$config=''){
 	static $model;
-	if( !isset($model[$tb]) ) $model[$tb] = new \Poem\Model($tb);
+	if( !isset($model[$tb]) ) $model[$tb] = new \Poem\Model($tb,$config);
 	return $model[$tb];
 }
 

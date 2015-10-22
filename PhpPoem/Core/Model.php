@@ -2,6 +2,9 @@
 namespace Poem;
 
 class Model{
+	protected $_db = null; // 数据库资源
+	protected $db_cfg = array(); // 数据库配置
+
 	protected $_field = '*';
 	protected $_where = array();
 	protected $_limit = '';
@@ -11,8 +14,41 @@ class Model{
 	protected $_sql   = '';
 	
 	private $tb_name = '';
-	function __construct($tb_name){
+	function __construct($tb_name='',$config=''){
 		$this->tb_name = $tb_name;
+		if( $config === '' ){
+			// 配置文件
+			$this->db_cfg = array(
+				'DB_TYPE' => config('DB_TYPE'),
+				'DB_HOST' => config('DB_HOST'),
+				'DB_PORT' => config('DB_PORT'),
+				'DB_NAME' => config('DB_NAME'),
+				'DB_USER' => config('DB_USER'),
+				'DB_PASS' => config('DB_PASS'),
+				'DB_CHARSET' => config('DB_CHARSET'),
+			);
+		}else if( is_array($config)  ){
+			// 用户指定配置
+			$this->db_cfg = $config;
+		}else if( is_string($config) ){
+			// db dsn配置
+			$tmp = parse_url($config);
+			$this->db_cfg = array(
+				'DB_TYPE' => isset($tmp['scheme']) ?$tmp['scheme'] : config('DB_TYPE'),
+				'DB_HOST' => isset($tmp['host']) ? $tmp['host'] : config('DB_HOST'),
+				'DB_PORT' => isset($tmp['port']) ? $tmp['port'] : config('DB_PORT'),
+				'DB_NAME' => isset($tmp['path']) ? substr($tmp['path'],1) : config('DB_NAME'),
+				'DB_USER' => isset($tmp['user']) ? $tmp['user'] : config('DB_USER'),
+				'DB_PASS' => isset($tmp['pass']) ? $tmp['pass'] : config('DB_PASS'),
+				'DB_CHARSET' => isset($tmp['fragment']) ? $tmp['fragment'] :config('DB_CHARSET')
+			);
+		}
+	}
+
+	function db(){
+		if( $this->_db !== null ) return $this->_db;
+		$this->_db = Db::getIns($this->db_cfg);
+		return $this->_db;
 	}
 
 	function _sql() {
@@ -22,7 +58,7 @@ class Model{
 
 	function query($sql) {
 		$this->_sql = $sql;
-		$info = Db::getIns()->query($sql);
+		$info = $this->db()->query($sql);
 		$this->afterSql();
 		return $info;
 	}
@@ -63,7 +99,7 @@ class Model{
 		$keys = substr($keys, 0,-1);
 		$vals = substr($vals, 0,-1);
 		$this->_sql  = 'INSERT INTO '.$this->tb_name." ($keys) VALUES ($vals)";
-		$info = Db::getIns()->insert($this->_sql,$this->_bind);
+		$info = $this->db()->insert($this->_sql,$this->_bind);
 		$this->afterSql();
 		return $info;
 	}
@@ -84,7 +120,7 @@ class Model{
 
 		$this->_sql  = 'UPDATE '.$this->tb_name." SET {$keys}";
 		$this->setWhere();
-		$info = Db::getIns()->update($this->_sql,$this->_bind);
+		$info = $this->db()->update($this->_sql,$this->_bind);
 		$this->afterSql();
 		return $info;
 	}
@@ -92,7 +128,7 @@ class Model{
 	function delete(){
 		$this->_sql  = 'DELETE FROM '.$this->tb_name;
 		$this->setWhere();
-		$info = Db::getIns()->delete($this->_sql,$this->_bind);
+		$info = $this->db()->delete($this->_sql,$this->_bind);
 		$this->afterSql();
 		return $info;
 	}
@@ -103,7 +139,7 @@ class Model{
 		$this->setGroup();
 		$this->setOrder();
 		$this->setLimit();
-		$info = Db::getIns()->select($this->_sql,$this->_bind);
+		$info = $this->db()->select($this->_sql,$this->_bind);
 		$this->afterSql();
 		return $info;
 	}
@@ -114,7 +150,7 @@ class Model{
 		$this->setGroup();
 		$this->setOrder();
 		$this->setLimit();
-		$info = Db::getIns()->select($this->_sql,$this->_bind);
+		$info = $this->db()->select($this->_sql,$this->_bind);
 		$this->afterSql();
 		return $info[0]['num'];
 	}

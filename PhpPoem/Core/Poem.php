@@ -4,6 +4,7 @@ namespace Poem;
 class Poem{
 	
 	private static $instance = array(); // 实例化的类和方法
+	private static $btime; // 开始时间
 	
 	static function start(){
 		spl_autoload_register('\Poem\Poem::autoload'); // 自动加载，没有找到本地类的
@@ -11,13 +12,13 @@ class Poem{
 		set_error_handler('\Poem\Poem::appError');
 		set_exception_handler('\Poem\Poem::appException');
 
-		$btime = microtime(1);
+		self::$btime = microtime(1);
 		// self::route(); // 路由管理
 		self::func();  // 函数库
 		Route::run(); // 路由管理
 		self::conf();  // 配置文件
 		self::exec();  // 执行操作
-		self::end($btime);   // 结束
+		self::end();   // 结束
 	}
 
 	// 没找到类，自动到这里加载
@@ -40,26 +41,6 @@ class Poem{
 		if( !isset(self::$instance[$key]) )
 			self::$instance[$key] = $method=='' ? $obj : call_user_func(array(&self::$instance[$class], $method));
 		return self::$instance[$key];
-	}
-
-	// 路由 获取请求模块，控制器，方法
-	static function route(){
-		$url = array();
-		if( isset($_SERVER['PATH_INFO']) ){
-			$_URL = preg_replace('/index.php/', '', $_SERVER['PATH_INFO']); // 去除index.php
-			$_EXT = pathinfo($_URL,PATHINFO_EXTENSION);  // 获取url后缀
-			if( $_EXT ) $_URL = preg_replace('/'.$_EXT.'$/i', '', $_URL); // 删除url后缀
-			$url = explode('/', $_URL); // /Home/Index/index
-		}
-		define('POEM_MODULE' , !empty($url[1]) ? ucfirst($url[1]) : 'Home');
-		define('POEM_CTL'  , !empty($url[2]) ? ucfirst($url[2]) : 'Index');
-		define('POEM_FUNC' , !empty($url[3]) ? $url[3] : 'index');
-
-		define('POEM_URL' , $_SERVER['SCRIPT_NAME']); // 项目入口文件 */index.php
-		define('__ROOT__' , dirname(POEM_URL));  // 顶级web目录
-		define('POEM_MODULE_URL', POEM_URL.'/'.POEM_MODULE);  // class url
-		define('POEM_CTL_URL'   , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTL);  // class url
-		define('POEM_FUNC_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTL.'/'.POEM_FUNC);  // method url
 	}
 
 	// 加载方法
@@ -91,9 +72,9 @@ class Poem{
 	}
 
 	// 结束
-	static function end($time){
+	static function end(){
 		// return;
-		T('POEM_TIME','', microtime(1) - $time);
+		T('POEM_TIME','', microtime(1) - self::$btime);
 		// Log::down();
 		Log::show();
 	}
