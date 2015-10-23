@@ -14,8 +14,11 @@ class Route{
 		}
 		// CO($_SERVER);
 		define('POEM_MODULE' , !empty($url[1]) ? ucfirst($url[1]) : 'Home');
-		define('POEM_CTL'  , !empty($url[2]) ? ucfirst($url[2]) : 'Index');
-		define('POEM_FUNC' , !empty($url[3]) ? $url[3] : 'index');
+		define('POEM_CTL'    , !empty($url[2]) ? ucfirst($url[2]) : 'Index');
+		define('POEM_FUNC'   , !empty($url[3]) ? $url[3] : 'index');
+
+		define('MODULE_MODEL'  , APP_PATH.POEM_MODULE.'/Model/');
+
 		if( isset($url[4]) ) self::parseParam(array_slice($url, 4));
 
 		define('POEM_URL' , $_SERVER['SCRIPT_NAME']); // 项目入口文件 */index.php

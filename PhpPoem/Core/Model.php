@@ -91,7 +91,9 @@ class Model{
 	function insert($data=null){
 		if( $data == null ){ return; }
 		// INSERT INTO more (id, NaMe) values (?, ?)
+		$keys = '';$vals='';
 		foreach ($data as $k => $v) {
+			if(is_null($v)) continue;
 			$keys .= "`$k`,";
 			$vals .= ":$k,";
 			$this->_bind[":$k"] = $v;
@@ -160,10 +162,26 @@ class Model{
 		return $info[0];
 	}
 
+	function inc($column){
+		if( $column == null ){ return; }
+		if( empty($this->_where) ) return false;
+		$this->_sql  = 'UPDATE '.$this->tb_name." SET `{$column}`=`{$column}`+1";
+		$this->setWhere();
+		$info = $this->db()->update($this->_sql,$this->_bind);
+		$this->afterSql();
+		return $info;
+	}
+
+
+	function id($id){
+		return $this->where(array('id'=>$id))->find();
+	}
+	
+
 
 	protected function afterSql(){
 		foreach ($this->_bind  as $key => $value) {
-			$this->_sql = str_replace($key, $value, $this->_sql);
+			$this->_sql = str_replace($key, substr($value, 0,10), $this->_sql);
 		}
 		$time = number_format(T('poem_db_exec',-1)*1000,2);
 		Log::trace('SQL',$this->_sql."[{$time}ms]");
@@ -193,7 +211,7 @@ class Model{
 				$bind[":$k"] = $v;
 			}
 		}
-		$this->_sql .= ' WHERE '.implode($logic, $keys);
+		$this->_sql .= ' WHERE '.implode(" $logic ", $keys);
 		$this->_bind = array_merge($this->_bind,$bind);
 	}
 

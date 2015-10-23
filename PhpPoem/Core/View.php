@@ -61,7 +61,7 @@ class View{
 			$file = APP_PATH.POEM_MODULE."/View/".POEM_CTL."/{$tpl}.html"; // html文件路径
 		}
 
-		is_file($file) or die('文件不存在'.$file);
+		is_file($file) or \Poem\Poem::halt('文件不存在'.$file);
 
 		return $file;
 	}
@@ -90,6 +90,14 @@ class View{
 			function($matches){return '<?php foreach( $'.$matches[1].' as $'.$matches[2].'){ ?>'; } ,
 			$content);
 		$content = str_replace('</each>', '<?php } ?>', $content);
+
+
+		// 匹配 <if "$key == 1"></if>
+		$content = preg_replace_callback(
+			'/<if[ ]*[\'"](.+)[\'"][ ]*>/',
+			function($matches){return '<?php if( $'.$matches[1].'){ ?>'; } ,
+			$content);
+		$content = str_replace('</if>', '<?php } ?>', $content);
 
         // CO($content);
         return $content;

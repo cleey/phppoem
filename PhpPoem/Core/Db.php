@@ -3,16 +3,15 @@ namespace Poem;
 
 class Db{
 
-	private static $_ins;
+	private static $_ins = array();
 	protected $_conn = null;
 	protected $_conn_cfg = array();
 
 	static function getIns($config=array()){
 
 		$key = md5(serialize($config));
-
-		if( !(self::$_ins[$key] instanceof self) )
-			self::$_ins[$key] = new self();
+		if( !isset(self::$_ins[$key]) ) self::$_ins[$key] = new self();
+		if( !(self::$_ins[$key] instanceof self) ) self::$_ins[$key] = new self();
 		self::$_ins[$key]->_conn_cfg = $config;
 		return self::$_ins[$key];
 	}

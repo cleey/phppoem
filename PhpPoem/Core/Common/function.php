@@ -46,8 +46,9 @@ function co($var,$flag=0){
 	echo "<pre>";
 	var_dump($var);
 	echo "</pre>";
-	if( $flag == 0 ) \Poem\Poem::end();
-	// if( $flag == 0 ) exit;
+	// if( $flag == 0 ) \Poem\Poem::end();
+	if( $flag == 0 ) \Poem\Poem::end();exit;
+	// if( $flag == 2 ) \Poem\Poem::end();exit;
 }
 
 // 返回ajax
@@ -72,7 +73,14 @@ function l($info){
 // Model
 function m($tb='',$config=''){
 	static $model;
-	if( !isset($model[$tb]) ) $model[$tb] = new \Poem\Model($tb,$config);
+	if( !isset($model[$tb]) ){
+		$class = 'Poem\\Model';
+		if( is_file( $file = MODULE_MODEL.ucfirst($tb).'.php' ) ){
+			include $file;
+			$class = POEM_MODULE.'\\Model\\'.$tb;
+		}
+		$model[$tb] = new $class($tb,$config);
+	}
 	return $model[$tb];
 }
 
@@ -129,19 +137,19 @@ function vendor($require_class,$ext='.php'){
 	require $file;
 }
 
-function p($m,$url='',$listnum=15){
+function p($m,$url='',$page_size=15,$show_nums=5){
 	$page = intval( I('p')) ? intval( I('p')) : 1;
 	$tm  = clone $m;
 	$total = $tm->count(); // 总记录数
-	$list = $m->limit( ($page-1)*$listnum ,$listnum )->select();  // 结果列表
+	$list = $m->limit( ($page-1)*$page_size ,$page_size )->select();  // 结果列表
 	$info['total'] = $total; // 总记录数
 	$info['np'] = $page;  // 当前页
-	$info['tp'] = ceil((int)$info['total']/(int)$listnum);  //总页数
+	$info['tp'] = ceil((int)$info['total']/(int)$page_size);  //总页数
 	$info['url'] = $url;  //url
 
 	$info['list'] = $list;
 	$info['page'] = $page;
-	$info['html'] = pageHtml($page,$info['tp'],$url);
+	$info['html'] = pagehtml($page,$info['tp'],$url,$show_nums);
 	return $info;
 }
 
@@ -157,7 +165,7 @@ function pageHtml($np,$tp,$url,$num=5){
 	$e 	 = ($np == $tp)?'disabled':'';  // 是否问尾页
 	$html = '';
 	if( $tp > 0){
-		$html .= '<ul class="pagination fr">';
+		$html .= '<ul class="pagination">';
 		// $html .= "<li> <span>共 $total 条 </span> </li>";
 		// $html .= "<li> <span>当前 $np / $tp 页</span> </li>";
 		if($np !=1){
@@ -174,7 +182,7 @@ function pageHtml($np,$tp,$url,$num=5){
 		}
 		$sum = 0;
 		for ($i=$begin; $i < $num+$begin; $i++) { 
-			$cp = ($np == $i) ? 'class="disabled"':''; //'.$cp.'
+			$cp = ($np == $i) ? 'class="active"':''; //'.$cp.'
 			$tu = ($np == $i) ? 'javascript:void(0);' : $url."?p=$i&&$clin_page_str";
 			$html .= "<li $cp><a href='$tu'>$i</a></li>";
 		}
@@ -186,6 +194,8 @@ function pageHtml($np,$tp,$url,$num=5){
 	}
 	return $html;
 }
+
+
 // cookie
 function cookie($name='',$value='',$option=null){
 	if( empty($name) ) return $_COOKIE;

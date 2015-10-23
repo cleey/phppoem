@@ -56,7 +56,13 @@ class Log{
 				'DEBUG' => '调试',
 			);
 		foreach ($arr as $key => $value) {
+			$num = 50;
+			$len = 0;
+			if( is_array($trace_tmp[$key])&& ($len=count($trace_tmp[$key])) >$num ){
+				$trace_tmp[$key] = array_slice($trace_tmp[$key], 0,$num);
+			}
 			$trace[$value] = $trace_tmp[$key];
+			if( $len>$num)$trace[$value][] = "...... 共 $len 条";
 		}
 		$totalTime = number_format($cltime,3);
 		include CORE_PATH.'Tpl/trace.php';

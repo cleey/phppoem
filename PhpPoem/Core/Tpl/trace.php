@@ -63,6 +63,6 @@ for(var i = 0; i < tab_tit.length; i++){
 }
 parseInt(history[0]) && open.click();
 (tab_tit[history[1]] || tab_tit[0]).click();
-open.click();
+// open.click();
 })();
 </script>
