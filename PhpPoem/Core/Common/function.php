@@ -46,9 +46,10 @@ function co($var,$flag=0){
 	echo "<pre>";
 	var_dump($var);
 	echo "</pre>";
-	// if( $flag == 0 ) \Poem\Poem::end();
-	if( $flag == 0 ) \Poem\Poem::end();exit;
-	// if( $flag == 2 ) \Poem\Poem::end();exit;
+	if( $flag == 0 ){
+		\Poem\Poem::end();
+		exit;
+	}
 }
 
 // 返回ajax
