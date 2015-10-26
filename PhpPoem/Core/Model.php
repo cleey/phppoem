@@ -51,7 +51,7 @@ class Model{
 		return $this->_db;
 	}
 
-	function _sql() {
+	function sql() {
 		return $this->_sql;
 	}
 
@@ -203,12 +203,12 @@ class Model{
 		}
 		foreach ($this->_where as $k => $v) {
 			if( is_array($v) ){
-				$keys[] = "`$k` ".$v[0]." :$k";
+				$keys[] = "`$k` ".$v[0]." :w_$k";
 				if( strcasecmp($v[0],'IN')==0 && is_array($v[1]) ) $v[1] = implode(',', $v[1]);
-				$bind[":$k"] = $v[1];
+				$bind[":w_$k"] = $v[1];
 			}else{
-				$keys[] = "`$k`=:$k";
-				$bind[":$k"] = $v;
+				$keys[] = "`$k`=:w_$k";
+				$bind[":w_$k"] = $v;
 			}
 		}
 		$this->_sql .= ' WHERE '.implode(" $logic ", $keys);
