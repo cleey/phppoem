@@ -58,7 +58,7 @@ class View{
 			$tpl = str_replace(':', '/', $tpl);
 			$file = APP_PATH.POEM_MODULE."/View/{$tpl}.html"; // html文件路径
 		}else{
-			$file = APP_PATH.POEM_MODULE."/View/".POEM_CTL."/{$tpl}.html"; // html文件路径
+			$file = APP_PATH.POEM_MODULE."/View/".POEM_CTRL."/{$tpl}.html"; // html文件路径
 		}
 
 		is_file($file) or \Poem\Poem::halt('文件不存在'.$file);
@@ -78,13 +78,14 @@ class View{
         	function($matches){return '<?php echo $'.$matches[1].';?>'; } ,
         	$content);
 
+        // $this->compile_include($content);
+
         // 匹配 <include file=""/>
         $content = preg_replace_callback(
-        	'/<include[ ]*file=[\'"](.+)[\'"][ ]*\/>/',
-        	function($matches){return '<?php include "'.$this->parseTpl($matches[1]).'"; ?>'; } ,
+        	'/<include[ ]+file=[\'"](.+)[\'"][ ]*\/>/',
+        	function($matches){return $this->compiler(file_get_contents( $this->parseTpl($matches[1]) )); } ,
         	$content);
-        
-        // 匹配 <each key="" as=""></each>
+        // 匹配 <each key="" as=""></each> '/<each[ ]+key=[\'"](.+)[\'"][ ]*as=[\'"](.+)[\'"][ ]*>/'
 		$content = preg_replace_callback(
 			'/<each[ ]+key=[\'"](.+)[\'"][ ]*as=[\'"](.+)[\'"][ ]*>/',
 			function($matches){return '<?php foreach( $'.$matches[1].' as $'.$matches[2].'){ ?>'; } ,
@@ -95,11 +96,21 @@ class View{
 		// 匹配 <if "$key == 1"></if>
 		$content = preg_replace_callback(
 			'/<if[ ]*[\'"](.+)[\'"][ ]*>/',
-			function($matches){return '<?php if( $'.$matches[1].'){ ?>'; } ,
+			function($matches){return '<?php if( '.$matches[1].'){ ?>'; } ,
 			$content);
 		$content = str_replace('</if>', '<?php } ?>', $content);
 
         // CO($content);
+        return $content;
+	}
+
+	protected function compile_include($content){
+		// 匹配 <include file=""/>
+        $flag = preg_match_all('/<include\sfile=[\'"](.+)[\'"]\s\/>/',$content,$matches);
+        foreach ($matches[1] as $v) {
+        	$tmp = $this->compiler(file_get_contents( $this->parseTpl($matches[1]) ));
+        	preg_replace('/<include\sfile=[\'"]'.$v.'[\'"]\s\/>/', $tmp, $content);
+        }
         return $content;
 	}
 

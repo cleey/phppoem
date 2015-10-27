@@ -67,7 +67,7 @@ class Poem{
 	static function exec(){
 		T('POEM_EXEC_TIME');
 		if( config('SESSION_AUTO_START') ){ session('[start]') ; }
-		self::instance(POEM_MODULE.'\\Controller\\'.POEM_CTL, POEM_FUNC); // 执行操作
+		self::instance(POEM_MODULE.'\\Controller\\'.POEM_CTRL, POEM_FUNC); // 执行操作
 		T('POEM_EXEC_TIME',0);
 	}
 

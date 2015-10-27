@@ -4,6 +4,7 @@ namespace Poem;
 class Route{
 
 	static function run(){
+		T('POEM_ROUTE_TIME');
 		$url = array();
 		if( isset($_SERVER['PATH_INFO']) ){
 			$_URL = $_SERVER['PATH_INFO'];
@@ -14,7 +15,7 @@ class Route{
 		}
 		// CO($_SERVER);
 		define('POEM_MODULE' , !empty($url[1]) ? ucfirst($url[1]) : 'Home');
-		define('POEM_CTL'    , !empty($url[2]) ? ucfirst($url[2]) : 'Index');
+		define('POEM_CTRL'    , !empty($url[2]) ? ucfirst($url[2]) : 'Index');
 		define('POEM_FUNC'   , !empty($url[3]) ? $url[3] : 'index');
 
 		define('MODULE_MODEL'  , APP_PATH.POEM_MODULE.'/Model/');
@@ -24,14 +25,18 @@ class Route{
 		define('POEM_URL' , $_SERVER['SCRIPT_NAME']); // 项目入口文件 */index.php
 		define('POEM_ROOT' , dirname(POEM_URL));  // 顶级web目录
 		define('POEM_MODULE_URL', POEM_URL.'/'.POEM_MODULE);  // class url
-		define('POEM_CTL_URL'   , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTL);  // class url
-		define('POEM_FUNC_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTL.'/'.POEM_FUNC);  // method url
+		define('POEM_CTRL_URL'   , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL);  // class url
+		define('POEM_FUNC_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL.'/'.POEM_FUNC);  // method url
+		T('POEM_ROUTE_TIME',0);
 	}
 
 	private static function parseRule($url){
-		$rule = include APP_ROUTE;
+		if( !is_file(APP_ROUTE) ) return;
+		$rule = include APP_ROUTE; // 用户自定义路由
 		foreach ($rule as $pattern => $path) {
+			// 匹配带{id}的参数
 			preg_match_all('/{(\w+)}/', $pattern, $matchs,PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
+
 			$tmp = '';
 			$pos = 0;
 			$vars= array();
