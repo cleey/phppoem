@@ -80,15 +80,17 @@ class View{
 
         // $this->compile_include($content);
 
-        // 匹配 <include file=""/>
+        // 匹配 <include ""/>
         $content = preg_replace_callback(
-        	'/<include[ ]+file=[\'"](.+)[\'"][ ]*\/>/',
+        	'/<include[ ]+[\'"](.+)[\'"][ ]*\/>/',
         	function($matches){return $this->compiler(file_get_contents( $this->parseTpl($matches[1]) )); } ,
         	$content);
         // 匹配 <each key="" as=""></each> '/<each[ ]+key=[\'"](.+)[\'"][ ]*as=[\'"](.+)[\'"][ ]*>/'
+		// '/<each[ ]+key=[\'"](.+)[\'"][ ]*as=[\'"](.+)[\'"][ ]*>/',
+		// foreach( $'.$matches[1].' as $'.$matches[2].')
 		$content = preg_replace_callback(
-			'/<each[ ]+key=[\'"](.+)[\'"][ ]*as=[\'"](.+)[\'"][ ]*>/',
-			function($matches){return '<?php foreach( $'.$matches[1].' as $'.$matches[2].'){ ?>'; } ,
+			'/<each[ ]+[\'"](.+)[\'"][ ]*>/',
+			function($matches){return '<?php foreach( '.$matches[1].' ){ ?>'; } ,
 			$content);
 		$content = str_replace('</each>', '<?php } ?>', $content);
 
@@ -99,6 +101,11 @@ class View{
 			function($matches){return '<?php if( '.$matches[1].'){ ?>'; } ,
 			$content);
 		$content = str_replace('</if>', '<?php } ?>', $content);
+
+		// 宏定义
+		$content = str_replace('POEM_MODULE_URL', POEM_MODULE_URL, $content);
+		$content = str_replace('POEM_CTRL_URL', POEM_CTRL_URL, $content);
+		$content = str_replace('POEM_FUNC_URL', POEM_FUNC_URL, $content);
 
         // CO($content);
         return $content;
