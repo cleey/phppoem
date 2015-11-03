@@ -13,7 +13,7 @@ function gp($param,$flag = 0){
 	// 分解 | key和val
 	foreach ($arr as $value) {
 		$k = explode('|',$value);
-		$v = I($k[0]);
+		$v = i($k[0]);
 		if( $flag == 0 && $v==='' ) return gp_err($k);
 		$params[ $k[0] ] = $v;
 	}
@@ -46,9 +46,11 @@ function co($var,$flag=0){
 	echo "<pre>";
 	var_dump($var);
 	echo "</pre>";
-	if( $flag == 0 ){
-		\Poem\Poem::end();
-		exit;
+	switch ($flag) {
+		case -1: exit; break;
+		case 0: \Poem\Poem::end(); exit; break;
+		case 1: break;
+		default: break;
 	}
 }
 
@@ -138,7 +140,7 @@ function vendor($require_class,$ext='.php'){
 	require $file;
 }
 
-function p($m,$url='',$page_size=15,$show_nums=5){
+function p($m,$url='',$affix='',$page_size=15,$show_nums=5){
 	$page = intval( I('p')) ? intval( I('p')) : 1;
 	$tm  = clone $m;
 	$total = $tm->count(); // 总记录数
@@ -150,11 +152,11 @@ function p($m,$url='',$page_size=15,$show_nums=5){
 
 	$info['list'] = $list;
 	$info['page'] = $page;
-	$info['html'] = pagehtml($page,$info['tp'],$url,$show_nums);
+	$info['html'] = pagehtml($page,$info['tp'],$affix,$url,$show_nums);
 	return $info;
 }
 
-function pageHtml($np,$tp,$url,$num=5){
+function pagehtml($np,$tp,$affix,$url,$num=5){
 // $np = 4;
 // $tp = 10;
 // header('Content-Type:text/html;charset=utf-8');
@@ -170,8 +172,8 @@ function pageHtml($np,$tp,$url,$num=5){
 		// $html .= "<li> <span>共 $total 条 </span> </li>";
 		// $html .= "<li> <span>当前 $np / $tp 页</span> </li>";
 		if($np !=1){
-			$html .= "<li class='{$f}'><a href='$url?p=1&&$clin_page_str'> << </a></li>";
-			$html .= "<li class='{$f}'><a href='$url?p=$up&&$clin_page_str'> < </a></li>";
+			$html .= "<li class='{$f}'><a href='$url?p=1&&$affix'> << </a></li>";
+			$html .= "<li class='{$f}'><a href='$url?p=$up&&$affix'> < </a></li>";
 		}
 		$sep = floor($num/2);
 		$begin = 1;
@@ -184,12 +186,12 @@ function pageHtml($np,$tp,$url,$num=5){
 		$sum = 0;
 		for ($i=$begin; $i < $num+$begin; $i++) { 
 			$cp = ($np == $i) ? 'class="active"':''; //'.$cp.'
-			$tu = ($np == $i) ? 'javascript:void(0);' : $url."?p=$i&&$clin_page_str";
+			$tu = ($np == $i) ? 'javascript:void(0);' : $url."?p=$i&&$affix";
 			$html .= "<li $cp><a href='$tu'>$i</a></li>";
 		}
 		if($np != $tp){
-			$html .= "<li class='{$e}'><a href='{$url}?p={$dp}&&{$clin_page_str}'> > </a></li>";
-			$html .= "<li class='{$e}'><a href='{$url}?p={$tp}&&{$clin_page_str}'> >> </a></li>";
+			$html .= "<li class='{$e}'><a href='{$url}?p={$dp}&&{$affix}'> > </a></li>";
+			$html .= "<li class='{$e}'><a href='{$url}?p={$tp}&&{$affix}'> >> </a></li>";
 		}
 		$html .= "</ul>";
 	}
@@ -299,10 +301,58 @@ function u($tpl){
 		$tpl = str_replace(':', '/', $tpl);
 		$url = POEM_MODULE_URL.'/'.$tpl; // html文件路径
 	}else{
-		$url = POEM_CTL_URL.'/'.$tpl; // html文件路径
+		$url = POEM_CTRL_URL.'/'.$tpl; // html文件路径
 	}
 
 	return $url;
+}
+
+
+/**
+ * @cc 上传文件函数
+ * @param  [type] $data url         [存储地址]
+ * @param  [type] $data size        [限制大小]
+ * @param  [type] $data allowedExts [允许后缀]
+ * @return [type]              [返回数组] info url ，code 1 成功 0失败，filename文件名
+ */
+function fileUpload($data){
+	
+	foreach ($data as $k => $v) {
+		if( empty($v) ){ return array('code'=> 0,'info'=> '参数不能为空：'.$k); }
+	}
+	if( !is_dir($data['url']) ){ return array('code'=> 0,'info'=> '路径错误：'.$data['url']); }
+	$fileField = $data['fileField']?: 'file';
+	$file = $_FILES[$fileField];
+
+	$ext = pathinfo($file["name"],PATHINFO_EXTENSION);
+	// 文件过大
+	if ( $file["size"] > $data['size'] ){
+		$return = array('code'=> 0,'info'=> '文件过大：'.$file["size"].'，请上传小于：'.$data['size']);
+	}
+	// 不允许后缀
+	elseif( !in_array($ext, $data['allow']) ){
+		$return = array('code'=> 0,'info'=> '不允许后缀：'.$ext.'请上传：'.implode(',',$data['allow']) );
+	}else{
+		if ($file["error"] > 0){
+			$return =array('code'=> 0,'info'=> "Return Code: " . $file["error"]);
+		}
+		else{
+			if( !$data['filename'] ){ 
+				// $data['filename'] = Date('YmdHis').'_'.$file["name"];
+				$data['filename'] = date('YmdHis').'_'.uniqid().'.'.$ext;
+			}
+			$newfile_url = $data['url'].$data['filename'];
+			move_uploaded_file($file["tmp_name"],$newfile_url);
+			$return = array(
+				'code'   => 1,
+				'origin' => $_FILES[$fileField]["name"],
+				'size'   => $_FILES[$fileField]["size"],
+				'name'   => $data['filename'],
+				'type'   => $ext,
+				'info'   => '/'.$newfile_url);
+		}
+	}
+	return $return;
 }
 
 ?>

@@ -73,7 +73,8 @@ class Model{
 		return $this;
 	}
 
-	function limit($b,$e){
+	function limit($b=0,$e=0){
+		if( $e == 0 ){ $e=$b; $b=0;}
 		$this->_limit = $b;
 		if( $e ) $this->_limit .= ",$e";
 		return $this;
@@ -172,12 +173,9 @@ class Model{
 		return $info;
 	}
 
-
 	function id($id){
 		return $this->where(array('id'=>$id))->find();
 	}
-	
-
 
 	protected function afterSql(){
 		foreach ($this->_bind  as $key => $value) {
@@ -190,7 +188,6 @@ class Model{
 		$this->_order = '';
 		$this->_field = '*';
 		$this->_bind  = array();
-		// CO( $this->_sql );
 	}
 
 	protected function setWhere(){
