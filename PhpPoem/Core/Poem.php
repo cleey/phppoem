@@ -13,8 +13,11 @@ class Poem{
 		set_exception_handler('\Poem\Poem::appException');
 
 		self::$btime = microtime(1);
-		// self::route(); // 路由管理
 		self::func();  // 函数库
+
+		$module = defined('NEW_MODULE') ? NEW_MODULE : 'Home';
+		if( !is_dir(APP_PATH.$module) ) \Poem\More\Build::checkModule($module);
+
 		Route::run(); // 路由管理
 		self::conf();  // 配置文件
 		self::exec();  // 执行操作
