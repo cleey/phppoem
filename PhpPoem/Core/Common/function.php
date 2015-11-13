@@ -115,10 +115,10 @@ function f($key='',$value='',$append=0){
 	else return $obj->set($key,$value,$append);
 }
 
-// 文件缓存
+// 缓存
 function s($key='',$value='',$options=null){
 	$config = is_array($options) ? $options :null ; 
-	if( is_null($key) ) \Poem\Cache::delIns();  // 删除实例
+	if( is_null($key) ) \Poem\Cache::close();  // 删除实例
 
 	$expire = is_numeric($options) ? $options : null;
 	$obj = \Poem\Cache::getIns('',$config);
@@ -203,12 +203,12 @@ function pagehtml($np,$tp,$affix,$url,$num=5){
 function cookie($name='',$value='',$option=null){
 	if( empty($name) ) return $_COOKIE;
 	$cfg = array(
-        'prefix'    =>  config('COOKIE_PREFIX'), // cookie 名称前缀
-        'expire'    =>  config('COOKIE_EXPIRE'), // cookie 保存时间
-        'path'      =>  config('COOKIE_PATH'), // cookie 保存路径
-        'domain'    =>  config('COOKIE_DOMAIN'), // cookie 有效域名
-        'secure'    =>  config('COOKIE_SECURE'), //  cookie 启用安全传输
-        'httponly'  =>  config('COOKIE_HTTPONLY'), // httponly设置
+        'prefix'    =>  config('cookie_prefix'), // cookie 名称前缀
+        'expire'    =>  config('cookie_expire'), // cookie 保存时间
+        'path'      =>  config('cookie_path'), // cookie 保存路径
+        'domain'    =>  config('cookie_domain'), // cookie 有效域名
+        'secure'    =>  config('cookie_secure'), //  cookie 启用安全传输
+        'httponly'  =>  config('cookie_httponly'), // httponly设置
     );
 	$name = $cfg['prefix'].$name;
 	if( $value === '') return $_COOKIE[$name];
@@ -244,7 +244,7 @@ function session($name='',$value=''){
 			unset($_SESSION);
 		}else{
 			if( strpos($name, '.') ){
-				$name = config('SESSION_PREFIX').$name;
+				$name = config('session_prefix').$name;
 				list($k1,$k2) = explode('.',$name);
 				return isset($_SESSION[$k1][$k2]) ? $_SESSION[$k1][$k2] : NULL;
 			}else return $_SESSION[$name];
@@ -252,7 +252,7 @@ function session($name='',$value=''){
 	}elseif( is_null($value) ){
 		unset($_SESSION[$value]);
 	}else{ // 设置 $name
-		$name = config('SESSION_PREFIX').$name;
+		$name = config('session_prefix').$name;
 		if( strpos($name, '.') ){
 			list($k1,$k2) = explode('.',$name);
 			$_SESSION[$k1][$k2] = $value;
@@ -262,8 +262,8 @@ function session($name='',$value=''){
 
 function layout($flag){
 	if( $flag !== false ){
-		config('LAYOUT_ON',true);
-		if( is_string($flag) ) config('LAYOUT',$flag);
+		config('layout_on',true);
+		if( is_string($flag) ) config('layout',$flag);
 	}else config('LAYOUT_ON',false);
 }
 

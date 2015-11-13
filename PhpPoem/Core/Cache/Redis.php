@@ -6,9 +6,10 @@ class Redis{
 	protected $_option;
 	function __construct($option=array()){
 		$option = array_merge( array(
-			'host'=>config('REDIS_HOST') ? : '127.0.0.1',
-			'port'=>config('REDIS_PORT') ? : 6379,
-			'expire'=>config('REDIS_EXPIRE') ? : 0,
+			'host'=>config('redis_host') ? : '127.0.0.1',
+			'port'=>config('redis_port') ? : 6379,
+			'expire'=>config('redis_expire') ? : 0,
+			'auth'=>config('redis_auth') ? : 0,
 			)
 		,$option);
 		$this->_option = $option;

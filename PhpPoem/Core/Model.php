@@ -19,13 +19,13 @@ class Model{
 		if( $config === '' ){
 			// 配置文件
 			$this->db_cfg = array(
-				'DB_TYPE' => config('DB_TYPE'),
-				'DB_HOST' => config('DB_HOST'),
-				'DB_PORT' => config('DB_PORT'),
-				'DB_NAME' => config('DB_NAME'),
-				'DB_USER' => config('DB_USER'),
-				'DB_PASS' => config('DB_PASS'),
-				'DB_CHARSET' => config('DB_CHARSET'),
+				'db_type' => config('db_type'),
+				'db_host' => config('db_host'),
+				'db_port' => config('db_port'),
+				'db_name' => config('db_name'),
+				'db_user' => config('db_user'),
+				'db_pass' => config('db_pass'),
+				'db_charset' => config('db_charset'),
 			);
 		}else if( is_array($config)  ){
 			// 用户指定配置
@@ -34,13 +34,13 @@ class Model{
 			// db dsn配置
 			$tmp = parse_url($config);
 			$this->db_cfg = array(
-				'DB_TYPE' => isset($tmp['scheme']) ?$tmp['scheme'] : config('DB_TYPE'),
-				'DB_HOST' => isset($tmp['host']) ? $tmp['host'] : config('DB_HOST'),
-				'DB_PORT' => isset($tmp['port']) ? $tmp['port'] : config('DB_PORT'),
-				'DB_NAME' => isset($tmp['path']) ? substr($tmp['path'],1) : config('DB_NAME'),
-				'DB_USER' => isset($tmp['user']) ? $tmp['user'] : config('DB_USER'),
-				'DB_PASS' => isset($tmp['pass']) ? $tmp['pass'] : config('DB_PASS'),
-				'DB_CHARSET' => isset($tmp['fragment']) ? $tmp['fragment'] :config('DB_CHARSET')
+				'db_type' => isset($tmp['scheme']) ?$tmp['scheme'] : config('db_type'),
+				'db_host' => isset($tmp['host']) ? $tmp['host'] : config('db_host'),
+				'db_port' => isset($tmp['port']) ? $tmp['port'] : config('db_port'),
+				'db_name' => isset($tmp['path']) ? substr($tmp['path'],1) : config('db_name'),
+				'db_user' => isset($tmp['user']) ? $tmp['user'] : config('db_user'),
+				'db_pass' => isset($tmp['pass']) ? $tmp['pass'] : config('db_pass'),
+				'db_charset' => isset($tmp['fragment']) ? $tmp['fragment'] :config('db_charset')
 			);
 		}
 	}

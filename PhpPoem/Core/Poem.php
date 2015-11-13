@@ -69,17 +69,21 @@ class Poem{
 	// 加载配置
 	static function exec(){
 		T('POEM_EXEC_TIME');
-		if( config('SESSION_AUTO_START') ){ session('[start]') ; }
+		if( config('session_auto_start') ){ session('[start]') ; }
 		self::instance(POEM_MODULE.'\\Controller\\'.POEM_CTRL, POEM_FUNC); // 执行操作
 		T('POEM_EXEC_TIME',0);
 	}
 
 	// 结束
 	static function end(){
-		// return;
+		// 关闭数据库
+		Db::clear();
+		Cache::clear();
+
 		T('POEM_TIME','', microtime(1) - self::$btime);
 		// Log::down();
 		Log::show();
+		exit;
 	}
 
 	// 接受PHP内部回调异常处理

@@ -1,29 +1,29 @@
 <?php 
 return array(
 	// "key" => "value"
-	'CF_VERSION' => 'beta1.0',
-	'LAYOUT_ON' => true,
+	'poem_version' => 'beta1.0',
+	'layout_on' => true,
 
 	// 数据库配置
-	'DB_TYPE' => 'mysql',
-	'DB_HOST' => 'localhost',
-	'DB_PORT' => '3306',
-	'DB_NAME' => '',
-	'DB_USER' => '',
-	'DB_PASS' => '',
-	'DB_CHARSET' => 'utf8',
+	'db_type' => 'mysql',
+	'db_host' => 'localhost',
+	'db_port' => '3306',
+	'db_name' => '',
+	'db_user' => '',
+	'db_pass' => '',
+	'db_charset' => 'utf8',
 
-	'RUNTIME_PATH' => 'Runtime/',
+	'runtime_path' => 'Runtime/',
 
-	'SESSION_PREFIX' => '',
-	'SESSION_AUTO_START' => true,
+	'session_prefix' => '',
+	'session_auth_start' => true,
 
-	'COOKIE_EXPIRE' => 0,
-	'COOKIE_DOMAIN' => '',
-	'COOKIE_PATH'   => '/',
-	'COOKIE_PREFIX' => '',
-	'COOKIE_SECURE' => false,
-	'COOKIE_HTTPONLY' => false,
+	'cookie_expire' => 0,
+	'cookie_domain' => '',
+	'cookie_path'   => '/',
+	'cookie_prefix' => '',
+	'cookie_secure' => false,
+	'cookie_httponly' => false,
 );
 
  ?>

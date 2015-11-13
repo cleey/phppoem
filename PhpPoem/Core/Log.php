@@ -22,13 +22,13 @@ class Log{
 	}
 
 	static function trace($key,$value){
-		if( !config('DEBUG_TRACE') ) return;
+		if( !config('debug_trace') ) return;
 		self::$trace[$key][] = $value;
 	}
 
 	// 请求结束由框架保存
 	static function show(){
-		if( !config('DEBUG_TRACE') || IS_AJAX || IS_CLI ) return; 
+		if( !config('debug_trace') || IS_AJAX || IS_CLI ) return; 
 		$trace_tmp = self::$trace;
 		$files  =  get_included_files();
 		foreach ($files as $key=>$file){

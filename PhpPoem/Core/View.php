@@ -23,7 +23,7 @@ class View{
 		$tpl     = $this->parseTpl($tpl);
 		$content = file_get_contents($tpl);
 		// 开启页面布局
-		if( ($layfile=config('LAYOUT')) && config('LAYOUT_ON') === true ){
+		if( ($layfile=config('layout')) && config('layout_on') === true ){
 			$layfile = $this->parseTpl($layfile);
 			$content = str_replace('{__LAYOUT__}', $content, file_get_contents($layfile));
 		}
