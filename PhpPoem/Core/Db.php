@@ -17,13 +17,13 @@ class Db{
 	}
 
 	private function connect(){
-		$type = $this->_conn_cfg['DB_TYPE'];
-		$host = $this->_conn_cfg['DB_HOST'];
-		$port = $this->_conn_cfg['DB_PORT'];
-		$name = $this->_conn_cfg['DB_NAME'];
-		$user = $this->_conn_cfg['DB_USER'];
-		$pass = $this->_conn_cfg['DB_PASS'];
-		$char = $this->_conn_cfg['DB_CHARSET'];
+		$type = $this->_conn_cfg['db_type'];
+		$host = $this->_conn_cfg['db_host'];
+		$port = $this->_conn_cfg['db_port'];
+		$name = $this->_conn_cfg['db_name'];
+		$user = $this->_conn_cfg['db_user'];
+		$pass = $this->_conn_cfg['db_pass'];
+		$char = $this->_conn_cfg['db_charset'];
 		$dsn = "{$type}:host={$host};port={$port};dbname={$name};charset={$char}";
 		T('poem_db_exec');
 		$this->_conn  = new \PDO($dsn,$user,$pass) or die('数据库连接失败');
@@ -66,6 +66,12 @@ class Db{
 			case 'select': return $pre->fetchAll(\PDO::FETCH_ASSOC); break;
 			default: break;
 		}
+	}
+
+	static function clear(){
+		if(empty(self::$_ins)) return;
+		foreach (self::$_ins as &$single)
+			$single->close();
 	}
 }
 
