@@ -6,6 +6,7 @@ class Route{
 	static function run(){
 		T('POEM_ROUTE_TIME');
 		$url = array();
+		if( defined('NEW_MODULE') ) $_SERVER['PATH_INFO'] = "/".NEW_MODULE;
 		if( isset($_SERVER['PATH_INFO']) ){
 			$_URL = $_SERVER['PATH_INFO'];
 			$_EXT = pathinfo($_URL,PATHINFO_EXTENSION);  // 获取url后缀
@@ -15,17 +16,17 @@ class Route{
 		}
 		// CO($_SERVER);
 		define('POEM_MODULE' , !empty($url[1]) ? ucfirst($url[1]) : 'Home');
-		define('POEM_CTRL'    , !empty($url[2]) ? ucfirst($url[2]) : 'Index');
+		define('POEM_CTRL'   , !empty($url[2]) ? ucfirst($url[2]) : 'Index');
 		define('POEM_FUNC'   , !empty($url[3]) ? $url[3] : 'index');
 
 		define('MODULE_MODEL'  , APP_PATH.POEM_MODULE.'/Model/');
 
 		if( isset($url[4]) ) self::parseParam(array_slice($url, 4));
 
-		define('POEM_URL' , $_SERVER['SCRIPT_NAME']); // 项目入口文件 */index.php
+		define('POEM_URL'  , trim($_SERVER['SCRIPT_NAME'],'/') ); // 项目入口文件 */index.php
 		define('POEM_ROOT' , dirname(POEM_URL));  // 顶级web目录
 		define('POEM_MODULE_URL', POEM_URL.'/'.POEM_MODULE);  // class url
-		define('POEM_CTRL_URL'   , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL);  // class url
+		define('POEM_CTRL_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL);  // class url
 		define('POEM_FUNC_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL.'/'.POEM_FUNC);  // method url
 		T('POEM_ROUTE_TIME',0);
 	}

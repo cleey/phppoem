@@ -5,7 +5,7 @@ class File{
 	protected $_prefix;
 
 	function __construct(){
-		$path = APP_PATH.config('RUNTIME_PATH');
+		$path = APP_PATH.config('runtime_path');
 		if( !is_dir($path) ) mkdir($path);
 		$this->_prefix = $path;
 	}
