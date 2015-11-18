@@ -23,7 +23,7 @@ class Route{
 
 		if( isset($url[4]) ) self::parseParam(array_slice($url, 4));
 
-		define('POEM_URL' , config('no_url_index') ? trim($_SERVER['SCRIPT_NAME'],'/') : $_SERVER['SCRIPT_NAME'] ); // 项目入口文件 */index.php
+		define('POEM_URL'  , trim($_SERVER['SCRIPT_NAME'],'/') ); // 项目入口文件 */index.php
 		define('POEM_ROOT' , dirname(POEM_URL));  // 顶级web目录
 		define('POEM_MODULE_URL', POEM_URL.'/'.POEM_MODULE);  // class url
 		define('POEM_CTRL_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL);  // class url
