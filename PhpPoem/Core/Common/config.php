@@ -3,6 +3,8 @@ return array(
 	// "key" => "value"
 	'poem_version' => 'beta1.0',
 	'layout_on' => true,
+	'layout'    => false,
+	'no_url_index'  => true, // 是否隐藏index.php
 
 	// 数据库配置
 	'db_type' => 'mysql',
