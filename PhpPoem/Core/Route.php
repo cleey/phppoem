@@ -23,11 +23,11 @@ class Route{
 
 		if( isset($url[4]) ) self::parseParam(array_slice($url, 4));
 
-		define('POEM_URL'  , trim($_SERVER['SCRIPT_NAME'],'/') ); // 项目入口文件 */index.php
+		define('POEM_URL'  , str_replace('/index.php', '',$_SERVER['SCRIPT_NAME']) ); // 项目入口文件 */index.php
 		define('POEM_ROOT' , dirname(POEM_URL));  // 顶级web目录
-		define('POEM_MODULE_URL', POEM_URL.'/'.POEM_MODULE);  // class url
-		define('POEM_CTRL_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL);  // class url
-		define('POEM_FUNC_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL.'/'.POEM_FUNC);  // method url
+		define('POEM_MODULE_URL', POEM_URL.'/'.strtolower(POEM_MODULE) );  // class url
+		define('POEM_CTRL_URL'  , POEM_URL.'/'.strtolower(POEM_MODULE.'/'.POEM_CTRL) );  // class url
+		define('POEM_FUNC_URL'  , POEM_URL.'/'.strtolower(POEM_MODULE.'/'.POEM_CTRL.'/'.POEM_FUNC) );  // method url
 		T('POEM_ROUTE_TIME',0);
 	}
 
