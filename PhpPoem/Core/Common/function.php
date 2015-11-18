@@ -172,8 +172,8 @@ function pagehtml($np,$tp,$affix,$url,$num=5){
 		// $html .= "<li> <span>共 $total 条 </span> </li>";
 		// $html .= "<li> <span>当前 $np / $tp 页</span> </li>";
 		if($np !=1){
-			$html .= "<li class='{$f}'><a href='$url?p=1&&$affix'> << </a></li>";
-			$html .= "<li class='{$f}'><a href='$url?p=$up&&$affix'> < </a></li>";
+			$html .= "<li class='{$f}'><a href='$url/p/1$affix'> << </a></li>";
+			$html .= "<li class='{$f}'><a href='$url/p/$up$affix'> < </a></li>";
 		}
 		$sep = floor($num/2);
 		$begin = 1;
@@ -186,12 +186,12 @@ function pagehtml($np,$tp,$affix,$url,$num=5){
 		$sum = 0;
 		for ($i=$begin; $i < $num+$begin; $i++) { 
 			$cp = ($np == $i) ? 'class="active"':''; //'.$cp.'
-			$tu = ($np == $i) ? 'javascript:void(0);' : $url."?p=$i&&$affix";
+			$tu = ($np == $i) ? 'javascript:void(0);' : $url."/p/$i$affix";
 			$html .= "<li $cp><a href='$tu'>$i</a></li>";
 		}
 		if($np != $tp){
-			$html .= "<li class='{$e}'><a href='{$url}?p={$dp}&&{$affix}'> > </a></li>";
-			$html .= "<li class='{$e}'><a href='{$url}?p={$tp}&&{$affix}'> >> </a></li>";
+			$html .= "<li class='{$e}'><a href='{$url}/p/{$dp}{$affix}'> > </a></li>";
+			$html .= "<li class='{$e}'><a href='{$url}/p/{$tp}{$affix}'> >> </a></li>";
 		}
 		$html .= "</ul>";
 	}

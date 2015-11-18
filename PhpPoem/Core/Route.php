@@ -11,8 +11,16 @@ class Route{
 			$_URL = $_SERVER['PATH_INFO'];
 			$_EXT = pathinfo($_URL,PATHINFO_EXTENSION);  // 获取url后缀
 			if( $_EXT ) $_URL = preg_replace('/\.'.$_EXT.'$/i', '', $_URL); // 删除url后缀
-			$_URL = self::parseRule($_URL);
+			if( !is_file(APP_ROUTE) ) $_URL = self::parseRule($_URL);
 			$url = explode('/', $_URL); // /Home/Index/index
+			// 获取地址栏中的/参数
+			if( ($n = count($url)) >= 5){
+				$i = 4;
+				while( $i+1 <= $n){
+					$_GET[$url[$i]] = $url[$i+1];
+					$i+=2;
+				}
+			}
 		}
 		// CO($_SERVER);
 		define('POEM_MODULE' , !empty($url[1]) ? ucfirst($url[1]) : 'Home');
@@ -32,7 +40,7 @@ class Route{
 	}
 
 	private static function parseRule($url){
-		if( !is_file(APP_ROUTE) ) return;
+		
 		$rule = include APP_ROUTE; // 用户自定义路由
 		foreach ($rule as $pattern => $path) {
 			// 匹配带{id}的参数
@@ -54,6 +62,7 @@ class Route{
 				break;
 			}
 		}
+
 		return $url;
 	}
 
