@@ -96,13 +96,13 @@ function assign($key,$value=''){
 	$view = \Poem\Poem::instance('Poem\View');
 	$view->assign($key,$value);
 }
-function v_ok($info,$url='',$second=false){
+function ok_jump($info,$url='',$param='',$second=false){
 	$view = \Poem\Poem::instance('Poem\View');
-	$view->autoJump($info,$url,$second,1);
+	$view->autoJump($info,$url,$param,$second,1);
 }
-function v_err($info,$url='',$second=false){
+function err_jump($info,$url='',$param='',$second=false){
 	$view = \Poem\Poem::instance('Poem\View');
-	$view->autoJump($info,$url,$second,0);
+	$view->autoJump($info,$url,$param,$second,0);
 }
 
 // 文件缓存
@@ -172,8 +172,8 @@ function pagehtml($np,$tp,$affix,$url,$num=5){
 		// $html .= "<li> <span>共 $total 条 </span> </li>";
 		// $html .= "<li> <span>当前 $np / $tp 页</span> </li>";
 		if($np !=1){
-			$html .= "<li class='{$f}'><a href='$url?p=1&&$affix'> << </a></li>";
-			$html .= "<li class='{$f}'><a href='$url?p=$up&&$affix'> < </a></li>";
+			$html .= "<li class='{$f}'><a href='$url/p/1$affix'> << </a></li>";
+			$html .= "<li class='{$f}'><a href='$url/p/$up$affix'> < </a></li>";
 		}
 		$sep = floor($num/2);
 		$begin = 1;
@@ -186,12 +186,12 @@ function pagehtml($np,$tp,$affix,$url,$num=5){
 		$sum = 0;
 		for ($i=$begin; $i < $num+$begin; $i++) { 
 			$cp = ($np == $i) ? 'class="active"':''; //'.$cp.'
-			$tu = ($np == $i) ? 'javascript:void(0);' : $url."?p=$i&&$affix";
+			$tu = ($np == $i) ? 'javascript:void(0);' : $url."/p/$i$affix";
 			$html .= "<li $cp><a href='$tu'>$i</a></li>";
 		}
 		if($np != $tp){
-			$html .= "<li class='{$e}'><a href='{$url}?p={$dp}&&{$affix}'> > </a></li>";
-			$html .= "<li class='{$e}'><a href='{$url}?p={$tp}&&{$affix}'> >> </a></li>";
+			$html .= "<li class='{$e}'><a href='{$url}/p/{$dp}{$affix}'> > </a></li>";
+			$html .= "<li class='{$e}'><a href='{$url}/p/{$tp}{$affix}'> >> </a></li>";
 		}
 		$html .= "</ul>";
 	}
@@ -264,7 +264,7 @@ function layout($flag){
 	if( $flag !== false ){
 		config('layout_on',true);
 		if( is_string($flag) ) config('layout',$flag);
-	}else config('LAYOUT_ON',false);
+	}else config('layout_on',false);
 }
 
 // 计时函数
@@ -285,13 +285,13 @@ function t($key,$end='',$settime=null){
 }
 
 function jump($url){
+	poem_url($url);
 	header("Location: $url");
 	exit;
 }
 
 function u($tpl){
 	if( strpos($tpl, '//') !== false ) return $tpl;
-	// list($module,$class,$func) = explode('\\', get_class($this) );
 	$tpl = $tpl != '' ? $tpl : POEM_FUNC;
 
 	if( strpos($tpl,'@') !== false ){ // 模块 Home@Index/index
@@ -305,6 +305,20 @@ function u($tpl){
 	}
 
 	return $url;
+}
+
+function poem_url($url){
+	if( strpos($url, '//') !== false )return $url;
+	$module= POEM_MODULE;
+	$class = POEM_CLASS;
+	$func  = POEM_FUNC;
+	$tmp = explode('/', trim($url,'/') );
+	switch(count($tmp)){
+		case 1: $func = $tmp[0];break;
+		case 2: $class = $tmp[0];$func = $tmp[1];break;
+		case 3: $module = $tmp[0];$class = $tmp[0];$func = $tmp[1];break;
+	}
+	return POEM_CTRL_URL."/$module/$class/$func"; // html文件路径
 }
 
 

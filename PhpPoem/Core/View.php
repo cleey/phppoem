@@ -124,7 +124,7 @@ class View{
 	// 页面跳转
 	function autoJump($info,$url='',$second=false,$status=1){
 		$key = $status == 1 ? 'message' : 'error';
-		if( $url != '' ) $url = u($url);
+		if( $url != '' ) $url = poem_url($url);
 		$url = $url ? $url : ($status == 1 ? $_SERVER["HTTP_REFERER"] : 'javascript:history.back(-1);');
 		if( !$second ) $second = $status == 1 ? 1 : 3;
 		$this->assign($key,$info);

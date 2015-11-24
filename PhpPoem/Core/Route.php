@@ -4,17 +4,23 @@ namespace Poem;
 class Route{
 
 	static function run(){
-		T('POEM_ROUTE_TIME');
 		$url = array();
 		if( defined('NEW_MODULE') ) $_SERVER['PATH_INFO'] = "/".NEW_MODULE;
 		if( isset($_SERVER['PATH_INFO']) ){
 			$_URL = $_SERVER['PATH_INFO'];
 			$_EXT = pathinfo($_URL,PATHINFO_EXTENSION);  // 获取url后缀
 			if( $_EXT ) $_URL = preg_replace('/\.'.$_EXT.'$/i', '', $_URL); // 删除url后缀
-			$_URL = self::parseRule($_URL);
+			if( is_file(APP_ROUTE) ) $_URL = self::parseRule($_URL);
 			$url = explode('/', $_URL); // /Home/Index/index
+			// 获取地址栏中的/参数
+			if( ($n = count($url)) >= 5){
+				$i = 4;
+				while( $i+1 <= $n){
+					$_GET[$url[$i]] = $url[$i+1];
+					$i+=2;
+				}
+			}
 		}
-		// CO($_SERVER);
 		define('POEM_MODULE' , !empty($url[1]) ? ucfirst($url[1]) : 'Home');
 		define('POEM_CTRL'   , !empty($url[2]) ? ucfirst($url[2]) : 'Index');
 		define('POEM_FUNC'   , !empty($url[3]) ? $url[3] : 'index');
@@ -23,16 +29,16 @@ class Route{
 
 		if( isset($url[4]) ) self::parseParam(array_slice($url, 4));
 
-		define('POEM_URL'  , trim($_SERVER['SCRIPT_NAME'],'/') ); // 项目入口文件 */index.php
+		define('POEM_URL'  , str_replace('/index.php', '',$_SERVER['SCRIPT_NAME']) ); // 项目入口文件 */index.php
 		define('POEM_ROOT' , dirname(POEM_URL));  // 顶级web目录
-		define('POEM_MODULE_URL', POEM_URL.'/'.POEM_MODULE);  // class url
-		define('POEM_CTRL_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL);  // class url
-		define('POEM_FUNC_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL.'/'.POEM_FUNC);  // method url
-		T('POEM_ROUTE_TIME',0);
+		define('POEM_MODULE_URL', POEM_URL.'/'.strtolower(POEM_MODULE) );  // class url
+		define('POEM_CTRL_URL'  , POEM_URL.'/'.strtolower(POEM_MODULE.'/'.POEM_CTRL) );  // class url
+		define('POEM_FUNC_URL'  , POEM_URL.'/'.strtolower(POEM_MODULE.'/'.POEM_CTRL.'/'.POEM_FUNC) );  // method url
+		
 	}
 
 	private static function parseRule($url){
-		if( !is_file(APP_ROUTE) ) return;
+		
 		$rule = include APP_ROUTE; // 用户自定义路由
 		foreach ($rule as $pattern => $path) {
 			// 匹配带{id}的参数
