@@ -17,7 +17,7 @@ return array(
 	'runtime_path' => 'Runtime/',
 
 	'session_prefix' => '',
-	'session_auth_start' => true,
+	'session_auto_start' => true,
 
 	'cookie_expire' => 0,
 	'cookie_domain' => '',

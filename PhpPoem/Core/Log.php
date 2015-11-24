@@ -22,7 +22,7 @@ class Log{
 	}
 
 	static function trace($key,$value){
-		if( !config('debug_trace') ) return;
+		// if( !config('debug_trace') ) return;
 		self::$trace[$key][] = $value;
 	}
 
