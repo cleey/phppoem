@@ -25,7 +25,7 @@ function gp_err($key){
 	$flag = isset($key[1]) ? $key[1] :$key[0];
 	$tmp = "{$flag} , 不能为空";
 	if ( IS_AJAX ){ ajax(0,$tmp,'Parameter cannot be null'); }
-	v_err($tmp);
+	err_jump($tmp);
 	// return $info;
 }
 
@@ -309,8 +309,8 @@ function u($tpl){
 
 function poem_url($url){
 	if( strpos($url, '//') !== false )return $url;
-	$module= POEM_MODULE;
-	$class = POEM_CLASS;
+	$module= strtolower(POEM_MODULE);
+	$class = strtolower(POEM_CTRL);
 	$func  = POEM_FUNC;
 	$tmp = explode('/', trim($url,'/') );
 	switch(count($tmp)){
@@ -318,7 +318,7 @@ function poem_url($url){
 		case 2: $class = $tmp[0];$func = $tmp[1];break;
 		case 3: $module = $tmp[0];$class = $tmp[0];$func = $tmp[1];break;
 	}
-	return POEM_CTRL_URL."/$module/$class/$func"; // html文件路径
+	return POEM_URL."/$module/$class/$func"; // html文件路径
 }
 
 
