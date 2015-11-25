@@ -190,6 +190,23 @@ class Model{
 		$this->_bind  = array();
 	}
 
+	protected function parseIn($k,$v){
+		$str = "`$k` in (:w_$k)";
+		$len = count($v);
+		$n   = 0;
+		$binds = array();
+		foreach ($v as $i) {
+			$tmp = ":w_{$k}_$n";
+			$keys[] = $tmp;
+			$bind[$tmp] = $i;
+			$n ++;
+		}
+		return array(
+				'keys' => "`$k` in (".implode(',', $keys).')',
+				'bind'=> $bind
+			);
+	}
+
 	protected function setWhere(){
 		if( empty($this->_where) ) return false;
 		$str = '';
@@ -198,16 +215,26 @@ class Model{
 			$logic = $this->_where['_logic'];
 			unset($this->_where['_logic']);
 		}
+		$keys = array();
+		$bind = array();
 		foreach ($this->_where as $k => $v) {
 			if( is_array($v) ){
-				$keys[] = "`$k` ".$v[0]." :w_$k";
-				if( strcasecmp($v[0],'IN')==0 && is_array($v[1]) ) $v[1] = implode(',', $v[1]);
-				$bind[":w_$k"] = $v[1];
+				$v[0] = strtoupper($v[0]); //  in like
+				if( $v[0] == 'IN' ){
+					$re = $this->parseIn($k,$v[1]);
+					$keys[] = $re['keys'];
+					$bind = array_merge($bind,$re['bind']);
+				}else{
+					$ik = ":w_$k";
+					$keys[] = "`$k` ".$v[0]." $ik";
+					$bind[$ik] = $v[1];
+				}
 			}else{
 				$keys[] = "`$k`=:w_$k";
 				$bind[":w_$k"] = $v;
 			}
 		}
+
 		$this->_sql .= ' WHERE '.implode(" $logic ", $keys);
 		$this->_bind = array_merge($this->_bind,$bind);
 	}
