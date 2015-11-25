@@ -250,7 +250,7 @@ function session($name='',$value=''){
 			}else return $_SESSION[$name];
 		}
 	}elseif( is_null($value) ){
-		unset($_SESSION[$value]);
+		unset($_SESSION[$name]);
 	}else{ // 设置 $name
 		$name = config('session_prefix').$name;
 		if( strpos($name, '.') ){
@@ -316,7 +316,7 @@ function poem_url($url){
 	switch(count($tmp)){
 		case 1: $func = $tmp[0];break;
 		case 2: $class = $tmp[0];$func = $tmp[1];break;
-		case 3: $module = $tmp[0];$class = $tmp[0];$func = $tmp[1];break;
+		case 3: $module = $tmp[0];$class = $tmp[1];$func = $tmp[2];break;
 	}
 	return POEM_URL."/$module/$class/$func"; // html文件路径
 }
