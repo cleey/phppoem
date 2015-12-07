@@ -3,6 +3,9 @@
 header("Content-Type: text/html;charset=utf-8");
 header("X-Powered-By: PhpPoem_beta_v1.0");
 
+defined('APP_DEBUG') || define('APP_DEBUG',false);     
+
+define('APP_RUNTIME_PATH'  , APP_PATH.'Runtime/');     // 当前目录Framework为CF扩展目录
 define('POEM_PATH'  , __DIR__.'/');     // 当前目录Framework为CF扩展目录
 define('CORE_PATH'  , realpath(POEM_PATH.'Core').'/'); // Framework核心代码库
 define('VENDOR_PATH', POEM_PATH.'Vendor/');  // 扩展包库
