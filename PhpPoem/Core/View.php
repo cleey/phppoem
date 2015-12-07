@@ -21,16 +21,19 @@ class View{
 		// 模板文件
 		T('POEM_COMPILE_TIME');
 		$tpl     = $this->parseTpl($tpl);
-		$content = file_get_contents($tpl);
-		// 开启页面布局
-		if( ($layfile=config('layout')) && config('layout_on') === true ){
-			$layfile = $this->parseTpl($layfile);
-			$content = str_replace('{__LAYOUT__}', $content, file_get_contents($layfile));
+		$filekey = str_replace(APP_PATH, '', $tpl); // 文件名 Home/Index/index.html
+		$c_w_v_tpl = f($filekey,'',2);  // 判断是否存在
+		if( APP_DEBUG || $c_w_v_tpl === false ){
+			$content = file_get_contents($tpl);
+			// 开启页面布局
+			if( ($layfile=config('layout')) && config('layout_on') === true ){
+				$layfile = $this->parseTpl($layfile);
+				$content = str_replace('{__LAYOUT__}', $content, file_get_contents($layfile));
+			}
+			$content = $this->compiler($content); // 模板编译
+			$c_w_v_tpl = f($filekey,$content);
+			F($filekey, php_strip_whitespace($c_w_v_tpl) ); // 去掉空格什么的
 		}
-		$content = $this->compiler($content); // 模板编译
-		$content = $this->strip_whitespace($content); // 去掉空格什么的
-		$filekey = md5($tpl); // 文件名
-		$c_w_v_tpl = F($filekey,$content);
 		T('POEM_COMPILE_TIME',0);
 		// 模板变量
 		if( !empty($this->html_vars) ) extract($this->html_vars);
@@ -136,51 +139,6 @@ class View{
 		
 		$this->display($file);
 		exit;
-	}
-
-	// 去除注释和空格
-	function strip_whitespace($content) {
-		$stripStr   = '';
-		//分析php源码
-		$tokens     = token_get_all($content);
-		$last_space = false;
-		for ($i = 0, $j = count($tokens); $i < $j; $i++) {
-			if (is_string($tokens[$i])) {
-				$last_space = false;
-				$stripStr  .= $tokens[$i];
-			} else {
-				switch ($tokens[$i][0]) {
-					//过滤各种PHP注释
-					case T_COMMENT:
-					case T_DOC_COMMENT: break;
-					//过滤空格
-					case T_WHITESPACE:
-						if (!$last_space) {
-							$stripStr  .= ' ';
-							$last_space = true;
-						}
-						break;
-					case T_START_HEREDOC:
-						$stripStr .= "<<<Poem\n";
-						break;
-					case T_END_HEREDOC:
-						$stripStr .= "Poem;\n";
-						for($k = $i+1; $k < $j; $k++) {
-							if(is_string($tokens[$k]) && $tokens[$k] == ';') {
-								$i = $k;
-								break;
-							} else if($tokens[$k][0] == T_CLOSE_TAG) {
-								break;
-							}
-						}
-						break;
-					default:
-						$last_space = false;
-						$stripStr  .= $tokens[$i][1];
-				}
-			}
-		}
-		return $stripStr;
 	}
 
 
