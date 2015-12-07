@@ -73,6 +73,11 @@ function l($info){
 	\Poem\Log::push($info,'DEBUG');
 }
 
+// 异常退出
+function e($info){
+	throw new Exception($info, 1);
+}
+
 // Model
 function m($tb='',$config=''){
 	static $model;
@@ -105,11 +110,12 @@ function err_jump($info,$url='',$param='',$second=false){
 	$view->autoJump($info,$url,$param,$second,0);
 }
 
-// 文件缓存
+// 文件缓存 append 0覆盖  1追加 2检查
 function f($key='',$value='',$append=0){
 	if( empty($key) ) return null;
 
 	$obj = \Poem\Cache::getIns('File');
+	if( $append == 2 ) return $obj->has($key);
 	if( $value === '') return $obj->get($key);
 	else if( is_null($value) ) return $obj->del($key);
 	else return $obj->set($key,$value,$append);
@@ -368,5 +374,52 @@ function fileUpload($data){
 	}
 	return $return;
 }
+
+
+// 去除注释和空格 优化php
+function self_php_strip_whitespace($content) {
+	$stripStr   = '';
+	//分析php源码
+	$tokens     = token_get_all($content);
+	$last_space = false;
+	for ($i = 0, $j = count($tokens); $i < $j; $i++) {
+		if (is_string($tokens[$i])) {
+			$last_space = false;
+			$stripStr  .= $tokens[$i];
+		} else {
+			switch ($tokens[$i][0]) {
+				//过滤各种PHP注释
+				case T_COMMENT:
+				case T_DOC_COMMENT: break;
+				//过滤空格
+				case T_WHITESPACE:
+					if (!$last_space) {
+						$stripStr  .= ' ';
+						$last_space = true;
+					}
+					break;
+				case T_START_HEREDOC:
+					$stripStr .= "<<<Poem\n";
+					break;
+				case T_END_HEREDOC:
+					$stripStr .= "Poem;\n";
+					for($k = $i+1; $k < $j; $k++) {
+						if(is_string($tokens[$k]) && $tokens[$k] == ';') {
+							$i = $k;
+							break;
+						} else if($tokens[$k][0] == T_CLOSE_TAG) {
+							break;
+						}
+					}
+					break;
+				default:
+					$last_space = false;
+					$stripStr  .= $tokens[$i][1];
+			}
+		}
+	}
+	return $stripStr;
+}
+
 
 ?>

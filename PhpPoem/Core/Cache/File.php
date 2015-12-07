@@ -2,31 +2,34 @@
 namespace Poem\Cache;
 
 class File{
-	protected $_prefix;
-
-	function __construct(){
-		$path = APP_PATH.config('runtime_path');
-		if( !is_dir($path) ) mkdir($path);
-		$this->_prefix = $path;
+	
+	public function has($key){
+		$key = APP_RUNTIME_PATH.$key.'.php';
+		return is_file($key) ? $key : false;
 	}
 
 	public function get($key){
-		$key = $this->_prefix.$key.'.php';
+		$key = APP_RUNTIME_PATH.$key.'.php';
+		if( !is_file($key) ) return false;
 		$data= file_get_contents($key);
 		$json= json_decode( $value, true );
 		return $json === NULL ? $data : $json;
 	}
 
 	public function set($key,$value,$append=0){
-		$key = $this->_prefix.$key.'.php';
+		$key = APP_RUNTIME_PATH.$key.'.php';
+		$dir = dirname($key);
+		if( !is_dir($dir) ) mkdir($dir,0775,true);
 		$jsonData  = json_decode( $value, true );
-		if($append == 0)file_put_contents($key, $value);
-		else file_put_contents($key, $value,FILE_APPEND);
+		if($append == 0) $re = file_put_contents($key, $value);
+		else $re = file_put_contents($key, $value,FILE_APPEND);
+		if( !$re ) e('文件写入失败：'.$path_or_append);
 		return $key;
 	}
 
 	public function del($key){
-		$key = $this->_prefix.$key.'.php';
+		$key = APP_RUNTIME_PATH.$key.'.php';
+		if( !is_file($key) ) return false;
 		unlink($key);
 	}
 
