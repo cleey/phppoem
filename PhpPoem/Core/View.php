@@ -77,20 +77,22 @@ class View{
         $content = str_replace('?><?php','',$content);
 
         // 匹配 {$vo['info']}
-        $content = preg_replace_callback('/{\$([\w\[\]\'"]+)}/',
+        $content = preg_replace_callback('/{\$([\w\[\]\'"\$]+)}/',
         	function($matches){return '<?php echo $'.$matches[1].';?>'; } ,
         	$content);
 
-        // $this->compile_include($content);
+        // 匹配 {:func($vo['info'])}
+        // $content = preg_replace_callback('/{\:([\w\[\]\(\)\'"\$]+)}/',
+        $content = preg_replace_callback('/{\:([^\}]+)}/',
+        	function($matches){return '<?php echo '.$matches[1].'; ?>'; } ,
+        	$content);
 
-        // 匹配 <include ""/>
+        // 匹配 <include "Public:menu"/>
         $content = preg_replace_callback(
         	'/<include[ ]+[\'"](.+)[\'"][ ]*\/>/',
         	function($matches){return $this->compiler(file_get_contents( $this->parseTpl($matches[1]) )); } ,
         	$content);
-        // 匹配 <each key="" as=""></each> '/<each[ ]+key=[\'"](.+)[\'"][ ]*as=[\'"](.+)[\'"][ ]*>/'
-		// '/<each[ ]+key=[\'"](.+)[\'"][ ]*as=[\'"](.+)[\'"][ ]*>/',
-		// foreach( $'.$matches[1].' as $'.$matches[2].')
+        // 匹配 <each "$list as $v"></each>
 		$content = preg_replace_callback(
 			'/<each[ ]+[\'"](.+)[\'"][ ]*>/',
 			function($matches){return '<?php foreach( '.$matches[1].' ){ ?>'; } ,
