@@ -13,8 +13,7 @@ class [MODEL]Model extends Model {
 
 	protected static $c= '<?php
 namespace [MODULE]\Controller;
-use Poem\Controller;
-class [CTRL] extends Controller {
+class [CTRL]{
     public function index(){
     	$info = \'Welcome to Use PhpPoem !\';
 

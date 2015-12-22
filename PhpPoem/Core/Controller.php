@@ -13,7 +13,7 @@ class Controller{
 	}
 	// 执行页面并返回执行结果
 	function fetch($tpl=''){
-		$this->view->fetch($tpl);
+		return $this->view->fetch($tpl);
 	}
 
 	// 用户变量

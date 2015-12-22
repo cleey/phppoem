@@ -94,20 +94,19 @@ function m($tb='',$config=''){
 
 // View
 function v($tpl=''){
-	$view = \Poem\Poem::instance('Poem\View');
-	$view->display($tpl);
+	\Poem\Poem::instance('Poem\View')->display($tpl);
+}
+function fetch($tpl=''){
+	return \Poem\Poem::instance('Poem\View')->fetch($tpl);
 }
 function assign($key,$value=''){
-	$view = \Poem\Poem::instance('Poem\View');
-	$view->assign($key,$value);
+	\Poem\Poem::instance('Poem\View')->assign($key,$value);
 }
 function ok_jump($info,$url='',$param='',$second=false){
-	$view = \Poem\Poem::instance('Poem\View');
-	$view->autoJump($info,$url,$param,$second,1);
+	\Poem\Poem::instance('Poem\View')->autoJump($info,$url,$param,$second,1);
 }
 function err_jump($info,$url='',$param='',$second=false){
-	$view = \Poem\Poem::instance('Poem\View');
-	$view->autoJump($info,$url,$param,$second,0);
+	\Poem\Poem::instance('Poem\View')->autoJump($info,$url,$param,$second,0);
 }
 
 // 文件缓存 append 0覆盖  1追加 2检查
@@ -315,6 +314,7 @@ function u($tpl){
 
 function poem_url($url){
 	if( strpos($url, '//') !== false )return $url;
+	if( strpos($url, '/')  === 0 )return $url;
 	$module= strtolower(POEM_MODULE);
 	$class = strtolower(POEM_CTRL);
 	$func  = POEM_FUNC;
