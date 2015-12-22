@@ -314,6 +314,7 @@ function u($tpl){
 
 function poem_url($url){
 	if( strpos($url, '//') !== false )return $url;
+	if( strpos($url, '/')  === 0 )return $url;
 	$module= strtolower(POEM_MODULE);
 	$class = strtolower(POEM_CTRL);
 	$func  = POEM_FUNC;
