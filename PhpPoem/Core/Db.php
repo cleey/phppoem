@@ -4,15 +4,17 @@ namespace Poem;
 class Db{
 
 	private static $_ins = array();
-	protected $_conn = null;
+	public  $_conn = null;
 	protected $_conn_cfg = array();
 
 	static function getIns($config=array()){
 
 		$key = md5(serialize($config));
-		if( !isset(self::$_ins[$key]) ) self::$_ins[$key] = new self();
-		if( !(self::$_ins[$key] instanceof self) ) self::$_ins[$key] = new self();
-		self::$_ins[$key]->_conn_cfg = $config;
+		if( !isset(self::$_ins[$key]) || !(self::$_ins[$key] instanceof self) ){
+			self::$_ins[$key] = new self();
+			self::$_ins[$key]->_conn_cfg = $config;
+			self::$_ins[$key]->connect();
+		}
 		return self::$_ins[$key];
 	}
 
@@ -37,8 +39,8 @@ class Db{
 	}
 
 	function query($sql){
-		T('poem_db_exec');
 		if( is_null($this->_conn) ) $this->connect();
+		T('poem_db_exec');
 		$re = $this->_conn->query($sql);
 		T('poem_db_exec',0);
 		if( $re == false ) return null;
@@ -51,14 +53,11 @@ class Db{
 
 	function exec($sql,$bind,$flag=''){
 		if( is_null($this->_conn) ) $this->connect();
-
 		T('poem_db_exec');
 		$pre = $this->_conn->prepare($sql);
 		foreach ($bind as $k => $v) $pre->bindValue($k,$v);
 		$re  = $pre->execute();
 		T('poem_db_exec',0);
-		
-
 		switch ($flag) {
 			case 'insert': return $this->_conn->lastInsertId(); break;
 			case 'update': return $pre->rowCount(); break;
