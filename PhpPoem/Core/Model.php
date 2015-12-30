@@ -8,7 +8,7 @@ class Model{
 	protected $_table = '';
 	protected $_distinct = '';
 	protected $_field = '*';
-	protected $_join = '';
+	protected $_join = array();
 	protected $_where = array();
 	protected $_group = '';
 	protected $_having = '';
@@ -79,8 +79,18 @@ class Model{
 		return $this;
 	}
 
+	function distinct($flag=true){
+		$this->_distinct = $flag ? 'DISTINCT ':'';
+		return $this;
+	}
+
 	function field($str){
 		$this->_field = $str;
+		return $this;
+	}
+
+	function join($str,$type='INNER'){
+		$this->_join[] = stristr($str, 'JOIN') ? $str : $type.' JOIN '.$str;
 		return $this;
 	}
 
@@ -89,8 +99,10 @@ class Model{
 		else $this->_where = array_merge($this->_where,$arr);
 		return $this;
 	}
-	function distinct($flag=true){
-		$this->_distinct = $flag ? 'DISTINCT ':'';
+
+	function having($str){
+		$this->_having = $str;
+		return $this;
 	}
 
 	function limit($b=0,$e=0){
@@ -280,11 +292,9 @@ class Model{
 		$this->_sql .= $str;
 	}
 
-	function setDistinct($_distinct){
-        return '';
-	}
 	function setJoin($_join){
-		return '';
+		if( empty($_join) ) return false;
+		$this->_sql .= ' '.implode(' ', $_join);
 	}
 	
 	function setGroup($_group){
@@ -292,7 +302,8 @@ class Model{
 		$this->_sql .= ' GROUP BY '.$this->_group;
 	}
 	function setHaving($_having){
-	    return '';
+	    if( empty($this->_having) ) return false;
+		$this->_sql .= ' HAVING '.$this->_having;
 	}
 	function setOrder($_order){
 	   	if( empty($this->_order) ) return false;
