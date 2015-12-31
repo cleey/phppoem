@@ -72,12 +72,10 @@ class Poem{
 		}
 		include $fname;
 		*/
-		
 		include CORE_FUNC; // 核心库
 		include APP_FUNC ; // App公共
 		$file = APP_PATH.POEM_MODULE.'/Common/function.php';
 		if( is_file($file) ) include $file; // 请求模块
-		
 
 		T('POEM_FUNC_TIME','', microtime(1) - $time);
 	}
