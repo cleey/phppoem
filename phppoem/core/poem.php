@@ -1,23 +1,22 @@
 <?php 
-namespace Poem;
+namespace poem;
 
-class Poem{
+class poem{
 	
 	private static $instance = array(); // 实例化的类和方法
 	private static $btime; // 开始时间
 	
 	static function start(){
-		spl_autoload_register('\Poem\Poem::autoload'); // 自动加载，没有找到本地类的
-		register_shutdown_function('\Poem\Poem::appFatal'); // 错误和异常处理
-		set_error_handler('\Poem\Poem::appError');
-		set_exception_handler('\Poem\Poem::appException');
+		spl_autoload_register('\poem\poem::autoload'); // 自动加载，没有找到本地类的
+		register_shutdown_function('\poem\poem::appFatal'); // 错误和异常处理
+		set_error_handler('\poem\poem::appError');
+		set_exception_handler('\poem\poem::appException');
 
 		self::$btime = microtime(1);
 
 		$module = defined('NEW_MODULE') ? NEW_MODULE : 'Home';
-		if( !is_dir(APP_PATH.$module) ) \Poem\More\Build::checkModule($module);
+		if( !is_dir(APP_PATH.$module) ) \poem\More\Build::checkModule($module);
 		
-
 
 		$routetime = microtime(1);
 		Route::run(); // 路由管理
@@ -25,7 +24,6 @@ class Poem{
 
 		self::func();  // 函数库
 		T('POEM_TIME','',$routetime);
-
 		self::conf();  // 配置文件
 		self::exec();  // 执行操作
 		self::end();   // 结束
@@ -33,12 +31,12 @@ class Poem{
 
 	// 没找到类，自动到这里加载
 	static function autoload($class){
-		$class = str_replace('\\', '/', $class);
-		// 命名空间
-		if( strstr($class,'/',true) == 'Poem' ) $file = CORE_PATH.strstr($class,'/').'.php';
-		else $file = APP_PATH.$class.'.php';
+		$class = strtolower(str_replace('\\', '/', $class));
 
-		if( !is_file($file) ) \Poem\Poem::halt( "自动加载Poem::autoload ：找不到类 ".$file );
+		// 命名空间
+		if( strstr($class,'/',true) == 'poem' ) $file = CORE_PATH.strstr($class,'/').'.php';
+		else $file = APP_PATH.$class.'.php';
+		if( !is_file($file) ) \poem\poem::halt( "自动加载poem::autoload ：找不到类 ".$file );
 		include $file;
 	}
 
@@ -74,7 +72,7 @@ class Poem{
 		*/
 		include CORE_FUNC; // 核心库
 		include APP_FUNC ; // App公共
-		$file = APP_PATH.POEM_MODULE.'/Common/function.php';
+		$file = APP_PATH.POEM_MODULE.'/common/function.php';
 		if( is_file($file) ) include $file; // 请求模块
 
 		T('POEM_FUNC_TIME','', microtime(1) - $time);
@@ -104,7 +102,7 @@ class Poem{
 		
 		config(include CORE_CONF);  // 核心库
 		config(include APP_CONF );  // App公共
-		$file = APP_PATH.POEM_MODULE.'/Common/config.php';
+		$file = APP_PATH.POEM_MODULE.'/common/config.php';
 		if( is_file($file) ) config(include $file); // 请求模块
 		
 		T('POEM_CONF_TIME',0);
@@ -114,7 +112,7 @@ class Poem{
 	static function exec(){
 		T('POEM_EXEC_TIME');
 		if( config('session_auto_start') ){ session('[start]') ; }
-		self::instance(POEM_MODULE.'\\Controller\\'.POEM_CTRL, POEM_FUNC); // 执行操作
+		self::instance(POEM_MODULE.'\\controller\\'.POEM_CTRL, POEM_FUNC); // 执行操作
 		T('POEM_EXEC_TIME',0);
 	}
 
