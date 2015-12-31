@@ -14,7 +14,7 @@ class poem{
 
 		self::$btime = microtime(1);
 
-		$module = defined('NEW_MODULE') ? NEW_MODULE : 'Home';
+		$module = defined('NEW_MODULE') ? NEW_MODULE : 'home';
 		if( !is_dir(APP_PATH.$module) ) \poem\More\Build::checkModule($module);
 		
 
