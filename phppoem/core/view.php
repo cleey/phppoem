@@ -139,7 +139,7 @@ class View{
 		$this->assign('jumpUrl',$url);
 		$this->assign('waitSecond',$second );
 
-		$file = CORE_PATH.'Tpl/jump.php';
+		$file = CORE_PATH.'tpl/jump.php';
 		
 		$this->display($file);
 		exit;

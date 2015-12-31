@@ -15,7 +15,7 @@ class poem{
 		self::$btime = microtime(1);
 
 		$module = defined('NEW_MODULE') ? NEW_MODULE : 'home';
-		if( !is_dir(APP_PATH.$module) ) \poem\More\Build::checkModule($module);
+		if( !is_dir(APP_PATH.$module) ) \poem\more\build::checkModule($module);
 		
 
 		$routetime = microtime(1);
@@ -54,25 +54,9 @@ class poem{
 	// 加载方法
 	static function func(){
 		$time = microtime(1);
-		/*
-		$fname= APP_RUNTIME_PATH.POEM_MODULE.'/Common/function.php';
-		if( APP_DEBUG || !is_file($fname) ){
-			$str  = file_get_contents(CORE_FUNC); // 核心库
-			$str .= file_get_contents(APP_FUNC); // App公共
-			$tmp  = APP_PATH.POEM_MODULE.'/Common/function.php'; // 请求模块
-			if( is_file($tmp) ) $str .= file_get_contents($tmp);
-
-			// 优化并写入文件
-			$dir = dirname($fname);
-			if( !is_dir($dir) ) mkdir($dir,0755,true);
-			$info = file_put_contents($fname, $str);
-			file_put_contents($fname, php_strip_whitespace($fname));
-		}
-		include $fname;
-		*/
 		include CORE_FUNC; // 核心库
 		include APP_FUNC ; // App公共
-		$file = APP_PATH.POEM_MODULE.'/common/function.php';
+		$file = APP_PATH.POEM_MODULE.'/boot/function.php';
 		if( is_file($file) ) include $file; // 请求模块
 
 		T('POEM_FUNC_TIME','', microtime(1) - $time);
@@ -81,28 +65,9 @@ class poem{
 	// 加载配置
 	static function conf(){
 		T('POEM_CONF_TIME');
-		/*
-		$fname= APP_RUNTIME_PATH.POEM_MODULE.'/Common/config.php';
-		if( APP_DEBUG || !is_file($fname) ){
-			$arr  = include CORE_CONF;  // 核心库
-			$arr1 = include APP_CONF;   // App公共
-			$arr  = array_merge($arr ,is_array($arr1)?$arr1:array() );
-			$tmp  = APP_PATH.POEM_MODULE.'/Common/config.php';
-			if( is_file($tmp) ){
-				$arr2 = include $tmp;
-				$arr  = array_merge($arr ,is_array($arr2) ?$arr2 :array() );
-			}
-			$dir = dirname($fname);
-			if( !is_dir($dir) ) mkdir($dir,0755,true);
-			$info = file_put_contents($fname, '<?php return '.var_export($arr,TRUE).';?>' );
-			file_put_contents($fname, php_strip_whitespace($fname));
-		}
-		config( include $fname );
-		*/
-		
 		config(include CORE_CONF);  // 核心库
 		config(include APP_CONF );  // App公共
-		$file = APP_PATH.POEM_MODULE.'/common/config.php';
+		$file = APP_PATH.POEM_MODULE.'/boot/config.php';
 		if( is_file($file) ) config(include $file); // 请求模块
 		
 		T('POEM_CONF_TIME',0);
@@ -123,9 +88,7 @@ class poem{
 		Cache::clear();
 
 		T('POEM_TIME','', microtime(1) - self::$btime);
-		// Log::down();
 		Log::show();
-		exit;
 	}
 
 	// 接受PHP内部回调异常处理
