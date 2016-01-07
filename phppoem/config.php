@@ -1,7 +1,7 @@
 <?php 
 return array(
 	// "key" => "value"
-	'version' => 'PhpPoem beta1.0',
+	'version' => 'PhpPoem v2.0',
 	'layout_on' => true,
 	'layout'    => false,
 

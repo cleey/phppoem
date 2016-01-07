@@ -45,7 +45,7 @@ function co($var,$flag=0){
 	echo "</pre>";
 	switch ($flag) {
 		case -1: exit; break;
-		case 0: \poem\poem::end(); exit; break;
+		case 0: \poem\app::end(); exit; break;
 		case 1: break;
 		default: break;
 	}
@@ -91,19 +91,19 @@ function m($tb='',$config=''){
 
 // View
 function v($tpl=''){
-	\poem\poem::instance('poem\view')->display($tpl);
+	\poem\load::instance('poem\view')->display($tpl);
 }
 function fetch($tpl=''){
-	return \poem\poem::instance('poem\view')->fetch($tpl);
+	return \poem\load::instance('poem\view')->fetch($tpl);
 }
 function assign($key,$value=''){
-	\poem\poem::instance('poem\view')->assign($key,$value);
+	\poem\load::instance('poem\view')->assign($key,$value);
 }
 function ok_jump($info,$url='',$param='',$second=false){
-	\poem\poem::instance('poem\view')->autoJump($info,$url,$param,$second,1);
+	\poem\load::instance('poem\view')->autoJump($info,$url,$param,$second,1);
 }
 function err_jump($info,$url='',$param='',$second=false){
-	\poem\poem::instance('poem\view')->autoJump($info,$url,$param,$second,0);
+	\poem\load::instance('poem\view')->autoJump($info,$url,$param,$second,0);
 }
 
 // 文件缓存 append 0覆盖  1追加 2检查
@@ -137,7 +137,7 @@ function vendor($require_class,$ext='.php'){
 	if( class_exists($require_class) ) return true;
 	if( isset($_file[$require_class]) ) return true;
 	$file = VENDOR_PATH.$require_class.$ext;
-	if( !is_file($file) ){\poem\poem::halt('文件不存在: '.$file);}
+	if( !is_file($file) ){\poem\app::halt('文件不存在: '.$file);}
 	$_file[$require_class] = true;
 	require $file;
 }

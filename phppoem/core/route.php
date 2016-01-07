@@ -11,15 +11,23 @@ class Route{
 			$_EXT = pathinfo($_URL,PATHINFO_EXTENSION);  // 获取url后缀
 			if( $_EXT ) $_URL = preg_replace('/\.'.$_EXT.'$/i', '', $_URL); // 删除url后缀
 			if( is_file(APP_ROUTE) ) $_URL = self::parseRule($_URL);
-			$url = explode('/', $_URL); // /Home/Index/index
+			$url = explode('/', $_URL); // /home/index/index
 			// 获取地址栏中的/参数
-			if( isset($url[4]) ) self::parseParam(array_slice($url, 4));
+			if( ($n = count($url)) >= 5){
+				$i = 4;
+				while( $i+1 <= $n){
+					$_GET[$url[$i]] = $url[$i+1];
+					$i+=2;
+				}
+			}
 		}
 		define('POEM_MODULE' , !empty($url[1]) ? strtolower($url[1]) : 'home');
 		define('POEM_CTRL'   , !empty($url[2]) ? strtolower($url[2]) : 'index');
 		define('POEM_FUNC'   , !empty($url[3]) ? strtolower($url[3]) : 'index');
 
 		define('MODULE_MODEL'  , APP_PATH.POEM_MODULE.'/model/');
+
+		if( isset($url[4]) ) self::parseParam(array_slice($url, 4));
 
 		define('POEM_URL'  , str_replace('/index.php', '',$_SERVER['SCRIPT_NAME']) ); // 项目入口文件 */index.php
 		define('POEM_ROOT' , dirname(POEM_URL));  // 顶级web目录

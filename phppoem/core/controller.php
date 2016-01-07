@@ -2,7 +2,7 @@
 namespace poem;
 class Controller{
 	protected $view; // view 类
-	function __construct(){ $this->view = poem::instance('poem\view'); }
+	function __construct(){ $this->view = load::instance('poem\view'); }
 	// 展示页面
 	function display($tpl=''){ $this->view->display($tpl); }
 	// 执行页面并返回执行结果

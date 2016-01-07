@@ -15,16 +15,12 @@ class [MODEL] extends model {
 namespace [MODULE]\controller;
 class [CTRL]{
     public function index(){
-    	echo \'Welcome to use PhpPoem !\';
-    }
-    public function viewtest(){
     	$info = \'Welcome to Use Phppoem !\';
-    	
-    	assign(\'varname\', $info);// 传递数据到view
 
-    	// 展示view  默认当前方法名视图
-    	// app/模块/view/控制器/方法.html 即
-    	// app/home/view/index/viewtest.html
+    	// 传递数据到view
+    	assign(\'varname\', $info);
+
+    	// 展示view  默认当前方法名视图即 app/[MODULE]/view/index/index.html
     	v();
     }
 }';
@@ -39,10 +35,10 @@ class [CTRL]{
 	static function initApp($module,$ctrls=array(),$models=array()){
 		if( !is_dir(APP_PATH) ){
 			$re = mkdir(APP_PATH,0755,true);
-			if( !$re ) \poem\poem::halt('应用目录创建失败：'.APP_PATH);
+			if( !$re ) \poem\app::halt('应用目录创建失败：'.APP_PATH);
 		}
 
-		if( !is_writable(APP_PATH) )  \poem\poem::halt('应用目录不可写：'.APP_PATH);
+		if( !is_writable(APP_PATH) )  \poem\app::halt('应用目录不可写：'.APP_PATH);
 
 		$cfg   = "<?php\nreturn array(\n\t//'key'=>'value'\n);\n";
 		$route = "<?php\nreturn array(\n\t//'key'=>'value'\n);\n";
@@ -57,10 +53,10 @@ class [CTRL]{
 				'function.php'=> '<?php ',
 				'route.php'   => $route
 				),
-			// APP_PATH.$module.'/boot' => array(
-			// 	'config.php'  => $cfg,
-			// 	'function.php'=> '<?php '
-			// 	),
+			APP_PATH.$module.'/common' => array(
+				'config.php'  => $cfg,
+				'function.php'=> '<?php '
+				),
 			$m_path => array(),
 			$v_path => array(),
 			$c_path => array(),
@@ -72,14 +68,12 @@ class [CTRL]{
 		}
 
 		foreach ($ctrls as $ctrl) {
-			$ctrl = strtolower($ctrl);
 			mkdir("$v_path/$ctrl",0755,true);
-			file_put_contents("$v_path/$ctrl/viewtest.html", self::$v);
+			file_put_contents("$v_path/$ctrl/index.html", self::$v);
 			$data = str_replace(array('[MODULE]','[CTRL]'), array($module,$ctrl), self::$c);
 			file_put_contents("$c_path/$ctrl.php", $data);
 		}
 		foreach ($models as $model) {
-			$model = strtolower($model);
 			$data = str_replace(array('[MODULE]','[MODEL]'), array($module,$model), self::$m);
 			file_put_contents("$m_path/$model.php", self::$m);
 		}
