@@ -27,7 +27,7 @@ class Load{
 		$key = $class.$method;
 		// 声明方法
 		if( !isset($ins[$key]) ){
-			self::$ins[$key] = $method=='' ? $obj : call_user_func(array(&$ins[$class], $method));
+			$ins[$key] = $method=='' ? $obj : call_user_func(array(&$ins[$class], $method));
 		}
 
 		return $ins[$key];
