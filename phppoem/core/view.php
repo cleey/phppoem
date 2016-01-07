@@ -21,6 +21,7 @@ class View{
 		// 模板文件
 		T('POEM_COMPILE_TIME');
 		$tpl     = $this->parseTpl($tpl);
+
 		$filekey = str_replace(APP_PATH, '', $tpl); // 文件名 Home/Index/index.html
 		$c_w_v_tpl = f($filekey,'',2);  // 判断是否存在
 		if( APP_DEBUG || $c_w_v_tpl === false ){
@@ -66,7 +67,7 @@ class View{
 			$file = APP_PATH.POEM_MODULE."/view/".POEM_CTRL."/{$tpl}.html"; // html文件路径
 		}
 
-		is_file($file) or \poem\poem::halt('文件不存在'.$file);
+		is_file($file) or \poem\app::halt('文件不存在'.$file);
 
 		return $file;
 	}
@@ -139,7 +140,7 @@ class View{
 		$this->assign('jumpUrl',$url);
 		$this->assign('waitSecond',$second );
 
-		$file = CORE_PATH.'Tpl/jump.php';
+		$file = CORE_PATH.'tpl/jump.php';
 		
 		$this->display($file);
 		exit;

@@ -15,20 +15,13 @@ class Log{
 		self::trace($lvl,$info);
 	}
 
-	// 请求结束由框架保存
-	static function down(){
-		echo '<br>=============== LOG ===============<br>';
-		foreach (self::$info as $v) echo '-- ',$v,'<br>';
-	}
-
 	static function trace($key,$value){
-		// if( !config('debug_trace') ) return;
+		if( !config('debug_trace') ) return;
 		self::$trace[$key][] = $value;
 	}
 
 	// 请求结束由框架保存
 	static function show(){
-		if( !config('debug_trace') || IS_AJAX || IS_CLI ) return; 
 		$trace_tmp = self::$trace;
 		$files  =  get_included_files();
 		foreach ($files as $key=>$file){
@@ -65,7 +58,7 @@ class Log{
 			if( $len>$num)$trace[$value][] = "...... 共 $len 条";
 		}
 		$totalTime = number_format($cltime,3);
-		include CORE_PATH.'Tpl/trace.php';
+		include CORE_PATH.'tpl/trace.php';
 	}
 }
 

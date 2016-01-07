@@ -13,6 +13,6 @@ define('APP_FUNC'   , APP_PATH.'function.php');
 define('APP_ROUTE'  , APP_PATH.'route.php');
 define('IS_AJAX'    , ((isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')) ? true : false);
 define('IS_CLI'     , PHP_SAPI=='cli'? 1 : 0);
-require CORE_PATH.'poem.php';
-\poem\poem::start();
+require CORE_PATH.'app.php';
+\poem\app::start();
 ?>

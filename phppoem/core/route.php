@@ -11,7 +11,7 @@ class Route{
 			$_EXT = pathinfo($_URL,PATHINFO_EXTENSION);  // 获取url后缀
 			if( $_EXT ) $_URL = preg_replace('/\.'.$_EXT.'$/i', '', $_URL); // 删除url后缀
 			if( is_file(APP_ROUTE) ) $_URL = self::parseRule($_URL);
-			$url = explode('/', $_URL); // /Home/Index/index
+			$url = explode('/', $_URL); // /home/index/index
 			// 获取地址栏中的/参数
 			if( ($n = count($url)) >= 5){
 				$i = 4;
