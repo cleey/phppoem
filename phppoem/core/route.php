@@ -4,6 +4,8 @@ namespace poem;
 class Route{
 
 	static function run(){
+		T('POEM_ROUTE_TIME');
+
 		$url = array();
 		if( defined('NEW_MODULE') ) $_SERVER['PATH_INFO'] = "/".NEW_MODULE;
 		if( isset($_SERVER['PATH_INFO']) ){
@@ -35,6 +37,7 @@ class Route{
 		define('POEM_CTRL_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL );  // class url
 		define('POEM_FUNC_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL.'/'.POEM_FUNC );  // method url
 		
+		T('POEM_ROUTE_TIME',0);
 	}
 
 	private static function parseRule($url){

@@ -7,6 +7,7 @@ class Log{
 	const NOTICE = 'NOTICE';
 	const INFO   = 'INFO';
 	const DEBUG  = 'DEBUG';
+	static $test  = 1;
 
 	private static $info = array();  // 日志信息
 	private static $trace = array();  // 日志信息
