@@ -22,7 +22,10 @@ class App{
 		Route::run(); // 路由管理
 		self::exec();  // 执行操作
 
-		self::end();  // 执行操作
+		t('POEM_TIME',0);
+		if( !config('debug_trace') || IS_AJAX || IS_CLI ) exit; 
+		log::show();
+		exit;
 	}
 
 	// common
@@ -58,13 +61,6 @@ class App{
 		// $method->invoke($ctrl);
 
 		t('POEM_EXEC_TIME',0);
-	}
-
-	static function end(){
-		t('POEM_TIME',0);
-		if( !config('debug_trace') || IS_AJAX || IS_CLI ) exit; 
-		log::show();
-		exit;
 	}
 
 	// 接受PHP内部回调异常处理
