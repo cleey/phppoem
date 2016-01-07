@@ -14,8 +14,6 @@ return array(
 	'db_pass' => '',
 	'db_charset' => 'utf8',
 
-	'runtime_path' => 'Runtime/',
-
 	'session_prefix' => '',
 	'session_auto_start' => true,
 
