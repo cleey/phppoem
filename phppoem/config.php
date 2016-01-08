@@ -1,7 +1,7 @@
 <?php 
 return array(
 	// "key" => "value"
-	'version' => 'PhpPoem beta1.0',
+	'version' => 'PhpPoem v2.0',
 	'layout_on' => true,
 	'layout'    => false,
 
@@ -13,8 +13,6 @@ return array(
 	'db_user' => '',
 	'db_pass' => '',
 	'db_charset' => 'utf8',
-
-	'runtime_path' => 'Runtime/',
 
 	'session_prefix' => '',
 	'session_auto_start' => true,

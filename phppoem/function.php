@@ -1,6 +1,5 @@
 <?php 
 
-
 // 获取参数Get 和 Post
 function i($param){
 	return htmlspecialchars( trim( isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:'' ) ) );
@@ -9,7 +8,6 @@ function i($param){
 // 获取参数Get 和 Post
 function gp($param,$flag = 0){
 	$arr = explode(',', $param);
-
 	// 分解 | key和val
 	foreach ($arr as $value) {
 		$k = explode('|',$value);
@@ -17,7 +15,6 @@ function gp($param,$flag = 0){
 		if( $flag == 0 && $v==='' ) return gp_err($k);
 		$params[ $k[0] ] = $v;
 	}
-
 	return count($params) == 1 ? current($params) : $params;
 }
 
@@ -46,12 +43,7 @@ function co($var,$flag=0){
 	echo "<pre>";
 	var_dump($var);
 	echo "</pre>";
-	switch ($flag) {
-		case -1: exit; break;
-		case 0: \Poem\Poem::end(); exit; break;
-		case 1: break;
-		default: break;
-	}
+	$flag == 0 && exit;
 }
 
 // 返回ajax
@@ -70,7 +62,7 @@ function ajax($code,$info='',$more='',$upd_url=0){
 
 // 日志
 function l($info){
-	\Poem\Log::push($info,'DEBUG');
+	\poem\log::push($info,'DEBUG');
 }
 
 // 异常退出
@@ -82,10 +74,10 @@ function e($info){
 function m($tb='',$config=''){
 	static $model;
 	if( !isset($model[$tb]) ){
-		$class = 'Poem\\Model';
-		if( is_file( $file = MODULE_MODEL.ucfirst($tb).'.php' ) ){
+		$class = 'poem\\model';
+		if( is_file( $file = MODULE_MODEL.strtolower($tb).'.php' ) ){
 			include $file;
-			$class = POEM_MODULE.'\\Model\\'.$tb;
+			$class = POEM_MODULE.'\\model\\'.$tb;
 		}
 		$model[$tb] = new $class($tb,$config);
 	}
@@ -94,26 +86,26 @@ function m($tb='',$config=''){
 
 // View
 function v($tpl=''){
-	\Poem\Poem::instance('Poem\View')->display($tpl);
+	\poem\load::instance('poem\view')->display($tpl);
 }
 function fetch($tpl=''){
-	return \Poem\Poem::instance('Poem\View')->fetch($tpl);
+	return \poem\load::instance('poem\view')->fetch($tpl);
 }
 function assign($key,$value=''){
-	\Poem\Poem::instance('Poem\View')->assign($key,$value);
+	\poem\load::instance('poem\view')->assign($key,$value);
 }
 function ok_jump($info,$url='',$param='',$second=false){
-	\Poem\Poem::instance('Poem\View')->autoJump($info,$url,$param,$second,1);
+	\poem\load::instance('poem\view')->autoJump($info,$url,$param,$second,1);
 }
 function err_jump($info,$url='',$param='',$second=false){
-	\Poem\Poem::instance('Poem\View')->autoJump($info,$url,$param,$second,0);
+	\poem\load::instance('poem\view')->autoJump($info,$url,$param,$second,0);
 }
 
 // 文件缓存 append 0覆盖  1追加 2检查
 function f($key='',$value='',$append=0){
 	if( empty($key) ) return null;
 
-	$obj = \Poem\Cache::getIns('File');
+	$obj = \poem\cache::getIns('file');
 	if( $append == 2 ) return $obj->has($key);
 	if( $value === '') return $obj->get($key);
 	else if( is_null($value) ) return $obj->del($key);
@@ -123,10 +115,10 @@ function f($key='',$value='',$append=0){
 // 缓存
 function s($key='',$value='',$options=null){
 	$config = is_array($options) ? $options :null ; 
-	if( is_null($key) ) \Poem\Cache::close();  // 删除实例
+	if( is_null($key) ) \poem\cache::close();  // 删除实例
 
 	$expire = is_numeric($options) ? $options : null;
-	$obj = \Poem\Cache::getIns('',$config);
+	$obj = \poem\cache::getIns('',$config);
 	if( $key === '' ){ return $obj->_ins; } // 返回实例
 
 	if( $value === '') return $obj->get($key);
@@ -140,7 +132,7 @@ function vendor($require_class,$ext='.php'){
 	if( class_exists($require_class) ) return true;
 	if( isset($_file[$require_class]) ) return true;
 	$file = VENDOR_PATH.$require_class.$ext;
-	if( !is_file($file) ){\Poem\Poem::halt('文件不存在: '.$file);}
+	if( !is_file($file) ){\poem\app::halt('文件不存在: '.$file);}
 	$_file[$require_class] = true;
 	require $file;
 }
@@ -308,7 +300,6 @@ function u($tpl){
 	}else{
 		$url = POEM_CTRL_URL.'/'.$tpl; // html文件路径
 	}
-
 	return $url;
 }
 
@@ -374,52 +365,5 @@ function fileUpload($data){
 	}
 	return $return;
 }
-
-
-// 去除注释和空格 优化php
-function self_php_strip_whitespace($content) {
-	$stripStr   = '';
-	//分析php源码
-	$tokens     = token_get_all($content);
-	$last_space = false;
-	for ($i = 0, $j = count($tokens); $i < $j; $i++) {
-		if (is_string($tokens[$i])) {
-			$last_space = false;
-			$stripStr  .= $tokens[$i];
-		} else {
-			switch ($tokens[$i][0]) {
-				//过滤各种PHP注释
-				case T_COMMENT:
-				case T_DOC_COMMENT: break;
-				//过滤空格
-				case T_WHITESPACE:
-					if (!$last_space) {
-						$stripStr  .= ' ';
-						$last_space = true;
-					}
-					break;
-				case T_START_HEREDOC:
-					$stripStr .= "<<<Poem\n";
-					break;
-				case T_END_HEREDOC:
-					$stripStr .= "Poem;\n";
-					for($k = $i+1; $k < $j; $k++) {
-						if(is_string($tokens[$k]) && $tokens[$k] == ';') {
-							$i = $k;
-							break;
-						} else if($tokens[$k][0] == T_CLOSE_TAG) {
-							break;
-						}
-					}
-					break;
-				default:
-					$last_space = false;
-					$stripStr  .= $tokens[$i][1];
-			}
-		}
-	}
-	return $stripStr;
-}
-
 
 ?>

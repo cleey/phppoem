@@ -1,5 +1,5 @@
 <?php 
-namespace Poem;
+namespace poem;
 
 class View{
 
@@ -21,6 +21,7 @@ class View{
 		// 模板文件
 		T('POEM_COMPILE_TIME');
 		$tpl     = $this->parseTpl($tpl);
+
 		$filekey = str_replace(APP_PATH, '', $tpl); // 文件名 Home/Index/index.html
 		$c_w_v_tpl = f($filekey,'',2);  // 判断是否存在
 		if( APP_DEBUG || $c_w_v_tpl === false ){
@@ -28,13 +29,15 @@ class View{
 			// 开启页面布局
 			if( ($layfile=config('layout')) && config('layout_on') === true ){
 				$layfile = $this->parseTpl($layfile);
+
 				$content = str_replace('{__LAYOUT__}', $content, file_get_contents($layfile));
 			}
 			$content = $this->compiler($content); // 模板编译
 			$c_w_v_tpl = f($filekey,$content);
-			F($filekey, php_strip_whitespace($c_w_v_tpl) ); // 去掉空格什么的
+			// F($filekey, php_strip_whitespace($c_w_v_tpl) ); // 去掉空格什么的
 		}
 		T('POEM_COMPILE_TIME',0);
+
 		// 模板变量
 		if( !empty($this->html_vars) ) extract($this->html_vars);
 		$this->html_vars = array(); // 清空
@@ -56,15 +59,15 @@ class View{
 
 		if( strpos($tpl,'@') !== false ){ // 模块 Home@Index/index
 			list($module,$tpl) = explode('@', $tpl );
-			$file = APP_PATH."{$module}/View/{$tpl}.html"; // html文件路径
+			$file = APP_PATH."{$module}/view/{$tpl}.html"; // html文件路径
 		}elseif( strpos($tpl,':') !== false ){ // 指定文件夹 Index/index
 			$tpl = str_replace(':', '/', $tpl);
-			$file = APP_PATH.POEM_MODULE."/View/{$tpl}.html"; // html文件路径
+			$file = APP_PATH.POEM_MODULE."/view/{$tpl}.html"; // html文件路径
 		}else{
-			$file = APP_PATH.POEM_MODULE."/View/".POEM_CTRL."/{$tpl}.html"; // html文件路径
+			$file = APP_PATH.POEM_MODULE."/view/".POEM_CTRL."/{$tpl}.html"; // html文件路径
 		}
 
-		is_file($file) or \Poem\Poem::halt('文件不存在'.$file);
+		is_file($file) or \poem\app::halt('文件不存在'.$file);
 
 		return $file;
 	}
@@ -137,7 +140,7 @@ class View{
 		$this->assign('jumpUrl',$url);
 		$this->assign('waitSecond',$second );
 
-		$file = CORE_PATH.'Tpl/jump.php';
+		$file = CORE_PATH.'tpl/jump.php';
 		
 		$this->display($file);
 		exit;

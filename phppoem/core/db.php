@@ -1,7 +1,7 @@
 <?php
-namespace Poem;
+namespace poem;
 
-class Db{
+class db{
 
 	private static $_ins = array();
 	public  $_conn = null;

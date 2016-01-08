@@ -33,10 +33,6 @@ class File{
 		unlink($key);
 	}
 
-	public function close(){
-		return 1;
-	}
-
 }
 
  ?>

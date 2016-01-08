@@ -33,9 +33,7 @@ class Redis{
 		return $this->_ins->del($key);
 	}
 
-	public function close(){
-		return $this->_ins->close();
-	}
+	function __destruct(){ $this->_ins->close(); }
 
 }
 

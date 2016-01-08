@@ -1,5 +1,5 @@
 <?php	
-define('APP_PATH','App/');
-require './PhpPoem/PhpPoem.php';
+define('APP_PATH','app/');
+require './phppoem/start.php';
 
 ?>

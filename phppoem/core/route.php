@@ -1,9 +1,11 @@
 <?php 
-namespace Poem;
+namespace poem;
 
 class Route{
 
 	static function run(){
+		T('POEM_ROUTE_TIME');
+
 		$url = array();
 		if( defined('NEW_MODULE') ) $_SERVER['PATH_INFO'] = "/".NEW_MODULE;
 		if( isset($_SERVER['PATH_INFO']) ){
@@ -11,7 +13,7 @@ class Route{
 			$_EXT = pathinfo($_URL,PATHINFO_EXTENSION);  // 获取url后缀
 			if( $_EXT ) $_URL = preg_replace('/\.'.$_EXT.'$/i', '', $_URL); // 删除url后缀
 			if( is_file(APP_ROUTE) ) $_URL = self::parseRule($_URL);
-			$url = explode('/', $_URL); // /Home/Index/index
+			$url = explode('/', $_URL); // /home/index/index
 			// 获取地址栏中的/参数
 			if( ($n = count($url)) >= 5){
 				$i = 4;
@@ -21,20 +23,21 @@ class Route{
 				}
 			}
 		}
-		define('POEM_MODULE' , !empty($url[1]) ? ucfirst($url[1]) : 'Home');
-		define('POEM_CTRL'   , !empty($url[2]) ? ucfirst($url[2]) : 'Index');
-		define('POEM_FUNC'   , !empty($url[3]) ? $url[3] : 'index');
+		define('POEM_MODULE' , !empty($url[1]) ? strtolower($url[1]) : 'home');
+		define('POEM_CTRL'   , !empty($url[2]) ? strtolower($url[2]) : 'index');
+		define('POEM_FUNC'   , !empty($url[3]) ? strtolower($url[3]) : 'index');
 
-		define('MODULE_MODEL'  , APP_PATH.POEM_MODULE.'/Model/');
+		define('MODULE_MODEL'  , APP_PATH.POEM_MODULE.'/model/');
 
 		if( isset($url[4]) ) self::parseParam(array_slice($url, 4));
 
 		define('POEM_URL'  , str_replace('/index.php', '',$_SERVER['SCRIPT_NAME']) ); // 项目入口文件 */index.php
 		define('POEM_ROOT' , dirname(POEM_URL));  // 顶级web目录
-		define('POEM_MODULE_URL', POEM_URL.'/'.strtolower(POEM_MODULE) );  // class url
-		define('POEM_CTRL_URL'  , POEM_URL.'/'.strtolower(POEM_MODULE.'/'.POEM_CTRL) );  // class url
-		define('POEM_FUNC_URL'  , POEM_URL.'/'.strtolower(POEM_MODULE.'/'.POEM_CTRL.'/'.POEM_FUNC) );  // method url
+		define('POEM_MODULE_URL', POEM_URL.'/'.POEM_MODULE );  // class url
+		define('POEM_CTRL_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL );  // class url
+		define('POEM_FUNC_URL'  , POEM_URL.'/'.POEM_MODULE.'/'.POEM_CTRL.'/'.POEM_FUNC );  // method url
 		
+		T('POEM_ROUTE_TIME',0);
 	}
 
 	private static function parseRule($url){
