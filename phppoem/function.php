@@ -43,12 +43,7 @@ function co($var,$flag=0){
 	echo "<pre>";
 	var_dump($var);
 	echo "</pre>";
-	switch ($flag) {
-		case -1: exit; break;
-		case 0: \poem\app::end(); exit; break;
-		case 1: break;
-		default: break;
-	}
+	$flag == 0 && exit;
 }
 
 // 返回ajax

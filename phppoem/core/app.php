@@ -3,9 +3,6 @@ namespace poem;
 
 class App{
 	
-	private static $instance = array(); // 实例化的类和方法
-	private static $btime; // 开始时间
-	
 	static function start(){
 
 		self::boot();  // 函数库
@@ -17,18 +14,18 @@ class App{
 		set_error_handler('\poem\app::appError');
 		set_exception_handler('\poem\app::appException');
 
-		self::$btime = microtime(1);
+		t('POEM_TIME');
 
 		$module = defined('NEW_MODULE') ? NEW_MODULE : 'home';
 		if( !is_dir(APP_PATH.$module) ) \poem\more\Build::checkModule($module);
 		
-		$routetime = microtime(1);
 		Route::run(); // 路由管理
-		$routetime = microtime(1) - $routetime;
-
-		T('POEM_ROUTE_TIME','',$routetime);
 		self::exec();  // 执行操作
-		self::end();   // 结束
+
+		t('POEM_TIME',0);
+		if( !config('debug_trace') || IS_AJAX || IS_CLI ) exit; 
+		log::show();
+		exit;
 	}
 
 	// common
@@ -37,18 +34,18 @@ class App{
 		$time = microtime(1);
 		include CORE_FUNC; // 核心库
 		if( is_file(APP_FUNC) ) include APP_FUNC ; // App公共
-		T('POEM_FUNC_TIME','', microtime(1) - $time);
+		t('POEM_FUNC_TIME','', microtime(1) - $time);
 
 		// 加载配置
-		T('POEM_CONF_TIME');
+		t('POEM_CONF_TIME');
 		config(include CORE_CONF);  // 核心库
 		if( is_file(APP_CONF) ) config(include APP_CONF );  // App公共
-		T('POEM_CONF_TIME',0);
+		t('POEM_CONF_TIME',0);
 	}
 
 	// 加载配置
 	static function exec(){
-		T('POEM_EXEC_TIME');
+		t('POEM_EXEC_TIME');
 		if( config('session_auto_start') ){ session('[start]') ; }
 
 		$file = APP_PATH.POEM_MODULE.'/boot/function.php';
@@ -57,25 +54,13 @@ class App{
 		$file = APP_PATH.POEM_MODULE.'/boot/config.php';
 		if( is_file($file) ) config(include $file); // 请求模块
 
-		$ctrl = load::controller(POEM_CTRL); // 执行操作
+		load::instance(POEM_MODULE.'\\controller\\'.POEM_CTRL, POEM_FUNC);
 
-		$method = new \ReflectionMethod($ctrl, POEM_FUNC);
-		$method->invoke($ctrl);
+		// $ctrl = load::controller(POEM_CTRL); // 执行操作
+		// $method = new \ReflectionMethod($ctrl, POEM_FUNC);
+		// $method->invoke($ctrl);
 
-		T('POEM_EXEC_TIME',0);
-	}
-
-	// 结束
-	static function end(){
-		// 关闭数据库
-		db::clear();
-		cache::clear();
-
-		T('POEM_TIME','', microtime(1) - self::$btime);
-
-		if( !config('debug_trace') || IS_AJAX || IS_CLI ) return; 
-
-		log::show();
+		t('POEM_EXEC_TIME',0);
 	}
 
 	// 接受PHP内部回调异常处理
