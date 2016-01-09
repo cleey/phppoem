@@ -1,6 +1,6 @@
 <?php 
 header("Content-Type: text/html;charset=utf-8");
-header("X-Powered-By: PhpPoem_beta_v1.0");
+header("X-Powered-By: PhpPoem_v2.0");
 defined('APP_DEBUG') || define('APP_DEBUG',false);     
 define('APP_RUNTIME_PATH'  , APP_PATH.'runtime/');     // 运行时临时文件目录
 define('POEM_PATH'  , __DIR__.'/');     // phppoem目录
