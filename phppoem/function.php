@@ -59,8 +59,6 @@ function ajax($code,$info='',$more='',$upd_url=0){
 
 // 日志
 function l($info){ \poem\log::push($info,'DEBUG'); }
-// 异常退出
-function e($info){ throw new Exception($info, 1); }
 
 // Model
 function m($tb='',$config=''){
