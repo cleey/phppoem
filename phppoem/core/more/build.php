@@ -51,10 +51,11 @@ class [CTRL]{
 			// 	'config.php'  => $cfg,
 			// 	'function.php'=> '<?php '
 			// 	),
-			$m_path => array(),
 			$v_path => array(),
 			$c_path => array(),
 		);
+		if( !empty($models) ) $app[] = $m_path => array();
+		
 		foreach ($app as $dir => $v) {
 			if( !is_dir($dir) ) mkdir($dir,0755,true);
 			foreach ($v as $file => $data)

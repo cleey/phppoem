@@ -23,7 +23,7 @@ class File{
 		$jsonData  = json_decode( $value, true );
 		if($append == 0) $re = file_put_contents($key, $value);
 		else $re = file_put_contents($key, $value,FILE_APPEND);
-		if( !$re ) e('文件写入失败：'.$path_or_append);
+		if( !$re ) error_log('文件写入失败：'.$path_or_append);
 		return $key;
 	}
 
