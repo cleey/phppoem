@@ -54,7 +54,7 @@ class [CTRL]{
 			$v_path => array(),
 			$c_path => array(),
 		);
-		if( !empty($models) ) $app[] = $m_path => array();
+		if( !empty($models) ) $app[$m_path] = array();
 		
 		foreach ($app as $dir => $v) {
 			if( !is_dir($dir) ) mkdir($dir,0755,true);
