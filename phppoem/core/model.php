@@ -219,7 +219,7 @@ class Model{
 
 	protected function afterSql(){
 		foreach ($this->_bind  as $key => $value) {
-			$this->_sql = str_replace($key, substr($value, 0,10), $this->_sql);
+			$this->_sql = str_replace($key, $value, $this->_sql);
 		}
 		$time = number_format(T('poem_db_exec',-1)*1000,2);
 		Log::trace('SQL',$this->_sql."[{$time}ms]");

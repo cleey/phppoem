@@ -1,11 +1,8 @@
 <?php 
-
 // 获取参数Get 和 Post
-function i($param){
-	return htmlspecialchars( trim( isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:'' ) ) );
-}
+function i($param){ return htmlspecialchars( trim( isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:'' ) ) ); }
 
-// 获取参数Get 和 Post
+// 获取参数并自动提示
 function gp($param,$flag = 0){
 	$arr = explode(',', $param);
 	// 分解 | key和val
@@ -36,25 +33,15 @@ function config($name=null,$value=null){
 }
 
 // 输出
-function co($var,$flag=0){
-	echo "<pre>";
-	var_dump($var);
-	echo "</pre>";
-	$flag == 0 && exit;
-}
+function co($var,$flag=0){ echo "<pre>"; var_dump($var); echo "</pre>"; $flag == 0 && exit; }
 
 // 返回ajax
 function ajax($code,$info='',$more='',$upd_url=0){
-	$re['code'] = $code;
-	$re['info'] = $info;
-	$re['more'] = $more;
-	$re['upd_url'] = $upd_url;
+	$re = ['code'=>$code, 'info'=>$info, 'more'=>$more, 'upd_url'=>$upd_url];
 	if ( IS_AJAX ){
 		echo json_encode($re);
 		exit;
-	}else{
-		CO( $re );
-	}
+	}else{co($re);}
 }
 
 // 日志
@@ -146,38 +133,6 @@ function cookie($name='',$value='',$option=null){
 	setcookie($name,$value,$cfg['expire'],$cfg['path'],$cfg['domain'],$cfg['secure'],$cfg['httponly']);
 }
 
-// session的使用
-function session($name='',$value=''){
-	if( $value===''){
-		if( $name === '') return $_SESSION ;
-		else if( strpos($name, '[') === 0 ){
-			switch ($name) {
-				case '[pause]': session_write_close(); break;
-				case '[start]': session_start(); break;
-				case '[destroy]': session_unset();session_destroy(); break;
-				case '[regenerate]': session_regenerate_id(); break;
-				default: break;
-			}
-		}elseif( is_null($name) ){
-			unset($_SESSION);
-		}else{
-			if( strpos($name, '.') ){
-				$name = config('session_prefix').$name;
-				list($k1,$k2) = explode('.',$name);
-				return isset($_SESSION[$k1][$k2]) ? $_SESSION[$k1][$k2] : NULL;
-			}else return $_SESSION[$name];
-		}
-	}elseif( is_null($value) ){
-		unset($_SESSION[$name]);
-	}else{ // 设置 $name
-		$name = config('session_prefix').$name;
-		if( strpos($name, '.') ){
-			list($k1,$k2) = explode('.',$name);
-			$_SESSION[$k1][$k2] = $value;
-		}else $_SESSION[$name] = $value;
-	}
-}
-
 function layout($flag){
 	if( $flag !== false ){
 		config('layout_on',true);
@@ -222,5 +177,4 @@ function poem_url($url){
 	}
 	return POEM_URL."/$module/$class/$func"; // html文件路径
 }
-
 ?>
