@@ -7,12 +7,14 @@ Home: http://www.phppoem.com/
 Author: Cleey  
 QQ群: 137951449
 
-压力测试   
-服务器配置为 16G 16核，php5.3.3开启opcache，使用压测工具ab 并发 5000 持续10s，结果为 5000 req/s 如下：   
-
-ab -c5000 -t10   
-
-Requests per second:    4967.29 [#/sec] (mean)   
-Time per request:       1006.586 [ms] (mean)   
-Time per request:       0.201 [ms] (mean, across all concurrent requests)   
-Transfer rate:          2003.33 [Kbytes/sec] received   
+压力测试    
+服务器配置为 16G 16核，php5.3.3开启opcache，使用压测工具ab，结果如下：   
+   
+PhpPoem 2.0 并发 7500 持续10s，结果  7836.84 req/s ：   
+   
+ab -c7500 -t10 http://www.test.com/   
+   
+Requests per second:    7836.84 [#/sec] (mean)   
+Time per request:       957.019 [ms] (mean)   
+Time per request:       0.128 [ms] (mean, across all concurrent requests)   
+Transfer rate:          1642.15 [Kbytes/sec] received   
