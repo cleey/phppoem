@@ -11,7 +11,7 @@ class Load{
 		// 命名空间
 		if( strstr($class,'/',true) == 'poem' ) $file = CORE_PATH.trim(strstr($class,'/'),'/').'.php';
 		else $file = APP_PATH.$class.'.php';
-		if( !is_file($file) ) app::halt( "自动加载：找不到类 ".$file );
+		if( !is_file($file) ) app::halt( "自动加载：找不到类 ".$class );
 		include $file;
 	}
 
