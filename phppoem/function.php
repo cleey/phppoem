@@ -80,18 +80,17 @@ function f($key='',$value='',$append=0){
 }
 
 // 缓存
-function s($key='',$value='',$options=null){
-	$config = is_array($options) ? $options :null ; 
-	if( is_null($key) ) \poem\cache::close();  // 删除实例
-
-	$expire = is_numeric($options) ? $options : null;
-	$obj = \poem\cache::getIns('',$config);
+function s($cache_type='',$key='',$value='',$options=null){
+	// option array为配置信息， int为超时
+	$obj = \poem\cache::getIns($cache_type, is_array($options) ? $options :null );
 	if( $key === '' ){ return $obj->_ins; } // 返回实例
 
 	if( $value === '') return $obj->get($key);
 	else if( is_null($value) ) return $obj->del($key);
-	else return $obj->set($key,$value,$expire);
+	else return $obj->set($key,$value,is_numeric($options) ? $options : null );
 }
+function redis($k='',$v='',$opt=null){ return s('redis',$k,$v,$opt); }
+function memcache($k='',$v='',$opt=null){ return s('memcache',$k,$v,$opt); }
 
 // 扩展包
 function vendor($require_class,$ext='.php'){

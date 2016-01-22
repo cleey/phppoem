@@ -1,5 +1,5 @@
 <?php 
-namespace Poem\Cache;
+namespace poem\cache;
 
 class Redis{
 	public $_ins;
@@ -8,25 +8,26 @@ class Redis{
 		$option = array_merge( array(
 			'host'=>config('redis_host') ? : '127.0.0.1',
 			'port'=>config('redis_port') ? : 6379,
-			'expire'=>config('redis_expire') ? : 0,
+			'expire'=>config('redis_expire') ? : null,
 			'auth'=>config('redis_auth') ? : 0,
-			)
-		,$option);
+			'timeout'=>config('redis_timeout') ? : 0
+			),$option);
 		$this->_option = $option;
-		$this->_ins = new \Redis();
-		$this->_ins->connect($option['host'],$option['port']);
+		$this->_ins = new \Redis;
+		$re = $this->_ins->connect($option['host'],$option['port'],$option['timeout']);
+		if( !$re ) throw new \Exception("Connect Redis Failed", 1);
 	}
 	
 	public function get($key){
 		$data= $this->_ins->get($key);
-		$json= json_decode( $value, true );
+		$json= json_decode( $data, true );
 		return $json === NULL ? $data : $json;
 	}
 
 	public function set($key,$value,$expire=null){
 		if( is_null($expire) ) $expire = $this->_option['expire'];
 		$value = is_object($value) || is_array($value) ? json_encode($value) : $value;
-		return $this->_ins->set($key,$value,$expire);
+		return is_int($expire) ? $this->_ins->set($key,$value) : $this->_ins->setex($key,$expire,$value);
 	}
 
 	public function del($key){
