@@ -13,6 +13,7 @@ return array(
 	'db_pass' => '',
 	'db_charset' => 'utf8',
 
+	'session_type' => '',
 	'session_prefix' => '',
 	'session_auto_start' => true,
 

@@ -46,19 +46,38 @@ class App{
 	// 加载配置
 	static function exec(){
 		t('POEM_EXEC_TIME');
-		if( config('session_auto_start') ){ session('[start]') ; }
+        // 非法操作
+		if (!preg_match('/^[A-Za-z](\w)*$/', POEM_FUNC)) {  throw new \ReflectionException(); }
 
-		$file = APP_PATH.POEM_MODULE.'/boot/function.php';
-		if( is_file($file) ) include $file; // 请求模块
+		if( is_file($file=APP_PATH.POEM_MODULE.'/boot/function.php') ) include $file; // 请求模块
+		if( is_file($file=APP_PATH.POEM_MODULE.'/boot/config.php') ) config(include $file); // 请求模块
 
-		$file = APP_PATH.POEM_MODULE.'/boot/config.php';
-		if( is_file($file) ) config(include $file); // 请求模块
-
-		load::instance(POEM_MODULE.'\\controller\\'.POEM_CTRL, POEM_FUNC);
-
-		// $ctrl = load::controller(POEM_CTRL); // 执行操作
-		// $method = new \ReflectionMethod($ctrl, POEM_FUNC);
-		// $method->invoke($ctrl);
+		// load::instance(POEM_MODULE.'\\controller\\'.POEM_CTRL, POEM_FUNC);
+		try{
+			$ctrl = load::controller(POEM_CTRL); // 执行操作
+			$method = new \ReflectionMethod($ctrl, POEM_FUNC);
+			if( $method->isPublic() ){
+				//  session
+				if( config('session_auto_start') ){
+					// 自定义session存储介质
+					if( config('session_type') ){
+			            $class = '\\poem\\session\\'.config('session_type');
+			            if (!session_set_save_handler(new $class())) throw new \Exception('error session handler');
+		            }
+					session_start();
+				}
+				$method->invoke($ctrl);
+			}
+			else throw new \ReflectionException();
+		}catch( \ReflectionException $e){
+			// 操作不存在
+            if (method_exists($ctrl, '_empty')) {
+                $method = new \ReflectionMethod($ctrl, '_empty');
+                $method->invokeArgs($ctrl, [POEM_FUNC, '']);
+            } else {
+                throw new Exception('method [ ' . (new \ReflectionClass($ctrl))->getName() . '->' . POEM_FUNC . ' ] not exists ', 10002);
+            }
+		}
 
 		t('POEM_EXEC_TIME',0);
 	}
@@ -103,18 +122,22 @@ class App{
 	// 错误输出
 	static function halt($err){
 		$e = array();
+		if( APP_DEBUG || IS_CLI ){
+			if( !is_array($err) ){
+				$trace = debug_backtrace();
+				$e['message']  = $err;
+				$e['file'] = $trace[0]['file'];
+				$e['line'] = $trace[0]['line'];
+				ob_start();
+				debug_print_backtrace();
+				$e['trace']= ob_get_clean();
+			}else $e = $err;
+		}else{
+			$err = is_array($err) ? $err['message'] : $err;
+			$e['message'] = config('sys_error_msg') ? : $err;
+		}
 
-		if( !is_array($err) ){
-			$trace = debug_backtrace();
-			$e['message']  = $err;
-			$e['file'] = $trace[0]['file'];
-			$e['line'] = $trace[0]['line'];
-			ob_start();
-			debug_print_backtrace();
-			$e['trace']= ob_get_clean();
-		}else $e = $err;
-
-		if( PHP_SAPI == 'cli' ) exit( iconv('UTF-8','gbk',$e['message']).PHP_EOL.'File: '.$e['file'].'('.$e['line'].')'.PHP_EOL.$e['trace']);
+		if( IS_CLI ) exit( iconv('UTF-8','gbk',$e['message']).PHP_EOL.'File: '.$e['file'].'('.$e['line'].')'.PHP_EOL.$e['trace']);
 
 		// echo 'halt';
 		include CORE_PATH.'tpl/exception.php';

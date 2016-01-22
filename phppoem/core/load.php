@@ -8,9 +8,8 @@ class Load{
 	// 没找到类，自动到这里加载
 	static function autoload($class){
 		$class = strtolower(str_replace('\\', '/', $class));
-
 		// 命名空间
-		if( strstr($class,'/',true) == 'poem' ) $file = CORE_PATH.strstr($class,'/').'.php';
+		if( strstr($class,'/',true) == 'poem' ) $file = CORE_PATH.trim(strstr($class,'/'),'/').'.php';
 		else $file = APP_PATH.$class.'.php';
 		if( !is_file($file) ) app::halt( "自动加载：找不到类 ".$file );
 		include $file;
@@ -31,6 +30,17 @@ class Load{
 		}
 
 		return $ins[$key];
+	}
+
+	// 扩展包引入
+	static function vendor($class,$ext='.php'){
+		static $_file = array();
+		if( class_exists($class) ) return true;
+		if( isset($_file[$class]) ) return true;
+		$file = VENDOR_PATH.$class.$ext;
+		if( !is_file($file) ){\poem\app::halt('文件不存在: '.$file);}
+		$_file[$class] = true;
+		require $file;
 	}
 
 	// controller
