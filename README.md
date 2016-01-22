@@ -12,7 +12,7 @@ QQ群: 137951449
    
 PhpPoem 2.0 并发 7500 持续10s，结果  7836.84 req/s ：   
    
-ab -c7500 -t10 http://www.test.com/   
+ab -c7500 -t10 test.com   
    
 Requests per second:    7836.84 [#/sec] (mean)   
 Time per request:       957.019 [ms] (mean)   
