@@ -56,19 +56,7 @@ class App{
 		try{
 			$ctrl = load::controller(POEM_CTRL); // 执行操作
 			$method = new \ReflectionMethod($ctrl, POEM_FUNC);
-			if( $method->isPublic() ){
-				//  session
-				if( config('session_auto_start') ){
-					// 自定义session存储介质
-					if( config('session_type') ){
-						if( config('session_expire') ) ini_set('session.gc_maxlifetime',config('session_expire'));
-			            $class = '\\poem\\session\\'.config('session_type');
-			            if (!session_set_save_handler(new $class())) throw new \Exception('error session handler');
-		            }
-					session_start();
-				}
-				$method->invoke($ctrl);
-			}
+			if( $method->isPublic() ) $method->invoke($ctrl);
 			else throw new \ReflectionException();
 		}catch( \ReflectionException $e){
 			// 操作不存在

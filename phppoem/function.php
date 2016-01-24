@@ -131,6 +131,30 @@ function cookie($name='',$value='',$option=null){
 	}
 	setcookie($name,$value,$cfg['expire'],$cfg['path'],$cfg['domain'],$cfg['secure'],$cfg['httponly']);
 }
+// session的使用
+function session($name='',$value=''){
+	static $flag = 0;
+	if( $flag == 0 ){
+		// 自定义session存储介质
+		if( config('session_type') ){
+			if( config('session_expire') ) ini_set('session.gc_maxlifetime',config('session_expire'));
+            $class = '\\poem\\session\\'.config('session_type');
+            if (!session_set_save_handler(new $class())) throw new \Exception('error session handler');
+        }
+		session_start();
+		$flag = 1;
+	}
+	if( $name === '') return $_SESSION ;
+	if( is_null($name) ) unset($_SESSION);
+	
+	if( $value===''){
+		return $_SESSION[$name];
+	}elseif( is_null($value) ){
+		unset($_SESSION[$name]);
+	}else{
+		$_SESSION[$name] = $value;
+	}
+}
 
 function layout($flag){
 	if( $flag !== false ){

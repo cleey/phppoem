@@ -15,7 +15,6 @@ return array(
 
 	'session_type' => '',
 	'session_prefix' => '',
-	'session_auto_start' => true,
 
 	'cookie_expire' => 0,
 	'cookie_domain' => '',
