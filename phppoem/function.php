@@ -62,7 +62,7 @@ function m($tb='',$config=''){
 }
 
 // View
-function v($tpl=''){\poem\load::instance('poem\view')->display($tpl);}
+function v($tpl='',$flag=true){\poem\load::instance('poem\view')->display($tpl);$flag && exit();}
 function fetch($tpl=''){return \poem\load::instance('poem\view')->fetch($tpl);}
 function assign($key,$value=''){\poem\load::instance('poem\view')->assign($key,$value);}
 function ok_jump($info,$url='',$param='',$second=false){\poem\load::instance('poem\view')->autoJump($info,$url,$param,$second,1);}
