@@ -28,30 +28,22 @@ class Model{
 		$this->_table = $tb_name;
 		if( $config === '' ){
 			// 配置文件
-			$this->db_cfg = array(
-				'db_type' => config('db_type'),
-				'db_host' => config('db_host'),
-				'db_port' => config('db_port'),
-				'db_name' => config('db_name'),
-				'db_user' => config('db_user'),
-				'db_pass' => config('db_pass'),
-				'db_charset' => config('db_charset'),
-			);
-		}else if( is_array($config)  ){
+			if( $dsn = config('db_dsn') ){
+				$this->db_cfg = $dsn;
+			}else{
+				$this->db_cfg = array(
+					'db_type' => config('db_type'),
+					'db_host' => config('db_host'),
+					'db_port' => config('db_port'),
+					'db_name' => config('db_name'),
+					'db_user' => config('db_user'),
+					'db_pass' => config('db_pass'),
+					'db_charset' => config('db_charset'),
+				);
+			}
+		}else{
 			// 用户指定配置
 			$this->db_cfg = $config;
-		}else if( is_string($config) ){
-			// db dsn配置
-			$tmp = parse_url($config);
-			$this->db_cfg = array(
-				'db_type' => isset($tmp['scheme']) ?$tmp['scheme'] : config('db_type'),
-				'db_host' => isset($tmp['host']) ? $tmp['host'] : config('db_host'),
-				'db_port' => isset($tmp['port']) ? $tmp['port'] : config('db_port'),
-				'db_name' => isset($tmp['path']) ? substr($tmp['path'],1) : config('db_name'),
-				'db_user' => isset($tmp['user']) ? $tmp['user'] : config('db_user'),
-				'db_pass' => isset($tmp['pass']) ? $tmp['pass'] : config('db_pass'),
-				'db_charset' => isset($tmp['fragment']) ? $tmp['fragment'] :config('db_charset')
-			);
 		}
 		$this->connectDB();
 	}

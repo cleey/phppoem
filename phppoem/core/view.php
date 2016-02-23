@@ -119,6 +119,39 @@ class View{
         return $content;
 	}
 
+	// 编辑文件
+	protected function compiler_bak($content){
+		// 添加安全代码 代表入口文件进入的
+        $content =  '<?php if (!defined(\'POEM_PATH\')) exit();?>'.$content;
+
+        // 匹配 {$vo['info']}
+        $content = preg_replace('/{\$([\w\[\]\'"\$]+)}/s', '<?php echo $\\1;?>', $content);
+        // 匹配 {:func($vo['info'])}
+        // $content = preg_replace_callback('/{\:([\w\[\]\(\)\'"\$]+)}/',
+        $content = preg_replace('/{\:([^\}]+)}/s', '<?php echo \\1;?>', $content);
+
+        // 匹配 <include "Public:menu"/>
+        $content = preg_replace_callback(
+        	'/<include[ ]+[\'"](.+)[\'"][ ]*\/>/',
+        	function($matches){return $this->compiler(file_get_contents( $this->parseTpl($matches[1]) )); } ,
+        	$content);
+        // 匹配 <each "$list as $v"></each>
+        $content = preg_replace('/<each[ ]+[\'"](.+)[\'"][ ]*>/s', '<?php foreach( \\1 ){ ?>', $content);
+		$content = str_replace('</each>', '<?php } ?>', $content);
+
+		// 匹配 <if "$key == 1"></if>
+        $content = preg_replace('/<if[ ]*[\'"](.+)[\'"][ ]*>/s', '<?php if( \\1 ){ ?>', $content);
+		$content = str_replace('</if>', '<?php } ?>', $content);
+
+		// 宏定义
+		$content = str_replace('POEM_MODULE_URL', POEM_MODULE_URL, $content);
+		$content = str_replace('POEM_CTRL_URL', POEM_CTRL_URL, $content);
+		$content = str_replace('POEM_FUNC_URL', POEM_FUNC_URL, $content);
+
+        // CO($content);
+        return $content;
+	}
+
 	protected function compile_include($content){
 		// 匹配 <include file=""/>
         $flag = preg_match_all('/<include\sfile=[\'"](.+)[\'"]\s\/>/',$content,$matches);
