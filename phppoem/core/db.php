@@ -5,11 +5,10 @@ class db{
 
 	private static $_ins = array();
 	public  $_conn = null;
-	protected $_conn_cfg = array();
+	protected $_conn_cfg;
 
-	static function getIns($config=array()){
-
-		$key = md5(serialize($config));
+	static function getIns($config){
+		$key = md5( is_array($config)?serialize($config):$config );
 		if( !isset(self::$_ins[$key]) || !(self::$_ins[$key] instanceof self) ){
 			self::$_ins[$key] = new self();
 			self::$_ins[$key]->_conn_cfg = $config;
@@ -19,14 +18,24 @@ class db{
 	}
 
 	private function connect(){
-		$type = $this->_conn_cfg['db_type'];
-		$host = $this->_conn_cfg['db_host'];
-		$port = $this->_conn_cfg['db_port'];
-		$name = $this->_conn_cfg['db_name'];
-		$user = $this->_conn_cfg['db_user'];
-		$pass = $this->_conn_cfg['db_pass'];
-		$char = $this->_conn_cfg['db_charset'];
-		$dsn = "{$type}:host={$host};port={$port};dbname={$name};charset={$char}";
+		if( is_array($this->_conn_cfg) ){
+			$type = $this->_conn_cfg['db_type'];
+			$host = $this->_conn_cfg['db_host'];
+			$port = $this->_conn_cfg['db_port'];
+			$name = $this->_conn_cfg['db_name'];
+			$user = $this->_conn_cfg['db_user'];
+			$pass = $this->_conn_cfg['db_pass'];
+			$char = $this->_conn_cfg['db_charset'];
+			$dsn = "{$type}:host={$host};port={$port};dbname={$name};charset={$char}";
+		}else{
+			$tmp = explode('@',$this->_conn_cfg);
+			if( count($tmp) == 2 ){
+				list($user,$pass) = explode(':',$tmp[0]);
+				$dsn = $tmp[1];
+			}else{
+				$dsn = $this->_conn_cfg;
+			}
+		}
 		T('poem_db_exec');
 		$this->_conn  = new \PDO($dsn,$user,$pass) or die('数据库连接失败');
 		$time = number_format(T('poem_db_exec',1)*1000,2);
@@ -55,6 +64,7 @@ class db{
 		if( is_null($this->_conn) ) $this->connect();
 		T('poem_db_exec');
 		$pre = $this->_conn->prepare($sql);
+		if( !$pre ) throw new \Exception(implode($this->_conn->errorInfo()) );
 		foreach ($bind as $k => $v) $pre->bindValue($k,$v);
 		$re  = $pre->execute();
 		T('poem_db_exec',0);

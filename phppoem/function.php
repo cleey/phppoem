@@ -1,11 +1,8 @@
 <?php 
-
 // 获取参数Get 和 Post
-function i($param){
-	return htmlspecialchars( trim( isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:'' ) ) );
-}
+function i($param){ return htmlspecialchars( trim( isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:'' ) ) ); }
 
-// 获取参数Get 和 Post
+// 获取参数并自动提示
 function gp($param,$flag = 0){
 	$arr = explode(',', $param);
 	// 分解 | key和val
@@ -36,31 +33,19 @@ function config($name=null,$value=null){
 }
 
 // 输出
-function co($var,$flag=0){
-	echo "<pre>";
-	var_dump($var);
-	echo "</pre>";
-	$flag == 0 && exit;
-}
+function co($var,$flag=0){ echo "<pre>"; var_dump($var); echo "</pre>"; $flag == 0 && exit; }
 
 // 返回ajax
 function ajax($code,$info='',$more='',$upd_url=0){
-	$re['code'] = $code;
-	$re['info'] = $info;
-	$re['more'] = $more;
-	$re['upd_url'] = $upd_url;
+	$re = ['code'=>$code, 'info'=>$info, 'more'=>$more, 'upd_url'=>$upd_url];
 	if ( IS_AJAX ){
 		echo json_encode($re);
 		exit;
-	}else{
-		CO( $re );
-	}
+	}else{co($re);}
 }
 
 // 日志
 function l($info){ \poem\log::push($info,'DEBUG'); }
-// 异常退出
-function e($info){ throw new Exception($info, 1); }
 
 // Model
 function m($tb='',$config=''){
@@ -77,7 +62,7 @@ function m($tb='',$config=''){
 }
 
 // View
-function v($tpl=''){\poem\load::instance('poem\view')->display($tpl);}
+function v($tpl='',$flag=true){\poem\load::instance('poem\view')->display($tpl);$flag && exit();}
 function fetch($tpl=''){return \poem\load::instance('poem\view')->fetch($tpl);}
 function assign($key,$value=''){\poem\load::instance('poem\view')->assign($key,$value);}
 function ok_jump($info,$url='',$param='',$second=false){\poem\load::instance('poem\view')->autoJump($info,$url,$param,$second,1);}
@@ -95,18 +80,17 @@ function f($key='',$value='',$append=0){
 }
 
 // 缓存
-function s($key='',$value='',$options=null){
-	$config = is_array($options) ? $options :null ; 
-	if( is_null($key) ) \poem\cache::close();  // 删除实例
-
-	$expire = is_numeric($options) ? $options : null;
-	$obj = \poem\cache::getIns('',$config);
+function s($cache_type='',$key='',$value='',$options=null){
+	// option array为配置信息， int为超时
+	$obj = \poem\cache::getIns($cache_type, is_array($options) ? $options :null );
 	if( $key === '' ){ return $obj->_ins; } // 返回实例
 
 	if( $value === '') return $obj->get($key);
 	else if( is_null($value) ) return $obj->del($key);
-	else return $obj->set($key,$value,$expire);
+	else return $obj->set($key,$value,is_numeric($options) ? $options : null );
 }
+function redis($k='',$v='',$opt=null){ return s('redis',$k,$v,$opt); }
+function memcache($k='',$v='',$opt=null){ return s('memcache',$k,$v,$opt); }
 
 // 扩展包
 function vendor($require_class,$ext='.php'){
@@ -147,36 +131,28 @@ function cookie($name='',$value='',$option=null){
 	}
 	setcookie($name,$value,$cfg['expire'],$cfg['path'],$cfg['domain'],$cfg['secure'],$cfg['httponly']);
 }
-
 // session的使用
 function session($name='',$value=''){
+	static $flag = 0;
+	if( $flag == 0 ){
+		// 自定义session存储介质
+		if( config('session_type') ){
+			if( config('session_expire') ) ini_set('session.gc_maxlifetime',config('session_expire'));
+            $class = '\\poem\\session\\'.config('session_type');
+            if (!session_set_save_handler(new $class())) throw new \Exception('error session handler');
+        }
+		session_start();
+		$flag = 1;
+	}
+	if( $name === '') return $_SESSION ;
+	if( is_null($name) ) unset($_SESSION);
+	
 	if( $value===''){
-		if( $name === '') return $_SESSION ;
-		else if( strpos($name, '[') === 0 ){
-			switch ($name) {
-				case '[pause]': session_write_close(); break;
-				case '[start]': session_start(); break;
-				case '[destroy]': session_unset();session_destroy(); break;
-				case '[regenerate]': session_regenerate_id(); break;
-				default: break;
-			}
-		}elseif( is_null($name) ){
-			unset($_SESSION);
-		}else{
-			if( strpos($name, '.') ){
-				$name = config('session_prefix').$name;
-				list($k1,$k2) = explode('.',$name);
-				return isset($_SESSION[$k1][$k2]) ? $_SESSION[$k1][$k2] : NULL;
-			}else return $_SESSION[$name];
-		}
+		return $_SESSION[$name];
 	}elseif( is_null($value) ){
 		unset($_SESSION[$name]);
-	}else{ // 设置 $name
-		$name = config('session_prefix').$name;
-		if( strpos($name, '.') ){
-			list($k1,$k2) = explode('.',$name);
-			$_SESSION[$k1][$k2] = $value;
-		}else $_SESSION[$name] = $value;
+	}else{
+		$_SESSION[$name] = $value;
 	}
 }
 
@@ -224,5 +200,4 @@ function poem_url($url){
 	}
 	return POEM_URL."/$module/$class/$func"; // html文件路径
 }
-
 ?>
