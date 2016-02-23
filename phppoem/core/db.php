@@ -28,7 +28,13 @@ class db{
 			$char = $this->_conn_cfg['db_charset'];
 			$dsn = "{$type}:host={$host};port={$port};dbname={$name};charset={$char}";
 		}else{
-			$dsn = $this->_conn_cfg;
+			$tmp = explode('@',$this->_conn_cfg);
+			if( count($tmp) == 2 ){
+				list($user,$pass) = explode(':',$tmp[0]);
+				$dsn = $tmp[1];
+			}else{
+				$dsn = $this->_conn_cfg;
+			}
 		}
 		T('poem_db_exec');
 		$this->_conn  = new \PDO($dsn,$user,$pass) or die('数据库连接失败');
@@ -58,6 +64,7 @@ class db{
 		if( is_null($this->_conn) ) $this->connect();
 		T('poem_db_exec');
 		$pre = $this->_conn->prepare($sql);
+		if( !$pre ) throw new \Exception(implode($this->_conn->errorInfo()) );
 		foreach ($bind as $k => $v) $pre->bindValue($k,$v);
 		$re  = $pre->execute();
 		T('poem_db_exec',0);
