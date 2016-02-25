@@ -68,13 +68,13 @@ function assign($key,$value=''){\poem\load::instance('poem\view')->assign($key,$
 function ok_jump($info,$url='',$param='',$second=false){\poem\load::instance('poem\view')->autoJump($info,$url,$param,$second,1);}
 function err_jump($info,$url='',$param='',$second=false){\poem\load::instance('poem\view')->autoJump($info,$url,$param,$second,0);}
 
-// 文件缓存 append 0覆盖  1追加 2检查
+// 文件缓存 append 0覆盖  1追加 2检查 -1 字符串写
 function f($key='',$value='',$append=0){
 	if( empty($key) ) return null;
 
 	$obj = \poem\cache::getIns('file');
 	if( $append == 2 ) return $obj->has($key);
-	if( $value === '') return $obj->get($key);
+	if( $value === '') return $obj->get($key,$append);
 	else if( is_null($value) ) return $obj->del($key);
 	else return $obj->set($key,$value,$append);
 }

@@ -22,7 +22,7 @@ class View{
 		T('POEM_COMPILE_TIME');
 		$tpl     = $this->parseTpl($tpl);
 
-		$filekey = str_replace(APP_PATH, '', $tpl); // 文件名 Home/Index/index.html
+		$filekey = str_replace(APP_PATH, '', $tpl); // 文件名 home/index/index.html
 		$c_w_v_tpl = f($filekey,'',2);  // 判断是否存在
 		if( APP_DEBUG || $c_w_v_tpl === false ){
 			$content = file_get_contents($tpl);
@@ -33,7 +33,7 @@ class View{
 				$content = str_replace('{__LAYOUT__}', $content, file_get_contents($layfile));
 			}
 			$content = $this->compiler($content); // 模板编译
-			$c_w_v_tpl = f($filekey,$content);
+			$c_w_v_tpl = f($filekey,$content,-1);
 			// F($filekey, php_strip_whitespace($c_w_v_tpl) ); // 去掉空格什么的
 		}
 		T('POEM_COMPILE_TIME',0);
