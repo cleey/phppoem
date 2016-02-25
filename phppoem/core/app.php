@@ -64,7 +64,7 @@ class App{
                 $method = new \ReflectionMethod($ctrl, '_empty');
                 $method->invokeArgs($ctrl, [POEM_FUNC, '']);
             } else {
-                throw new Exception('method [ ' . (new \ReflectionClass($ctrl))->getName() . '->' . POEM_FUNC . ' ] not exists ', 10002);
+                throw new \Exception('method [ ' . (new \ReflectionClass($ctrl))->getName() . '->' . POEM_FUNC . ' ] not exists ', 10002);
             }
 		}
 

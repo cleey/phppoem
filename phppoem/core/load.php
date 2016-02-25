@@ -20,7 +20,7 @@ class Load{
 		static $ins = [];
 		// 声明类
 		if( !isset($ins[$class]) ){
-			if( !class_exists($class) ) throw new Exception('class not find: '.$class);
+			if( !class_exists($class) ) throw new \Exception('class not find: '.$class);
 			$ins[$class] = new $class;
 		}
 		$key = $class.$method;
