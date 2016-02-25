@@ -1,5 +1,5 @@
 <?php 
-namespace poem\cache;
+namespace Poem\Cache;
 
 class File{
 	
@@ -8,11 +8,12 @@ class File{
 		return is_file($key) ? $key : false;
 	}
 
-	public function get($key){
+	public function get($key,$append){
 		$key = APP_RUNTIME_PATH.$key.'.php';
 		if( !is_file($key) ) return false;
-		$data= file_get_contents($key);
-		$json= json_decode( $value, true );
+		if( $append === -1 ) return file_get_contents($key);
+		$data = file_get_contents($key);
+		$json= unserialize( $data );
 		return $json === NULL ? $data : $json;
 	}
 
@@ -20,10 +21,16 @@ class File{
 		$key = APP_RUNTIME_PATH.$key.'.php';
 		$dir = dirname($key);
 		if( !is_dir($dir) ) mkdir($dir,0775,true);
-		$jsonData  = json_decode( $value, true );
-		if($append == 0) $re = file_put_contents($key, $value);
-		else $re = file_put_contents($key, $value,FILE_APPEND);
-		if( !$re ) error_log('文件写入失败：'.$path_or_append);
+
+		if( $append === -1 ){
+			$re  = file_put_contents($key, $value);
+		}else{
+			$value  = serialize($value);
+			if($append == 0) $re = file_put_contents($key, $value);
+			else $re = file_put_contents($key, $value,FILE_APPEND);
+		}
+
+		if( !$re ) error_log('文件写入失败：'.$key);
 		return $key;
 	}
 
@@ -32,7 +39,6 @@ class File{
 		if( !is_file($key) ) return false;
 		unlink($key);
 	}
-
 }
 
  ?>
