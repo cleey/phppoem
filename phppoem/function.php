@@ -10,8 +10,8 @@ function gp($param,$flag = 0){
 		$k = explode('|',$value);
 		$v = i($k[0]);
 		if( $flag == 0 && $v==='' ){
-			$flag = isset($key[1]) ? $key[1] :$key[0];
-			$tmp = "{$flag} , 不能为空";
+			$more = isset($k[1]) ? $k[1] :$k[0];
+			$tmp = "{$more} , 不能为空";
 			if ( IS_AJAX ){ ajax(0,$tmp,'Parameter cannot be null'); }
 			err_jump($tmp);
 		}

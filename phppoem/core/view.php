@@ -108,7 +108,11 @@ class View{
 			'/<if[ ]*[\'"](.+)[\'"][ ]*>/',
 			function($matches){return '<?php if( '.$matches[1].'){ ?>'; } ,
 			$content);
-		$content = str_replace('</if>', '<?php } ?>', $content);
+		$content = preg_replace_callback(
+			'/<elseif[ ]*[\'"](.+)[\'"][ ]*>/',
+			function($matches){return '<?php elseif( '.$matches[1].'){ ?>'; } ,
+			$content);
+		$content = str_replace(['</if>','<else />'], ['<?php } ?>','<?php }else{ ?>'], $content);
 
 		// 宏定义
 		$content = str_replace('POEM_MODULE_URL', POEM_MODULE_URL, $content);
