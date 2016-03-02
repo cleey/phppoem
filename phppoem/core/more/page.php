@@ -27,8 +27,8 @@ class page{
 		$html = '';
 		if( $tp > 0){
 			$html .= '<ul class="pagination">';
-			// $html .= "<li> <span>共 $total 条 </span> </li>";
-			// $html .= "<li> <span>当前 $np / $tp 页</span> </li>";
+			$html .= "<li> <span>共 $total 条 </span> </li>";
+			$html .= "<li> <span>当前 $np / $tp 页</span> </li>";
 			if($np !=1){
 				$html .= "<li class='{$f}'><a href='$url/p/1$affix'> << </a></li>";
 				$html .= "<li class='{$f}'><a href='$url/p/$up$affix'> < </a></li>";
