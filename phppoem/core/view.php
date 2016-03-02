@@ -102,7 +102,6 @@ class View{
 			$content);
 		$content = str_replace('</each>', '<?php } ?>', $content);
 
-
 		// 匹配 <if "$key == 1"></if>
 		$content = preg_replace_callback(
 			'/<if[ ]*[\'"](.+)[\'"][ ]*>/',
@@ -115,11 +114,8 @@ class View{
 		$content = str_replace(['</if>','<else />'], ['<?php } ?>','<?php }else{ ?>'], $content);
 
 		// 宏定义
-		$content = str_replace('POEM_MODULE_URL', POEM_MODULE_URL, $content);
-		$content = str_replace('POEM_CTRL_URL', POEM_CTRL_URL, $content);
-		$content = str_replace('POEM_FUNC_URL', POEM_FUNC_URL, $content);
+		$content = str_replace(['POEM_URL','POEM_MODULE_URL','POEM_CTRL_URL','POEM_FUNC_URL'], [POEM_URL,POEM_MODULE_URL,POEM_CTRL_URL,POEM_FUNC_URL], $content);
 
-        // CO($content);
         return $content;
 	}
 
