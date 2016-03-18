@@ -14,12 +14,12 @@ class page{
 
 		$info['list'] = $list;
 		$info['page'] = $page;
-		$info['html'] = $this->pagehtml($page,$info['tp'],$affix,$url,$show_nums);
+		$info['html'] = $this->pagehtml($page,$info['tp'],$affix,$url,$show_nums,$total);
 		return $info;
 	}
 
 	// $np 当前页 $tp 总页数
-	function pagehtml($np,$tp,$affix,$url,$num=5){
+	function pagehtml($np,$tp,$affix,$url,$num=5,$total){
 		$up	 = $np-1;   // 上一页
 		$dp  = $np+1;   // 下一页
 		$f 	 = ($np == 1)?'disabled':'';   // 是否为首页
