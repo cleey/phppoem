@@ -1,6 +1,10 @@
 <?php 
 // 获取参数Get 和 Post
-function i($param){ return htmlspecialchars( trim( isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:'' ) ) ); }
+function i($param){
+	$tmp = isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:'');
+	if( is_array($tmp) ) return array_map('htmlspecialchars',$tmp);
+	return htmlspecialchars( trim($tmp) );
+}
 
 // 获取参数并自动提示
 function gp($param,$flag = 0){
@@ -37,11 +41,12 @@ function co($var,$flag=0){ echo "<pre>"; var_dump($var); echo "</pre>"; $flag ==
 
 // 返回ajax
 function ajax($code,$info='',$more='',$upd_url=0){
-	$re = ['code'=>$code, 'info'=>$info, 'more'=>$more, 'upd_url'=>$upd_url];
-	if ( IS_AJAX ){
-		echo json_encode($re);
-		exit;
-	}else{co($re);}
+	$re = ['code'=>$code, 'info'=>$info];
+	if( $info!=='' ) $re['info'] = $info;
+	if( $more!=='' ) $re['more'] = $more;
+	if( $upd_url!=0 ) $re['upd_url'] = $upd_url;
+	echo json_encode($re);
+	exit;
 }
 
 // 日志
