@@ -19,6 +19,7 @@ class Route{
 				$i = 4;
 				while( $i+1 <= $n){
 					$_GET[$url[$i]] = $url[$i+1];
+					$_REQUEST[$url[$i]] = $url[$i+1];
 					$i+=2;
 				}
 			}

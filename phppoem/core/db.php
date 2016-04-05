@@ -50,10 +50,15 @@ class db{
 	function query($sql){
 		if( is_null($this->_conn) ) $this->connect();
 		T('poem_db_exec');
-		$re = $this->_conn->query($sql);
-		T('poem_db_exec',0);
-		if( $re == false ) return null;
-		return $re->fetchAll(\PDO::FETCH_ASSOC);
+		try{
+			$re = $this->_conn->query($sql);
+			if(!$re){ throw new \Exception(implode(', ', $pre->errorInfo() ) ); }
+			T('poem_db_exec',0);
+			if( $re == false ) return null;
+			return $re->fetchAll(\PDO::FETCH_ASSOC);
+		}catch(\PDOException $e){
+			throw new \Exception(implode(', ', $e->errorInfo));
+		}
 	}
 	function select($sql,$bind){ return $this->exec($sql,$bind,'select'); }
 	function insert($sql,$bind){ return $this->exec($sql,$bind,'insert'); }
@@ -63,17 +68,23 @@ class db{
 	function exec($sql,$bind,$flag=''){
 		if( is_null($this->_conn) ) $this->connect();
 		T('poem_db_exec');
-		$pre = $this->_conn->prepare($sql);
-		if( !$pre ) throw new \Exception(implode($this->_conn->errorInfo()) );
-		foreach ($bind as $k => $v) $pre->bindValue($k,$v);
-		$re  = $pre->execute();
-		T('poem_db_exec',0);
-		switch ($flag) {
-			case 'insert': return $this->_conn->lastInsertId(); break;
-			case 'update': return $pre->rowCount(); break;
-			case 'delete': return $pre->rowCount(); break;
-			case 'select': return $pre->fetchAll(\PDO::FETCH_ASSOC); break;
-			default: break;
+		try{
+			$pre = $this->_conn->prepare($sql);
+			if( !$pre ) throw new \Exception(implode($this->_conn->errorInfo()) );
+			foreach ($bind as $k => $v) $pre->bindValue($k,$v);
+			$re = $pre->execute();
+			if(!$re){ throw new \Exception(implode(', ', $pre->errorInfo() ) ); }
+
+			T('poem_db_exec',0);
+			switch ($flag) {
+				case 'insert': return $this->_conn->lastInsertId(); break;
+				case 'update': return $pre->rowCount(); break;
+				case 'delete': return $pre->rowCount(); break;
+				case 'select': return $pre->fetchAll(\PDO::FETCH_ASSOC); break;
+				default: break;
+			}
+		}catch(\PDOException $e){
+			throw new \Exception(implode(', ', $e->errorInfo));
 		}
 	}
 

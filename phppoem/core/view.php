@@ -76,45 +76,28 @@ class View{
 	protected function compiler($content){
 		// 添加安全代码 代表入口文件进入的
         $content =  '<?php if (!defined(\'POEM_PATH\')) exit();?>'.$content;
-        // 优化生成的php代码
-        $content = str_replace('?><?php','',$content);
-
-        // 匹配 {$vo['info']}
-        $content = preg_replace_callback('/{\$([\w\[\]\'"\$]+)}/',
-        	function($matches){return '<?php echo $'.$matches[1].';?>'; } ,
+        $content = preg_replace(
+        	array(
+				'/{\$([\w\[\]\'"\$]+)}/s', // 匹配 {$vo['info']}
+				'/{\:([^\}]+)}/s', // 匹配 {:func($vo['info'])}
+				'/<each[ ]+[\'"](.+)[\'"][ ]*>/', // 匹配 <each "$list as $v"></each>
+				'/<if[ ]*[\'"](.+)[\'"][ ]*>/', // 匹配 <if "$key == 1"></if>
+	        	'/<elseif[ ]*[\'"](.+)[\'"][ ]*>/'
+        	),
+        	array(
+        		'<?php echo $\\1;?>',
+        		'<?php echo \\1;?>',
+        		'<?php foreach( \\1 ){ ?>',
+        		'<?php if( \\1 ){ ?>',
+        		'<?php }elseif( \\1 ){ ?>'
+        	),
         	$content);
-
-        // 匹配 {:func($vo['info'])}
-        // $content = preg_replace_callback('/{\:([\w\[\]\(\)\'"\$]+)}/',
-        $content = preg_replace_callback('/{\:([^\}]+)}/',
-        	function($matches){return '<?php echo '.$matches[1].'; ?>'; } ,
-        	$content);
-
+		$content = str_replace(array('</if>','<else />','</each>','POEM_URL','POEM_MODULE_URL','POEM_CTRL_URL','POEM_FUNC_URL'), array('<?php } ?>','<?php }else{ ?>','<?php } ?>',POEM_URL,POEM_MODULE_URL,POEM_CTRL_URL,POEM_FUNC_URL), $content);
         // 匹配 <include "Public:menu"/>
         $content = preg_replace_callback(
         	'/<include[ ]+[\'"](.+)[\'"][ ]*\/>/',
         	function($matches){return $this->compiler(file_get_contents( $this->parseTpl($matches[1]) )); } ,
         	$content);
-        // 匹配 <each "$list as $v"></each>
-		$content = preg_replace_callback(
-			'/<each[ ]+[\'"](.+)[\'"][ ]*>/',
-			function($matches){return '<?php foreach( '.$matches[1].' ){ ?>'; } ,
-			$content);
-		$content = str_replace('</each>', '<?php } ?>', $content);
-
-		// 匹配 <if "$key == 1"></if>
-		$content = preg_replace_callback(
-			'/<if[ ]*[\'"](.+)[\'"][ ]*>/',
-			function($matches){return '<?php if( '.$matches[1].'){ ?>'; } ,
-			$content);
-		$content = preg_replace_callback(
-			'/<elseif[ ]*[\'"](.+)[\'"][ ]*>/',
-			function($matches){return '<?php elseif( '.$matches[1].'){ ?>'; } ,
-			$content);
-		$content = str_replace(['</if>','<else />'], ['<?php } ?>','<?php }else{ ?>'], $content);
-
-		// 宏定义
-		$content = str_replace(['POEM_URL','POEM_MODULE_URL','POEM_CTRL_URL','POEM_FUNC_URL'], [POEM_URL,POEM_MODULE_URL,POEM_CTRL_URL,POEM_FUNC_URL], $content);
 
         return $content;
 	}
