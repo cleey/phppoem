@@ -2,7 +2,7 @@
 .tpl-e{ max-width:600px;margin:0 auto;padding: 80px 10px;font-family: '微软雅黑'; color: #333; font-size: 14px;}
 .tpl-e h1{ font-size: 40px; font-weight: normal;margin: 0;}
 .tpl-e .jump{margin: 10px 0;}
-.tpl-e .success,.tpl-e .error{font-size: 18px;margin-bottom: 20px;}
+.tpl-e .success,.tpl-e .error{font-size: 18px;margin: 10px 0;}
 </style>
 
 <div class="tpl-e">
