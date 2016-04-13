@@ -33,9 +33,9 @@ class [CTRL]{
 	static function initApp($module,$ctrls=array(),$models=array()){
 		if( !is_dir(APP_PATH) ){
 			$re = mkdir(APP_PATH,0755,true);
-			if( !$re ) \poem\poem::halt('应用目录创建失败：'.APP_PATH);
+			if( !$re ) \poem\app::halt('应用目录创建失败：'.APP_PATH);
 		}
-		if( !is_writable(APP_PATH) )  \poem\poem::halt('应用目录不可写：'.APP_PATH);
+		if( !is_writable(APP_PATH) )  \poem\app::halt('应用目录不可写：'.APP_PATH);
 		$cfg   = "<?php\nreturn array(\n\t//'key'=>'value'\n);\n";
 		$route = "<?php\nreturn array(\n\t//'key'=>'value'\n);\n";
 		$m_path = APP_PATH.$module.'/model';
