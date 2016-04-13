@@ -16,6 +16,7 @@ class Redis{
 		$this->_ins = new \Redis;
 		$re = $this->_ins->connect($option['host'],$option['port'],$option['timeout']);
 		if( !$re ) throw new \Exception("Connect Redis Failed", 1);
+		if( $option['auth'] ) $this->_ins->auth($option['auth']);
 	}
 	
 	public function get($key){
