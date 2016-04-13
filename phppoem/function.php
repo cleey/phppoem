@@ -1,7 +1,7 @@
 <?php 
 // 获取参数Get 和 Post
 function i($param){
-	$tmp = isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:'');
+	$tmp = isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:null);
 	if( is_array($tmp) ) return array_map('htmlspecialchars',$tmp);
 	return htmlspecialchars( trim($tmp) );
 }
@@ -13,7 +13,7 @@ function gp($param,$flag = 0){
 	foreach ($arr as $value) {
 		$k = explode('|',$value);
 		$v = i($k[0]);
-		if( $flag == 0 && $v==='' ){
+		if( $flag == 0 && (is_null($v)||$v==='') ){
 			$more = isset($k[1]) ? $k[1] :$k[0];
 			$tmp = "{$more} , 不能为空";
 			if ( IS_AJAX ){ ajax(0,$tmp,'Parameter cannot be null'); }
