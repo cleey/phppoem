@@ -37,7 +37,8 @@ class db{
 			}
 		}
 		T('poem_db_exec');
-		$this->_conn  = new \PDO($dsn,$user,$pass) or die('数据库连接失败');
+		$char = $char ? $char : 'utf8';
+		$this->_conn  = new \PDO($dsn,$user,$pass, array(\PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES '$char'")) or die('数据库连接失败');
 		$time = number_format(T('poem_db_exec',1)*1000,2);
 
 		Log::trace('SQL',"PDO连接 [{$time}ms]");
@@ -45,6 +46,15 @@ class db{
 
 	function close(){
 		$this->_conn = NULL;
+	}
+	function beginTransaction(){
+		$this->_conn->beginTransaction();
+	}
+	function rollBack(){
+		$this->_conn->rollBack();
+	}
+	function commit(){
+		$this->_conn->commit();
 	}
 
 	function query($sql){
@@ -56,6 +66,17 @@ class db{
 			T('poem_db_exec',0);
 			if( $re == false ) return null;
 			return $re->fetchAll(\PDO::FETCH_ASSOC);
+		}catch(\PDOException $e){
+			throw new \Exception(implode(', ', $e->errorInfo));
+		}
+	}
+	function execute($sql){
+		if( is_null($this->_conn) ) $this->connect();
+		T('poem_db_exec');
+		try{
+			$re = $this->_conn->exec($sql);
+			T('poem_db_exec',0);
+			return $re;
 		}catch(\PDOException $e){
 			throw new \Exception(implode(', ', $e->errorInfo));
 		}
