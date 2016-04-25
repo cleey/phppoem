@@ -58,11 +58,33 @@ class Model{
 		return $this->_sql;
 	}
 
+	function beginTransaction(){
+		$this->_db->beginTransaction();
+	}
+	function rollBack(){
+		$this->_db->rollBack();
+	}
+	function commit(){
+		$this->_db->commit();
+	}
+	
 	function query($sql) {
 		$this->_sql = $sql;
 		$info = $this->_db->query($sql);
 		$this->afterSql();
 		return $info;
+	}
+	function exec($sql) {
+		$this->_sql = $sql;
+		$info = $this->_db->execute($sql);
+		$this->afterSql();
+		return $info;
+	}
+	function setInc($field,$num) {
+		return $this->update("{$field}={$field}+".intval($num));
+	}
+	function setDec($field,$num) {
+		return $this->update("{$field}={$field}-".intval($num));
 	}
 
 	function bind($val){
@@ -138,12 +160,18 @@ class Model{
 			unset($data['id']);
 		}
 		if( empty($this->_where) ) return false;
-		foreach ($data as $k => $v) {
-			$keys .= "`$k`=:$k,";
-			$bind[":$k"] = $v;
+		if( is_array($data) ){
+			foreach ($data as $k => $v) {
+				$keys .= "`$k`=:$k,";
+				$bind[":$k"] = $v;
+			}
+			$keys = substr($keys, 0,-1);
+			$this->_bind = array_merge($this->_bind,$bind);
+		}else if( is_string($data)){
+			$keys = $data;
+		}else{
+			new \Exception('update params must be array or string');
 		}
-		$keys = substr($keys, 0,-1);
-		$this->_bind = array_merge($this->_bind,$bind);
 
 		$this->_sql  = 'UPDATE '.$this->_table." SET {$keys}";
 		$this->setWhere($this->_where);

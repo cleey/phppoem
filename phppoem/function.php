@@ -37,7 +37,14 @@ function config($name=null,$value=null){
 }
 
 // 输出
-function co($var,$flag=0){ echo "<pre>"; var_dump($var); echo "</pre>"; $flag == 0 && exit; }
+function co(){
+	$vars = func_get_args();
+    foreach ($vars as $var){
+        highlight_string("<?php\n".var_export($var, true));
+        echo '<hr />';
+    }
+    exit;
+}
 
 // 返回ajax
 function ajax($code,$info='',$more='',$upd_url=0){
@@ -57,7 +64,7 @@ function m($tb='',$config=''){
 	static $model;
 	if( !isset($model[$tb]) ){
 		$class = 'poem\\model';
-		if( is_file( $file = MODULE_MODEL.strtolower($tb).'.php' ) ){
+		if( $tb && is_file( $file = MODULE_MODEL.strtolower($tb).'.php' ) ){
 			include $file;
 			$class = POEM_MODULE.'\\model\\'.$tb;
 		}
@@ -100,7 +107,7 @@ function memcache($k='',$v='',$opt=null){ return s('memcache',$k,$v,$opt); }
 // 扩展包
 function vendor($require_class,$ext='.php'){
 	static $_file = array();
-	if( class_exists($require_class) ) return true;
+	// if( class_exists($require_class) ) return true;
 	if( isset($_file[$require_class]) ) return true;
 	$file = VENDOR_PATH.$require_class.$ext;
 	if( !is_file($file) ){\poem\app::halt('文件不存在: '.$file);}
