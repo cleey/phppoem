@@ -245,7 +245,7 @@ class Model{
 
 	function inc($column){
 		$this->_db->init_connect(true);
-		
+
 		if( $column == null ){ return; }
 		if( empty($this->_where) ) return false;
 		$this->_sql  = 'UPDATE '.$this->_table." SET `{$column}`=`{$column}`+1";

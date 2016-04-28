@@ -4,8 +4,8 @@ namespace poem;
 class db{
 
 	private static $_ins = array();
-	private  $_linkid = array();
-	public  $_conn = null;
+	public $_linkid = array();
+	public $_conn = null;
 	protected $_cfg;
 
 	static function getIns($config){
@@ -16,7 +16,6 @@ class db{
 			if( !is_string($config) && isset($config['db_deploy']) && !empty($config['db_deploy']) ){
 				self::$_ins[$key]->parseCfg();
 			}
-			self::$_ins[$key]->init_connect();
 		}
 		return self::$_ins[$key];
 	}
@@ -40,6 +39,7 @@ class db{
     protected function deployConnect($master = false){
         // 分布式数据库配置解析
         $conf = $this->_cfg;
+
         // 数据库读写是否分离
         if ($conf['db_rw_separate']) {
             if( $master ) $id = mt_rand(0,$this->_cfg['db_master_num']-1);
@@ -64,24 +64,24 @@ class db{
         return $this->connect($id_config, $id, $master);
     }
 
-	private function connect($config='',$linkId=0,$reconnect=false){
-		if( !isset($this->_linkid[$_linkid]) ){
+	private function connect($config='',$linkid=0,$reconnect=false){
+		if( !isset($this->_linkid[$linkid]) ){
 			$dsn = $this->parseDsn($config);
 			T('poem_db_exec');
 			try{
-				$this->_linkid[$_linkid] = new \PDO($dsn['dsn'],$dsn['user'],$dsn['pass'], array(\PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES '".$dsn['char']."'")) or die('数据库连接失败');
+				$this->_linkid[$linkid] = new \PDO($dsn['dsn'],$dsn['user'],$dsn['pass'], array(\PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES '".$dsn['char']."'")) or die('数据库连接失败');
 				$time = number_format(T('poem_db_exec',1)*1000,2);
 			}catch(\PDOException $e){
 				if( $reconnect ){
 					Log::trace('ERR',$e->getMessage());
-					$this->connect($config,$linkId);
+					$this->connect($config,$linkid);
 				}else{
 					throw new \Exception($e->getMessage());
 				}
 			}
 			Log::trace('SQL',"PDO连接 [{$time}ms]");
 		}
-		return $this->_linkid[$_linkid];
+		return $this->_linkid[$linkid];
 	}
 
 	private function parseDsn($config=''){
