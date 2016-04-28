@@ -18,7 +18,7 @@ class Log{
 
 	static function trace($key,$value){
 		if( !config('debug_trace') ) return;
-		if( count( self::$trace[$key])>50 ) return;
+		if( isset(self::$trace[$key]) && count( self::$trace[$key] )> 50 ) return;
 		self::$trace[$key][] = $value;
 	}
 
