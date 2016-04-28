@@ -243,18 +243,6 @@ class Model{
 		return $info[0];
 	}
 
-	function inc($column){
-		$this->_db->init_connect(true);
-
-		if( $column == null ){ return; }
-		if( empty($this->_where) ) return false;
-		$this->_sql  = 'UPDATE '.$this->_table." SET `{$column}`=`{$column}`+1";
-		$this->setWhere();
-		$info = $this->_db->update($this->_sql,$this->_bind);
-		$this->afterSql();
-		return $info;
-	}
-
 	function id($id){
 		return $this->where(array('id'=>$id))->find();
 	}
