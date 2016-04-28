@@ -32,13 +32,17 @@ class Model{
 				$this->db_cfg = $dsn;
 			}else{
 				$this->db_cfg = array(
-					'db_type' => config('db_type'),
-					'db_host' => config('db_host'),
-					'db_port' => config('db_port'),
-					'db_name' => config('db_name'),
-					'db_user' => config('db_user'),
-					'db_pass' => config('db_pass'),
-					'db_charset' => config('db_charset'),
+					'db_type'       => config('db_type'),
+					'db_host'       => config('db_host'),
+					'db_name'       => config('db_name'),
+					'db_user'       => config('db_user'),
+					'db_pass'       => config('db_pass'),
+					'db_port'       => config('db_port'),
+					'db_charset'    => config('db_charset'),
+					'db_deploy'     => config('db_deploy'),
+					'db_rw_separate'=> config('db_rw_separate'),
+					'db_master_num' => config('db_master_num'),
+					'db_slave_no'   => config('db_slave_no'),
 				);
 			}
 		}else{
@@ -59,6 +63,8 @@ class Model{
 	}
 
 	function beginTransaction(){
+		$this->_db->init_connect(true);
+
 		$this->_db->beginTransaction();
 	}
 	function rollBack(){
@@ -69,14 +75,18 @@ class Model{
 	}
 	
 	function query($sql) {
+		$this->_db->init_connect(false);
+
 		$this->_sql = $sql;
 		$info = $this->_db->query($sql);
 		$this->afterSql();
 		return $info;
 	}
 	function exec($sql) {
+		$this->_db->init_connect(true);
+
 		$this->_sql = $sql;
-		$info = $this->_db->execute($sql);
+		$info = $this->_db->exec($sql);
 		$this->afterSql();
 		return $info;
 	}
@@ -136,6 +146,8 @@ class Model{
 	}
 
 	function insert($data=null){
+		$this->_db->init_connect(true);
+
 		if( $data == null ){ return; }
 		// INSERT INTO more (id, NaMe) values (?, ?)
 		$keys = '';$vals='';
@@ -154,6 +166,8 @@ class Model{
 	}
 
 	function update($data=null){
+		$this->_db->init_connect(true);
+
 		if( $data == null ){ return; }
 		if( isset($data['id']) ){
 			$this->where(array('id'=>$data['id']));
@@ -181,6 +195,8 @@ class Model{
 	}
 
 	function delete(){
+		$this->_db->init_connect(true);
+
 		$this->_sql  = 'DELETE FROM '.$this->_table;
 		$this->setWhere($this->_where);
 		$info = $this->_db->delete($this->_sql,$this->_bind);
@@ -189,6 +205,8 @@ class Model{
 	}
 
 	function select(){
+		$this->_db->init_connect(false);
+
 		// $selectSql = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%%LIMIT% %UNION%%LOCK%%COMMENT%';
 		$this->_sql = 'SELECT '.$this->_distinct.$this->_field.' FROM `'.$this->_table.'`';
         $this->setJoin($this->_join);
@@ -208,6 +226,8 @@ class Model{
 	}
 
 	function count(){
+		$this->_db->init_connect(true);
+
 		$this->_sql = 'SELECT count(*) as num FROM `'.$this->_table.'`';
 		$this->setWhere($this->_where);
 		$this->setGroup($this->_group);
@@ -224,6 +244,8 @@ class Model{
 	}
 
 	function inc($column){
+		$this->_db->init_connect(true);
+		
 		if( $column == null ){ return; }
 		if( empty($this->_where) ) return false;
 		$this->_sql  = 'UPDATE '.$this->_table." SET `{$column}`=`{$column}`+1";
