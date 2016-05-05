@@ -268,10 +268,18 @@ class Model{
 		}
 		$time = number_format(T('poem_db_exec',-1)*1000,2);
 		Log::trace('SQL',$this->_sql."[{$time}ms]");
-		$this->_where = array();
-		$this->_limit = '';
-		$this->_order = '';
+		$this->_distinct = '';
 		$this->_field = '*';
+		$this->_join = array();
+		$this->_where = array();
+		$this->_group = '';
+		$this->_having = '';
+		$this->_order = '';
+		$this->_limit = '';
+		$this->_union = '';
+		$this->_lock = '';
+		$this->_comment = '';
+		$this->_force = '';
 		$this->_bind  = array();
 	}
 
