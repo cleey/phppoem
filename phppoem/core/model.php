@@ -146,14 +146,14 @@ class Model{
 	}
 
 	function insert($data=null){
-		$this->_db->init_connect(true);
-
 		if( $data == null ){ return; }
+
+		$this->_db->init_connect(true);
 		// INSERT INTO more (id, NaMe) values (?, ?)
 		$keys = '';$vals='';
 		foreach ($data as $k => $v) {
 			if(is_null($v)) continue;
-			$keys .= "`$k`,";
+			$keys .= "$k,";
 			$vals .= ":$k,";
 			$this->_bind[":$k"] = $v;
 		}
@@ -164,11 +164,26 @@ class Model{
 		$this->afterSql();
 		return $info;
 	}
-
-	function update($data=null){
+	function insertAll($data=null){
+		if( !is_array($data[0]) ){ return false; }
 		$this->_db->init_connect(true);
 
+		$keys = implode(',',array_keys($data[0]));
+		$sql = "insert into ".$this->_table." ($keys) values";
+		$vals = array();
+		foreach ($data as $v) {
+			$vals[] = '('.implode(',' ,$this->parseValue($v) ).')';
+		}
+		$this->_sql  = 'INSERT INTO '.$this->_table." ($keys) VALUES ".implode(',',$vals);
+		$info = $this->_db->insert($this->_sql,$this->_bind);
+		$this->afterSql();
+		return $info;
+	}
+
+	function update($data=null){
 		if( $data == null ){ return; }
+		$this->_db->init_connect(true);
+
 		if( isset($data['id']) ){
 			$this->where(array('id'=>$data['id']));
 			unset($data['id']);
@@ -176,7 +191,7 @@ class Model{
 		if( empty($this->_where) ) return false;
 		if( is_array($data) ){
 			foreach ($data as $k => $v) {
-				$keys .= "`$k`=:$k,";
+				$keys .= "$k=:$k,";
 				$bind[":$k"] = $v;
 			}
 			$keys = substr($keys, 0,-1);
@@ -208,7 +223,7 @@ class Model{
 		$this->_db->init_connect(false);
 
 		// $selectSql = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%%LIMIT% %UNION%%LOCK%%COMMENT%';
-		$this->_sql = 'SELECT '.$this->_distinct.$this->_field.' FROM `'.$this->_table.'`';
+		$this->_sql = 'SELECT '.$this->_distinct.$this->_field.' FROM '.$this->_table;
         $this->setJoin($this->_join);
         $this->setWhere($this->_where);
         $this->setGroup($this->_group);
@@ -228,7 +243,7 @@ class Model{
 	function count(){
 		$this->_db->init_connect(true);
 
-		$this->_sql = 'SELECT count(*) as num FROM `'.$this->_table.'`';
+		$this->_sql = 'SELECT count(*) as num FROM '.$this->_table;
 		$this->setWhere($this->_where);
 		$this->setGroup($this->_group);
 		$this->setOrder($this->_order);
@@ -278,41 +293,41 @@ class Model{
 				if( preg_match('/^(NOT IN|IN)$/',$exp) ){
 					if( is_string($v[1]) ) $v[1] = explode(',', $v[1]);
 					$vals = implode(',', $this->parseValue($v[1]) );
-					$item[] = "`$k` $exp ($vals)";
+					$item[] = "$k $exp ($vals)";
 				}elseif( preg_match('/^(=|!=|<|<=|>|>=)$/',$exp) ){
 					$k1  = count($this->_bind);
-					$item[] = "`$k` $exp :$k1";
+					$item[] = "$k $exp :$k1";
 					$this->_bind[":$k1"] = $v[1];
 				}elseif( preg_match('/^(BETWEEN|NOT BETWEEN)$/',$exp) ){
 					$tmp = is_string($v[1]) ? explode(',', $v[1]): $v[1];
 					$k1  = count($this->_bind);
 					$k2  = $k1 + 1;
-					$item[] = "`$k` $exp :$k1 AND :$k2";
+					$item[] = "$k $exp :$k1 AND :$k2";
 					$this->_bind[":$k1"] = $tmp[0];
 					$this->_bind[":$k2"] = $tmp[1];
 				}elseif( preg_match('/^(LIKE|NOT LIKE)$/',$exp) ){
 					if( is_array($v[1]) ){
 						$likeLogic = isset($v[2]) ? strtoupper($v[2]) : 'OR';
 						$like = [];
-						foreach ($v[1] as $like_item)  $like[] = "`$k` $exp ".$this->parseValue($like_item);
+						foreach ($v[1] as $like_item)  $like[] = "$k $exp ".$this->parseValue($like_item);
 						$str = implode($likeLogic, $like);
 						$item[] = "($str)";
 					}else{
 						$wyk = ':'.count($this->_bind);
-						$item[] = "`$k` $exp $wyk";
+						$item[] = "$k $exp $wyk";
 						$this->_bind[$wyk] = $v[1];
 					}
 				}else{
 					$wyk = ':'.count($this->_bind);
-					$item[] = "`$k` $exp $wyk";
+					$item[] = "$k $exp $wyk";
 					$this->_bind[$wyk] = $val;
 				}
 			}elseif( $k=='_string' ){
 				$item[] = $v;
 			}else{
 				$wyk = ':'.count($this->_bind);
-				// $item[] = "`$k`=".$this->parseValue($v);
-				$item[] = "`$k`=$wyk";
+				// $item[] = "$k=".$this->parseValue($v);
+				$item[] = "$k=$wyk";
 				$this->_bind[$wyk] = $v;
 			}
 		}
