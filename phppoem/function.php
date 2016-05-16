@@ -142,6 +142,7 @@ function cookie($name='',$value='',$option=null){
 		unset($_COOKIE[$name]);
 	}
 	setcookie($name,$value,$cfg['expire'],$cfg['path'],$cfg['domain'],$cfg['secure'],$cfg['httponly']);
+	$_COOKIE[$name] = $value;
 }
 // session的使用
 function session($name='',$value=''){
@@ -212,4 +213,3 @@ function poem_url($url){
 	}
 	return POEM_URL."/$module/$class/$func"; // html文件路径
 }
-?>
