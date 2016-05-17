@@ -24,6 +24,8 @@ class File{
 
 		if( $append === -1 ){
 			$re  = file_put_contents($key, $value);
+		}if( $append === -2 ){
+			$re  = file_put_contents($key, $value,FILE_APPEND);
 		}else{
 			$value  = serialize($value);
 			if($append == 0) $re = file_put_contents($key, $value);
