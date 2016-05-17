@@ -129,7 +129,7 @@ class db{
 	function exec($sql){
 		T('poem_db_exec');
 		try{
-			$re = $this->_conn->execute($sql);
+			$re = $this->_conn->exec($sql);
 			T('poem_db_exec',0);
 			return $re;
 		}catch(\PDOException $e){
