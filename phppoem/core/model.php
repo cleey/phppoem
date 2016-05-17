@@ -164,7 +164,7 @@ class Model{
 		$this->afterSql();
 		return $info;
 	}
-	function insertAll($data=null){
+	function insertAll($data=null,$num=1000){
 		if( !is_array($data[0]) ){ return false; }
 		$this->_db->init_connect(true);
 
@@ -173,9 +173,16 @@ class Model{
 		$vals = array();
 		foreach ($data as $v) {
 			$vals[] = '('.implode(',' ,$this->parseValue($v) ).')';
+			if( count($vals)>=$num ){
+				$this->_sql  = 'INSERT INTO '.$this->_table." ($keys) VALUES ".implode(',',$vals);
+				$info = $this->_db->insert($this->_sql,$this->_bind);
+				$vals = array();
+			}
 		}
-		$this->_sql  = 'INSERT INTO '.$this->_table." ($keys) VALUES ".implode(',',$vals);
-		$info = $this->_db->insert($this->_sql,$this->_bind);
+		if( count($vals) ){
+			$this->_sql  = 'INSERT INTO '.$this->_table." ($keys) VALUES ".implode(',',$vals);
+			$info = $this->_db->insert($this->_sql,$this->_bind);
+		}
 		$this->afterSql();
 		return $info;
 	}
