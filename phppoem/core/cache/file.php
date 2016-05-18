@@ -32,7 +32,7 @@ class File{
 			else $re = file_put_contents($key, $value,FILE_APPEND);
 		}
 
-		if( !$re ) error_log('文件写入失败：'.$key);
+		if( !$re ) throw new \Exception('文件写入失败：'.$key);
 		return $key;
 	}
 
