@@ -22,7 +22,6 @@ class Model{
 	protected $_bind  = array();
 	protected $_sql   = '';
 
-
 	function __construct($tb_name='',$config=''){
 		// $this->tb_name = $tb_name;
 		$this->_table = $tb_name;
@@ -251,6 +250,7 @@ class Model{
 		$this->_db->init_connect(true);
 
 		$this->_sql = 'SELECT count(*) as num FROM '.$this->_table;
+        $this->setJoin($this->_join);
 		$this->setWhere($this->_where);
 		$this->setGroup($this->_group);
 		$this->setOrder($this->_order);
@@ -309,7 +309,7 @@ class Model{
 					if( is_string($v[1]) ) $v[1] = explode(',', $v[1]);
 					$vals = implode(',', $this->parseValue($v[1]) );
 					$item[] = "$k $exp ($vals)";
-				}elseif( preg_match('/^(=|!=|<|<=|>|>=)$/',$exp) ){
+				}elseif( preg_match('/^(=|!=|<|<>|<=|>|>=)$/',$exp) ){
 					$k1  = count($this->_bind);
 					$item[] = "$k $exp :$k1";
 					$this->_bind[":$k1"] = $v[1];
@@ -333,15 +333,15 @@ class Model{
 						$this->_bind[$wyk] = $v[1];
 					}
 				}else{
-					$wyk = ':'.count($this->_bind);
-					$item[] = "$k $exp $wyk";
-					$this->_bind[$wyk] = $val;
+					throw new \Exception("exp error", 1);
+					// $wyk = ':'.count($this->_bind);
+					// $item[] = "$k $exp $wyk";
+					// $this->_bind[$wyk] = $val;
 				}
 			}elseif( $k=='_string' ){
 				$item[] = $v;
 			}else{
 				$wyk = ':'.count($this->_bind);
-				// $item[] = "$k=".$this->parseValue($v);
 				$item[] = "$k=$wyk";
 				$this->_bind[$wyk] = $v;
 			}
