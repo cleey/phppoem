@@ -73,11 +73,10 @@ class Model{
 		$this->_db->commit();
 	}
 	
-	function query($sql) {
+	function query($sql,$bind=array()) {
 		$this->_db->init_connect(false);
-
 		$this->_sql = $sql;
-		$info = $this->_db->query($sql);
+		$info = $this->_db->select($sql,$bind);
 		$this->afterSql();
 		return $info;
 	}

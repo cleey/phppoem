@@ -116,18 +116,6 @@ class db{
 	function rollBack(){ return $this->_conn->rollBack(); }
 	function commit(){ return $this->_conn->commit(); }
 
-	function query($sql){
-		T('poem_db_exec');
-		try{
-			$re = $this->_conn->query($sql);
-			if(!$re) $this->error($pre,$sql);
-			T('poem_db_exec',0);
-			if( $re == false ) return null;
-			return $re->fetchAll(\PDO::FETCH_ASSOC);
-		}catch(\PDOException $e){
-			$this->error($e,$sql);
-		}
-	}
 	function exec($sql){
 		T('poem_db_exec');
 		try{
