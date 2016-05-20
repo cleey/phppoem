@@ -1,9 +1,14 @@
 <?php 
 // 获取参数Get 和 Post
-function i($param){
+function i($param,$type=''){
 	$tmp = isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:null);
-	if( is_array($tmp) ) return array_map('htmlspecialchars',$tmp);
-	return htmlspecialchars( trim($tmp) );
+	if( is_null($tmp) ) return $tmp;
+	switch ($type) {
+		case 'array': array_map('htmlspecialchars',$tmp); break;
+		case 'sql': addslashes( htmlspecialchars( trim($tmp) ) ); break;
+		default: htmlspecialchars( trim($tmp) ); break;
+	}
+	return $tmp;
 }
 
 // 获取参数并自动提示
@@ -16,7 +21,7 @@ function gp($param,$flag = 0){
 		if( $flag == 0 && (is_null($v)||$v==='') ){
 			$more = isset($k[1]) ? $k[1] :$k[0];
 			$tmp = "{$more} , 不能为空";
-			if ( IS_AJAX ){ ajax(0,$tmp,'Parameter cannot be null'); }
+			if ( IS_AJAX ){ ajax(0,$tmp,'param cannot be null'); }
 			err_jump($tmp);
 		}
 		$params[ $k[0] ] = $v;

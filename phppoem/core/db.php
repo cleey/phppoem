@@ -8,6 +8,14 @@ class db{
 	public $_conn = null;
 	protected $_cfg;
 
+	// PDO连接参数
+    protected $options = array(
+        \PDO::ATTR_CASE              => \PDO::CASE_LOWER,
+        \PDO::ATTR_ERRMODE           => \PDO::ERRMODE_EXCEPTION,
+        \PDO::ATTR_ORACLE_NULLS      => \PDO::NULL_NATURAL,
+        \PDO::ATTR_STRINGIFY_FETCHES => false,
+    );
+
 	static function getIns($config){
 		$key = md5( is_array($config)?serialize($config):$config );
 		if( !isset(self::$_ins[$key]) || !(self::$_ins[$key] instanceof self) ){
@@ -67,9 +75,10 @@ class db{
 	private function connect($config='',$linkid=0,$reconnect=false){
 		if( !isset($this->_linkid[$linkid]) ){
 			$dsn = $this->parseDsn($config);
+			$this->options[\PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES '".$dsn['char']."'";
 			T('poem_db_exec');
 			try{
-				$this->_linkid[$linkid] = new \PDO($dsn['dsn'],$dsn['user'],$dsn['pass'], array(\PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES '".$dsn['char']."'")) or die('数据库连接失败');
+				$this->_linkid[$linkid] = new \PDO($dsn['dsn'],$dsn['user'],$dsn['pass'], $this->options) or die('数据库连接失败');
 				$time = number_format(T('poem_db_exec',1)*1000,2);
 			}catch(\PDOException $e){
 				if( $reconnect ){
@@ -118,12 +127,12 @@ class db{
 		T('poem_db_exec');
 		try{
 			$re = $this->_conn->query($sql);
-			if(!$re){ throw new \Exception(implode(', ', $pre->errorInfo() ) ); }
+			if(!$re) $this->error($pre,$sql);
 			T('poem_db_exec',0);
 			if( $re == false ) return null;
 			return $re->fetchAll(\PDO::FETCH_ASSOC);
 		}catch(\PDOException $e){
-			throw new \Exception(implode(', ', $e->errorInfo));
+			$this->error($e,$sql);
 		}
 	}
 	function exec($sql){
@@ -133,7 +142,7 @@ class db{
 			T('poem_db_exec',0);
 			return $re;
 		}catch(\PDOException $e){
-			throw new \Exception(implode(', ', $e->errorInfo));
+			$this->error($e,$sql);
 		}
 	}
 	function select($sql,$bind){ return $this->execute($sql,$bind,'select'); }
@@ -145,10 +154,10 @@ class db{
 		T('poem_db_exec');
 		try{
 			$pre = $this->_conn->prepare($sql);
-			if( !$pre ) throw new \Exception(implode($this->_conn->errorInfo()) );
+			if( !$pre ) $this->error($this->_conn,$sql);
 			foreach ($bind as $k => $v) $pre->bindValue($k,$v);
 			$re = $pre->execute();
-			if(!$re){ throw new \Exception(implode(', ', $pre->errorInfo() ) ); }
+			if(!$re) $this->error($pre,$sql);
 
 			T('poem_db_exec',0);
 			switch ($flag) {
@@ -159,10 +168,12 @@ class db{
 				default: break;
 			}
 		}catch(\PDOException $e){
-			throw new \Exception(implode(', ', $e->errorInfo));
+			$this->error($e,$sql);
 		}
 	}
-
+	private function error($e,$sql){
+		throw new \Exception(implode(', ', $e->errorInfo)."\n [SQL 语句]：".$sql);
+	}
 	function __destruct(){
 		$this->_linkid = null;
 		$this->_conn = null;
