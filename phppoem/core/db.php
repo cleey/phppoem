@@ -7,14 +7,7 @@ class db{
 	public $_linkid = array();
 	public $_conn = null;
 	protected $_cfg;
-
-	// PDO连接参数
-    protected $options = array(
-        \PDO::ATTR_CASE              => \PDO::CASE_LOWER,
-        \PDO::ATTR_ERRMODE           => \PDO::ERRMODE_EXCEPTION,
-        \PDO::ATTR_ORACLE_NULLS      => \PDO::NULL_NATURAL,
-        \PDO::ATTR_STRINGIFY_FETCHES => false,
-    );
+	protected $options = array( \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION );
 
 	static function getIns($config){
 		$key = md5( is_array($config)?serialize($config):$config );
@@ -75,7 +68,7 @@ class db{
 	private function connect($config='',$linkid=0,$reconnect=false){
 		if( !isset($this->_linkid[$linkid]) ){
 			$dsn = $this->parseDsn($config);
-			$this->options[\PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES '".$dsn['char']."'";
+			if( $dsn['char'] ) $this->options[\PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES '".$dsn['char']."'";
 			T('poem_db_exec');
 			try{
 				$this->_linkid[$linkid] = new \PDO($dsn['dsn'],$dsn['user'],$dsn['pass'], $this->options) or die('数据库连接失败');
@@ -95,6 +88,7 @@ class db{
 
 	private function parseDsn($config=''){
 		if( $config == '' ) $config = $this->_cfg;
+		$char = '';
 		if( is_array($config) ){
 			$type = $config['db_type'];
 			$host = $config['db_host'];
@@ -113,7 +107,6 @@ class db{
 				$dsn = $config;
 			}
 		}
-		$char = $char ? $char : 'utf8';
 		return array('user' => $user, 'pass' => $pass, 'char' => $char, 'dsn' => $dsn);
 	}
 
