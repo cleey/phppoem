@@ -2,13 +2,14 @@
 // 获取参数Get 和 Post
 function i($param,$type=''){
 	$tmp = isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:null);
-	if( is_null($tmp) ) return $tmp;
-	switch ($type) {
-		case 'array': array_map('htmlspecialchars',$tmp); break;
-		case 'sql': addslashes( htmlspecialchars( trim($tmp) ) ); break;
-		default: htmlspecialchars( trim($tmp) ); break;
+	if( is_null($tmp) || is_numeric($tmp) ) return $tmp;
+	if( $type == 'array' && is_array($tmp) ){
+		return array_map('htmlspecialchars',$tmp);
+	}else{
+		$tmp = htmlspecialchars( trim(strval($tmp)) );
+		if( $type == 'sql' ) $tmp = addslashes($tmp);
+		return $tmp;
 	}
-	return $tmp;
 }
 
 // 获取参数并自动提示
