@@ -4,11 +4,10 @@ function i($param,$type=''){
 	$tmp = isset($_GET[$param]) ? $_GET[$param]: ( isset($_POST[$param]) ?$_POST[$param]:null);
 	if( is_null($tmp) ) return $tmp;
 	switch ($type) {
-		case 'array': array_map('htmlspecialchars',$tmp); break;
-		case 'sql': addslashes( htmlspecialchars( trim($tmp) ) ); break;
-		default: htmlspecialchars( trim($tmp) ); break;
+		case 'array': return array_map('htmlspecialchars',$tmp); break;
+		case 'sql': return addslashes( htmlspecialchars( trim($tmp) ) ); break;
+		default: return htmlspecialchars( trim($tmp) ); break;
 	}
-	return $tmp;
 }
 
 // 获取参数并自动提示
