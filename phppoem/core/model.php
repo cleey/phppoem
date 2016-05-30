@@ -18,12 +18,12 @@ class Model{
 	protected $_lock = '';
 	protected $_comment = '';
 	protected $_force = '';
+	protected $_ismaster = false; // 针对查询，手动选择主库
 
 	protected $_bind  = array();
 	protected $_sql   = '';
 
 	function __construct($tb_name='',$config=''){
-		// $this->tb_name = $tb_name;
 		$this->_table = $tb_name;
 		if( $config === '' ){
 			// 配置文件
@@ -72,9 +72,13 @@ class Model{
 	function commit(){
 		$this->_db->commit();
 	}
+	function master(){
+		$this->_ismaster = true;
+		return $this;
+	}
 	
 	function query($sql,$bind=array()) {
-		$this->_db->init_connect(false);
+		$this->_db->init_connect($this->_ismaster);
 		$this->_sql = $sql;
 		$info = $this->_db->select($sql,$bind);
 		$this->afterSql();
@@ -225,7 +229,7 @@ class Model{
 	}
 
 	function select(){
-		$this->_db->init_connect(false);
+		$this->_db->init_connect($this->_ismaster);
 
 		// $selectSql = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%%LIMIT% %UNION%%LOCK%%COMMENT%';
 		$this->_sql = 'SELECT '.$this->_distinct.$this->_field.' FROM '.$this->_table;
@@ -286,6 +290,7 @@ class Model{
 		$this->_lock = '';
 		$this->_comment = '';
 		$this->_force = '';
+		$this->_ismaster  = false;
 		$this->_bind  = array();
 	}
 
