@@ -3,9 +3,10 @@ PhpPoem, 如诗一般简洁优美的PHP框架
 PhpPoem, a simple and beautiful php framework, php will be like poet.
 
 
-Home: http://www.phppoem.com/  
+Home: http://phppoem.com/  
 Author: Cleey  
 QQ群: 137951449
+
 
 压力测试    
 服务器配置为 16G 16核，php5.3.3开启opcache，使用压测工具ab，结果如下：   
