@@ -1,6 +1,6 @@
 <?php
 namespace poem;
-class Load{
+class load{
 	static function register(){
         spl_autoload_register('\poem\load::autoload');
     }
@@ -16,26 +16,16 @@ class Load{
 	}
 
 	// 存储已经实例化的类以及方法
-	static function instance($class,$method=''){
+	static function instance($class){
 		static $ins = [];
-		// 声明类
-		if( !isset($ins[$class]) ){
-			if( !class_exists($class) ) throw new \Exception('class not find: '.$class);
-			$ins[$class] = new $class;
-		}
-		$key = $class.$method;
-		// 声明方法
-		if( !isset($ins[$key]) ){
-			$ins[$key] = $method=='' ? $obj : call_user_func(array(&$ins[$class], $method));
-		}
-
-		return $ins[$key];
+		if( !isset($ins[$class]) ) $ins[$class] = new $class;
+		return $ins[$class];
 	}
 
 	// 扩展包引入
 	static function vendor($class,$ext='.php'){
 		static $_file = array();
-		if( class_exists($class) ) return true;
+		// if( class_exists($class) ) return true;vendor
 		if( isset($_file[$class]) ) return true;
 		$file = VENDOR_PATH.$class.$ext;
 		if( !is_file($file) ){\poem\app::halt('文件不存在: '.$file);}
@@ -45,22 +35,9 @@ class Load{
 
 	// controller
 	static function controller($class,$module=POEM_MODULE){
-		static $ctrl = [];
 		$name = "$module\\controller\\$class";
-		if( !isset($ctrl[$name]) ) $ctrl[$name] = new $name;
-		return $ctrl[$name];
+		return self::instance($name);
 	}
-
-	static function func($class, $vars = []){
-        $info   = pathinfo($url);
-        $func = $info['basename'];
-        $ctrl = '.' != $info['dirname'] ? $info['dirname'] : POEM_CTRL;
-        $class  = self::controller($ctrl);
-
-        if (is_string($vars)) parse_str($vars, $vars);
-        return call_user_func_array([ & $class, $func], $vars);
-    }
-
 
 }
 

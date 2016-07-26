@@ -1,6 +1,6 @@
 <?php 
 namespace poem;
-class Controller{
+class controller{
 	protected $view; // view 类
 	function __construct(){ $this->view = load::instance('poem\view'); }
 	// 展示页面

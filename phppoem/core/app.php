@@ -1,7 +1,7 @@
 <?php 
 namespace poem;
 
-class App{
+class app{
 	
 	static function start(){
 
@@ -19,13 +19,12 @@ class App{
 		$module = defined('NEW_MODULE') ? NEW_MODULE : 'home';
 		if( !is_dir(APP_PATH.$module) ) \poem\more\Build::checkModule($module);
 		
-		Route::run(); // 路由管理
+		route::run(); // 路由管理
 		self::exec();  // 执行操作
 
 		t('POEM_TIME',0);
 		if( !config('debug_trace') || IS_AJAX || IS_CLI ) exit; 
 		log::show();
-		exit;
 	}
 
 	// common
@@ -47,11 +46,10 @@ class App{
 	static function exec(){
 		t('POEM_EXEC_TIME');
         // 非法操作
-		if (!preg_match('/^[A-Za-z](\w)*$/', POEM_FUNC)) {  throw new \ReflectionException(); }
+		if (!preg_match('/^[A-Za-z](\w)*$/', POEM_FUNC)) {  throw new \Exception('function: ['.htmlspecialchars(POEM_FUNC).'] not exists'); }
 
 		if( is_file($file=APP_PATH.POEM_MODULE.'/boot/function.php') ) include $file; // 请求模块
 		if( is_file($file=APP_PATH.POEM_MODULE.'/boot/config.php') ) config(include $file); // 请求模块
-
 		// load::instance(POEM_MODULE.'\\controller\\'.POEM_CTRL, POEM_FUNC);
 		try{
 			$ctrl = load::controller(POEM_CTRL); // 执行操作
