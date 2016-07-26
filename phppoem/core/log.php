@@ -1,7 +1,6 @@
 <?php 
-namespace Poem;
-
-class Log{
+namespace poem;
+class log{
 	const ERR    = 'ERR';
 	const WARN   = 'WARN';
 	const NOTICE = 'NOTICE';

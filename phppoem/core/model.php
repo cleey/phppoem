@@ -1,7 +1,6 @@
 <?php
-namespace Poem;
-
-class Model{
+namespace poem;
+class model{
 	protected $_db = null; // 数据库资源
 	protected $db_cfg = array(); // 数据库配置
 

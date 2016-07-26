@@ -1,12 +1,20 @@
 <?php 
 namespace poem;
-
-class Route{
+class route{
 
 	static function run(){
 		T('POEM_ROUTE_TIME');
 
 		$url = array();
+		if( IS_CLI ){ // 命令行模式
+			$tmp = parse_url($_SERVER['argv'][1]);
+			$_SERVER['PATH_INFO'] = $tmp['path'];
+			$tmp = explode('&', $tmp['query']);
+			foreach ($tmp as $one) {
+				list($k,$v) = explode('=', $one);
+				$_GET[$k] = $v;
+			}
+		}
 		if( defined('NEW_MODULE') ) $_SERVER['PATH_INFO'] = "/".NEW_MODULE;
 		if( isset($_SERVER['PATH_INFO']) ){
 			$_URL = $_SERVER['PATH_INFO'];

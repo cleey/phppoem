@@ -112,13 +112,7 @@ function memcache($k='',$v='',$opt=null){ return s('memcache',$k,$v,$opt); }
 
 // 扩展包
 function vendor($require_class,$ext='.php'){
-	static $_file = array();
-	// if( class_exists($require_class) ) return true;
-	if( isset($_file[$require_class]) ) return true;
-	$file = VENDOR_PATH.$require_class.$ext;
-	if( !is_file($file) ){\poem\app::halt('文件不存在: '.$file);}
-	$_file[$require_class] = true;
-	require $file;
+	\poem\load::vendor($require_class,$ext);
 }
 
 // cookie

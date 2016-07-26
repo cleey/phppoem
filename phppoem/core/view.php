@@ -1,7 +1,6 @@
 <?php 
 namespace poem;
-
-class View{
+class view{
 
 	protected $html_vars = array(); // 用户assign 变量
 
