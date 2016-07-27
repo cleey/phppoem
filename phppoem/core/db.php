@@ -7,7 +7,7 @@ class db{
 	public $_linkid = array();
 	public $_conn = null;
 	protected $_cfg;
-	protected $options = array( \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION );
+	protected $options = array( \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::MYSQL_ATTR_MULTI_STATEMENTS => false );
 
 	static function getIns($config){
 		$key = md5( is_array($config)?serialize($config):$config );
