@@ -24,7 +24,7 @@ class model {
 	protected $_sql = '';
 
 	function __construct($tb_name = '', $config = '') {
-		$this->_table = $tb_name;
+		$this->_table = $this->parseTbName($tb_name);
 		if ($config === '') {
 			// 配置文件
 			if ($dsn = config('db_dsn')) {
@@ -223,7 +223,7 @@ class model {
 
 		if (is_array($data)) {
 			foreach ($data as $k => $v) {
-				$keys .= "$k=:$k,";
+				$keys .= "`$k`=:$k,";
 				$bind[":$k"] = $v;
 			}
 			$keys = substr($keys, 0, -1);
@@ -344,16 +344,16 @@ class model {
 					}
 
 					$vals = implode(',', $this->parseValue($v[1]));
-					$item[] = "$k $exp ($vals)";
+					$item[] = "`$k` $exp ($vals)";
 				} elseif (preg_match('/^(=|!=|<|<>|<=|>|>=)$/', $exp)) {
 					$k1 = count($this->_bind);
-					$item[] = "$k $exp :$k1";
+					$item[] = "`$k` $exp :$k1";
 					$this->_bind[":$k1"] = $v[1];
 				} elseif (preg_match('/^(BETWEEN|NOT BETWEEN)$/', $exp)) {
 					$tmp = is_string($v[1]) ? explode(',', $v[1]) : $v[1];
 					$k1 = count($this->_bind);
 					$k2 = $k1 + 1;
-					$item[] = "$k $exp :$k1 AND :$k2";
+					$item[] = "`$k` $exp :$k1 AND :$k2";
 					$this->_bind[":$k1"] = $tmp[0];
 					$this->_bind[":$k2"] = $tmp[1];
 				} elseif (preg_match('/^(LIKE|NOT LIKE)$/', $exp)) {
@@ -361,14 +361,14 @@ class model {
 						$likeLogic = isset($v[2]) ? strtoupper($v[2]) : 'OR';
 						$like = [];
 						foreach ($v[1] as $like_item) {
-							$like[] = "$k $exp " . $this->parseValue($like_item);
+							$like[] = "`$k` $exp " . $this->parseValue($like_item);
 						}
 
 						$str = implode($likeLogic, $like);
 						$item[] = "($str)";
 					} else {
 						$wyk = ':' . count($this->_bind);
-						$item[] = "$k $exp $wyk";
+						$item[] = "`$k` $exp $wyk";
 						$this->_bind[$wyk] = $v[1];
 					}
 				} else {
@@ -381,7 +381,7 @@ class model {
 				$item[] = $v;
 			} else {
 				$wyk = ':' . count($this->_bind);
-				$item[] = "$k=$wyk";
+				$item[] = "`$k`=$wyk";
 				$this->_bind[$wyk] = $v;
 			}
 		}
@@ -455,7 +455,18 @@ class model {
 		} else {
 			return $val;
 		}
+	}
 
+	private function parseTbName($tb) {
+		if ($tb[0] == '`') {return;}
+		if ($pos = strpos($tb, ' ')) {
+			$tb = '`' . substr_replace($tb, '` ', $pos, 1);
+		} elseif ($pos = strpos($tb, '.')) {
+			$tb = '`' . substr_replace($tb, '`.', $pos, 1);
+		} else {
+			$tb = "`$tb`";
+		}
+		return $tb;
 	}
 
 }
