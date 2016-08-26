@@ -6,14 +6,12 @@ class page {
 		$page = intval(I('p')) ? intval(I('p')) : 1;
 		$total = $m->noclear()->count(); // 总记录数
 		$list = $m->limit(($page - 1) * $page_size, $page_size)->select(); // 结果列表
-		$info['total'] = $total; // 总记录数
-		$info['np'] = $page; // 当前页
-		$info['tp'] = ceil((int) $info['total'] / (int) $page_size); //总页数
-		$info['url'] = $url ? $url : POEM_FUNC_URL; //url
-
 		$info['list'] = $list;
-		$info['page'] = $page;
-		$info['html'] = self::pagehtml($page, $info['tp'], $info['url'], $show_nums, $total);
+		$info['total'] = $total; // 总记录数
+		$info['url'] = $url ? $url : POEM_FUNC_URL; //url
+		$info['page'] = $page; // 当前页
+		$info['page_count'] = ceil((int) $info['total'] / (int) $page_size); //总页数
+		$info['html'] = self::pagehtml($page, $info['page_count'], $info['url'], $show_nums, $total);
 		return $info;
 	}
 
