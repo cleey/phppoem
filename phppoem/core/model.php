@@ -223,7 +223,8 @@ class model {
 
 		if (is_array($data)) {
 			foreach ($data as $k => $v) {
-				$keys .= "`$k`=:$k,";
+				$kt = $this->parseKey($k);
+				$keys .= "$kt=:$k,";
 				$bind[":$k"] = $v;
 			}
 			$keys = substr($keys, 0, -1);
@@ -337,6 +338,7 @@ class model {
 			if ($k == '_complex') {
 				$item[] = substr($this->setWhere($v, true), 7);
 			} elseif (is_array($v)) {
+				$k = $this->parseKey($k);
 				$exp = strtoupper($v[0]); //  in like
 				if (preg_match('/^(NOT IN|IN)$/', $exp)) {
 					if (is_string($v[1])) {
@@ -344,16 +346,16 @@ class model {
 					}
 
 					$vals = implode(',', $this->parseValue($v[1]));
-					$item[] = "`$k` $exp ($vals)";
+					$item[] = "$k $exp ($vals)";
 				} elseif (preg_match('/^(=|!=|<|<>|<=|>|>=)$/', $exp)) {
 					$k1 = count($this->_bind);
-					$item[] = "`$k` $exp :$k1";
+					$item[] = "$k $exp :$k1";
 					$this->_bind[":$k1"] = $v[1];
 				} elseif (preg_match('/^(BETWEEN|NOT BETWEEN)$/', $exp)) {
 					$tmp = is_string($v[1]) ? explode(',', $v[1]) : $v[1];
 					$k1 = count($this->_bind);
 					$k2 = $k1 + 1;
-					$item[] = "`$k` $exp :$k1 AND :$k2";
+					$item[] = "$k $exp :$k1 AND :$k2";
 					$this->_bind[":$k1"] = $tmp[0];
 					$this->_bind[":$k2"] = $tmp[1];
 				} elseif (preg_match('/^(LIKE|NOT LIKE)$/', $exp)) {
@@ -361,27 +363,25 @@ class model {
 						$likeLogic = isset($v[2]) ? strtoupper($v[2]) : 'OR';
 						$like = [];
 						foreach ($v[1] as $like_item) {
-							$like[] = "`$k` $exp " . $this->parseValue($like_item);
+							$like[] = "$k $exp " . $this->parseValue($like_item);
 						}
 
 						$str = implode($likeLogic, $like);
 						$item[] = "($str)";
 					} else {
 						$wyk = ':' . count($this->_bind);
-						$item[] = "`$k` $exp $wyk";
+						$item[] = "$k $exp $wyk";
 						$this->_bind[$wyk] = $v[1];
 					}
 				} else {
 					throw new \Exception("exp error", 1);
-					// $wyk = ':'.count($this->_bind);
-					// $item[] = "$k $exp $wyk";
-					// $this->_bind[$wyk] = $val;
 				}
 			} elseif ($k == '_string') {
 				$item[] = $v;
 			} else {
+				$k = $this->parseKey($k);
 				$wyk = ':' . count($this->_bind);
-				$item[] = "`$k`=$wyk";
+				$item[] = "$k=$wyk";
 				$this->_bind[$wyk] = $v;
 			}
 		}
@@ -455,6 +455,16 @@ class model {
 		} else {
 			return $val;
 		}
+	}
+
+	protected function parseKey($key) {
+		if ($key[0] == '`') {return;}
+		if ($pos = strpos($key, '.')) {
+			$key = '`' . substr_replace($key, '`.`', $pos, 1) . '`';
+		} else {
+			$key = "`$key`";
+		}
+		return $key;
 	}
 
 	private function parseTbName($tb) {
