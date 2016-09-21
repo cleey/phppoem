@@ -175,7 +175,7 @@ class model {
 				continue;
 			}
 
-			$keys .= "$k,";
+			$keys .= $this->parseKey($k) . ",";
 			$vals .= ":$k,";
 			$this->_bind[":$k"] = $v;
 		}
@@ -190,7 +190,7 @@ class model {
 		if (!is_array($data[0])) {return false;}
 		$this->_db->init_connect(true);
 
-		$keys = implode(',', array_keys($data[0]));
+		$keys = '`' . implode('`,`', array_keys($data[0])) . '`';
 		$sql = "insert into " . $this->_table . " ($keys) values";
 		$vals = array();
 		foreach ($data as $v) {
