@@ -288,7 +288,7 @@ class model {
 	}
 
 	function find() {
-		$info = $this->select();
+		$info = $this->limit(1)->select();
 		return $info[0];
 	}
 
