@@ -24,6 +24,7 @@ class model {
 	protected $_sql = '';
 
 	function __construct($tb_name = '', $config = '') {
+		$tb_name = config('db_prefix') . $tb_name;
 		$this->_table = $this->parseTbName($tb_name);
 		if ($config === '') {
 			// 配置文件
