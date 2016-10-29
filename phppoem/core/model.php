@@ -124,6 +124,7 @@ class model {
 	}
 
 	function join($str, $type = 'INNER') {
+		$str = config('db_prefix') . $str;
 		$this->_join[] = stristr($str, 'JOIN') ? $str : $type . ' JOIN ' . $str;
 		return $this;
 	}
