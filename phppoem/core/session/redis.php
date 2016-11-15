@@ -7,6 +7,7 @@ class redis extends \SessionHandler {
 	public function open($savePath, $session_id) {
 		$this->maxtime = ini_get('session.gc_maxlifetime');
 		$this->table = config('session_table') ?: "session";
+
 		return true;
 	}
 
@@ -15,15 +16,15 @@ class redis extends \SessionHandler {
 	}
 
 	public function read($session_id) {
-		return redis($this->table . $session_id);
+		return redis()->get($this->table . $session_id);
 	}
 
 	public function write($session_id, $session_data) {
-		return redis($this->table . $session_id, $session_data, $this->maxtime);
+		return redis()->setex($this->table . $session_id, $this->maxtime, $session_data);
 	}
 
 	public function destroy($session_id) {
-		return redis($this->table . $session_id, null);
+		return redis()->del($this->table . $session_id);
 	}
 
 	public function gc($sessMaxLifeTime) {
