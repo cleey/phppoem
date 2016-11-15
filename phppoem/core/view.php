@@ -36,7 +36,6 @@ class view {
 			}
 			$content = $this->compiler($content); // 模板编译
 			$c_w_v_tpl = f($filekey, $content, -1);
-			// F($filekey, php_strip_whitespace($c_w_v_tpl) ); // 去掉空格什么的
 		}
 		T('POEM_COMPILE_TIME', 0);
 
