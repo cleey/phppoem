@@ -15,4 +15,3 @@ define('IS_AJAX'    , ((isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($
 define('IS_CLI'     , PHP_SAPI=='cli'? 1 : 0);
 require CORE_PATH.'app.php';
 \poem\app::start();
-?>
