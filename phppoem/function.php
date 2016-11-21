@@ -194,7 +194,7 @@ function t($key,$end='',$settime=null){
 }
 
 function jump($url){
-	poem_url($url);
+	$url = poem_url($url);
 	header("Location: $url");
 	exit;
 }
