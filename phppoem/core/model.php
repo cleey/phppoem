@@ -480,7 +480,4 @@ class model {
 		}
 		return $tb;
 	}
-
 }
-
-?>
