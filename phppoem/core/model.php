@@ -1,7 +1,7 @@
 <?php
 namespace poem;
 class model {
-	protected $_db = null; // 数据库资源
+	public $_db = null; // 数据库资源
 	protected $db_cfg = array(); // 数据库配置
 
 	protected $_table = '';
@@ -24,7 +24,6 @@ class model {
 	protected $_sql = '';
 
 	function __construct($tb_name = '', $config = '') {
-		$tb_name = config('db_prefix') . $tb_name;
 		$this->_table = $this->parseTbName($tb_name);
 		if ($config === '') {
 			// 配置文件
@@ -49,16 +48,9 @@ class model {
 			// 用户指定配置
 			$this->db_cfg = $config;
 		}
-		$this->connectDB();
 	}
-
-	function connectDB() {
-		if ($this->_db !== null) {
-			return $this->_db;
-		}
-
-		$this->_db = Db::getIns($this->db_cfg);
-		return $this->_db;
+	function close() {
+		Db::getIns($this->db_cfg)->_linkid = null;
 	}
 
 	function sql() {
@@ -66,15 +58,15 @@ class model {
 	}
 
 	function beginTransaction() {
-		$this->_db->init_connect(true);
+		Db::getIns($this->db_cfg)->init_connect(true);
 
-		$this->_db->beginTransaction();
+		Db::getIns($this->db_cfg)->beginTransaction();
 	}
 	function rollBack() {
-		$this->_db->rollBack();
+		Db::getIns($this->db_cfg)->rollBack();
 	}
 	function commit() {
-		$this->_db->commit();
+		Db::getIns($this->db_cfg)->commit();
 	}
 	function master() {
 		$this->_ismaster = true;
@@ -86,17 +78,17 @@ class model {
 	}
 
 	function query($sql, $bind = array()) {
-		$this->_db->init_connect($this->_ismaster);
+		Db::getIns($this->db_cfg)->init_connect($this->_ismaster);
 		$this->_sql = $sql;
-		$info = $this->_db->select($sql, $bind);
+		$info = Db::getIns($this->db_cfg)->select($sql, $bind);
 		$this->afterSql();
 		return $info;
 	}
 	function exec($sql) {
-		$this->_db->init_connect(true);
+		Db::getIns($this->db_cfg)->init_connect(true);
 
 		$this->_sql = $sql;
-		$info = $this->_db->exec($sql);
+		$info = Db::getIns($this->db_cfg)->exec($sql);
 		$this->afterSql();
 		return $info;
 	}
@@ -124,7 +116,6 @@ class model {
 	}
 
 	function join($str, $type = 'INNER') {
-		$str = config('db_prefix') . $str;
 		$this->_join[] = stristr($str, 'JOIN') ? $str : $type . ' JOIN ' . $str;
 		return $this;
 	}
@@ -168,7 +159,7 @@ class model {
 	function insert($data = null) {
 		if ($data == null) {return;}
 
-		$this->_db->init_connect(true);
+		Db::getIns($this->db_cfg)->init_connect(true);
 		// INSERT INTO more (id, NaMe) values (?, ?)
 		$keys = '';
 		$vals = '';
@@ -177,35 +168,35 @@ class model {
 				continue;
 			}
 
-			$keys .= $this->parseKey($k) . ",";
+			$keys .= "$k,";
 			$vals .= ":$k,";
 			$this->_bind[":$k"] = $v;
 		}
 		$keys = substr($keys, 0, -1);
 		$vals = substr($vals, 0, -1);
 		$this->_sql = 'INSERT INTO ' . $this->_table . " ($keys) VALUES ($vals)";
-		$info = $this->_db->insert($this->_sql, $this->_bind);
+		$info = Db::getIns($this->db_cfg)->insert($this->_sql, $this->_bind);
 		$this->afterSql();
 		return $info;
 	}
 	function insertAll($data = null, $num = 1000) {
 		if (!is_array($data[0])) {return false;}
-		$this->_db->init_connect(true);
+		Db::getIns($this->db_cfg)->init_connect(true);
 
-		$keys = '`' . implode('`,`', array_keys($data[0])) . '`';
+		$keys = implode(',', array_keys($data[0]));
 		$sql = "insert into " . $this->_table . " ($keys) values";
 		$vals = array();
 		foreach ($data as $v) {
 			$vals[] = '(' . implode(',', $this->parseValue($v)) . ')';
 			if (count($vals) >= $num) {
 				$this->_sql = 'INSERT INTO ' . $this->_table . " ($keys) VALUES " . implode(',', $vals);
-				$info = $this->_db->insert($this->_sql, $this->_bind);
+				$info = Db::getIns($this->db_cfg)->insert($this->_sql, $this->_bind);
 				$vals = array();
 			}
 		}
 		if (count($vals)) {
 			$this->_sql = 'INSERT INTO ' . $this->_table . " ($keys) VALUES " . implode(',', $vals);
-			$info = $this->_db->insert($this->_sql, $this->_bind);
+			$info = Db::getIns($this->db_cfg)->insert($this->_sql, $this->_bind);
 		}
 		$this->afterSql();
 		return $info;
@@ -213,7 +204,7 @@ class model {
 
 	function update($data = null) {
 		if ($data == null) {return;}
-		$this->_db->init_connect(true);
+		Db::getIns($this->db_cfg)->init_connect(true);
 
 		if (isset($data['id'])) {
 			$this->where(array('id' => $data['id']));
@@ -239,23 +230,23 @@ class model {
 
 		$this->_sql = 'UPDATE ' . $this->_table . " SET {$keys}";
 		$this->setWhere($this->_where);
-		$info = $this->_db->update($this->_sql, $this->_bind);
+		$info = Db::getIns($this->db_cfg)->update($this->_sql, $this->_bind);
 		$this->afterSql();
 		return $info;
 	}
 
 	function delete() {
-		$this->_db->init_connect(true);
+		Db::getIns($this->db_cfg)->init_connect(true);
 
 		$this->_sql = 'DELETE FROM ' . $this->_table;
 		$this->setWhere($this->_where);
-		$info = $this->_db->delete($this->_sql, $this->_bind);
+		$info = Db::getIns($this->db_cfg)->delete($this->_sql, $this->_bind);
 		$this->afterSql();
 		return $info;
 	}
 
 	function select() {
-		$this->_db->init_connect($this->_ismaster);
+		Db::getIns($this->db_cfg)->init_connect($this->_ismaster);
 
 		// $selectSql = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%%LIMIT% %UNION%%LOCK%%COMMENT%';
 		$this->_sql = 'SELECT ' . $this->_distinct . $this->_field . ' FROM ' . $this->_table;
@@ -270,13 +261,13 @@ class model {
 		$this->setComment($this->_comment);
 		$this->setForce($this->_force);
 
-		$info = $this->_db->select($this->_sql, $this->_bind);
+		$info = Db::getIns($this->db_cfg)->select($this->_sql, $this->_bind);
 		$this->afterSql();
 		return $info;
 	}
 
 	function count() {
-		$this->_db->init_connect(true);
+		Db::getIns($this->db_cfg)->init_connect(true);
 
 		$this->_sql = 'SELECT count(*) as num FROM ' . $this->_table;
 		$this->setJoin($this->_join);
@@ -284,13 +275,13 @@ class model {
 		$this->setGroup($this->_group);
 		$this->setOrder($this->_order);
 		$this->setLimit($this->_limit);
-		$info = $this->_db->select($this->_sql, $this->_bind);
+		$info = Db::getIns($this->db_cfg)->select($this->_sql, $this->_bind);
 		$this->afterSql();
 		return $info[0]['num'];
 	}
 
 	function find() {
-		$info = $this->limit(1)->select();
+		$info = $this->select();
 		return $info[0];
 	}
 
@@ -300,7 +291,7 @@ class model {
 
 	protected function afterSql() {
 		foreach ($this->_bind as $key => $value) {
-			$this->_sql = str_replace($key, $this->_db->_conn->quote($value), $this->_sql);
+			$this->_sql = str_replace($key, Db::getIns($this->db_cfg)->_conn->quote($value), $this->_sql);
 		}
 		$time = number_format(T('poem_db_exec', -1) * 1000, 2);
 		Log::trace('SQL', $this->_sql . "[{$time}ms]");
@@ -447,7 +438,7 @@ class model {
 
 	protected function parseValue($val) {
 		if (is_string($val)) {
-			return $this->_db->_conn->quote($val);
+			return Db::getIns($this->db_cfg)->_conn->quote($val);
 		} elseif (is_array($val)) {
 			return array_map([$this, 'parseValue'], $val);
 		} elseif (is_bool($val)) {
@@ -480,4 +471,7 @@ class model {
 		}
 		return $tb;
 	}
+
 }
+
+?>
