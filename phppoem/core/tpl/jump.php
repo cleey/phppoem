@@ -6,13 +6,13 @@
 </style>
 
 <div class="tpl-e">
-<?php if( $message ){ ?>
+<?php if ($message) {?>
 	<h1 style="color:#6CC539;">^_^</h1>
 	<p class="success"><?php echo $message; ?></p>
-<?php }else{ ?>
+<?php } else {?>
 	<h1 style="color:#F37F7F;">>_<</h1>
 	<p class="error"><?php echo $error; ?></p>
-<?php } ?>
+<?php }?>
 	<p class="jump">
 		页面自动 <a id="href" href="<?php echo $jumpUrl; ?>">跳转</a>
 		等待时间： <b id="wait"><?php echo $waitSecond; ?></b>
