@@ -18,10 +18,11 @@ class load {
         }
 
         if (!is_file($file)) {
-            app::halt("自动加载：找不到类 " . $class);
+            return false;
         }
 
         include $file;
+        return true;
     }
 
     // 存储已经实例化的类以及方法
