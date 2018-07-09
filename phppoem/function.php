@@ -1,41 +1,64 @@
 <?php
-// 获取参数Get 和 Post
-function i($param, $type = '') {
-    $tmp = isset($_GET[$param]) ? $_GET[$param] : (isset($_POST[$param]) ? $_POST[$param] : null);
+/**
+ * i , input缩写, 获取参数Get 和 Post
+ * @param  string $key 参数
+ * @param  bool $is_array 是否为获取数组
+ * @return mixed
+ * i('info');
+ */
+function i($key, $is_array = false) {
+    $tmp = isset($_GET[$key]) ? $_GET[$key] : (isset($_POST[$key]) ? $_POST[$key] : null);
     if (is_null($tmp) || is_numeric($tmp)) {
         return $tmp;
     }
 
-    if ($type == 'array' && is_array($tmp)) {
+    if ($is_array && is_array($tmp)) {
         return array_map('htmlspecialchars', $tmp);
-    } else {
-        $tmp = htmlspecialchars(trim(strval($tmp)));
-        if ($type == 'sql') {
-            $tmp = addslashes($tmp);
-        }
-        return $tmp;
     }
+    return htmlspecialchars(trim(strval($tmp)));
 }
 
-// 获取参数并自动提示
-function gp($param, $flag = 0) {
+/**
+ * 获取参数 gp, get post缩写, 获取参数Get 和 Post
+ * @param  string $param 参数
+ * @param  bool $allow_null 默认不允许
+ * @return mixed
+ * 使用方法
+ * gp('name,age') 或
+ * gp('name|姓名,age|年龄') 即如下
+ * array(
+ *     'name' => i('name'),
+ *     'age' => i('age'),
+ * )
+ * “|” 后面是提示内容，如果参数为name空,则会提示 "姓名, 不能为空."
+ */
+function gp($param, $allow_null = false) {
     $arr = explode(',', $param);
     // 分解 | key和val
     foreach ($arr as $value) {
         $k = explode('|', $value);
         $v = i($k[0]);
-        if ($flag == 0 && (is_null($v) || $v === '')) {
+        if ($allow_null == false && (is_null($v) || $v === '')) {
             $more = isset($k[1]) ? $k[1] : $k[0];
             $tmp  = "{$more} , 不能为空";
             if (IS_AJAX) {ajax(0, $tmp, 'param cannot be null');}
-            err_jump($tmp);
+            jump_err($tmp);
         }
-        $params[$k[0]] = $v;
+        $args[$k[0]] = $v;
     }
-    return count($params) == 1 ? current($params) : $params;
+    return count($args) == 1 ? current($args) : $args;
 }
 
-// 读取和加载配置文件
+/**
+ * 配置管理
+ * @param  string $name
+ * @param  mixed $value
+ * @return mixed
+ * 使用方法
+ * 1. config($key); 获取 config $key
+ * 2. config($key,$value); 设置config $key值为$value
+ * 3. config(); 获取所有config
+ */
 function config($name = null, $value = null) {
     static $config = array();
     if (empty($name)) {
@@ -56,7 +79,11 @@ function config($name = null, $value = null) {
     return null;
 }
 
-// 输出
+/**
+ * 调试输出
+ * @param mixed  multi 任意类型/数目
+ * @return void
+ */
 function co() {
     $vars = func_get_args();
     foreach ($vars as $var) {
@@ -66,29 +93,41 @@ function co() {
     exit;
 }
 
-// 返回ajax
-function ajax($code, $info = '', $more = '', $upd_url = 0) {
+/**
+ * ajax返回值
+ * @param  string  $code  提示码
+ * @param  string  $info  提示信息
+ * @param  string  $data  数据信息
+ * @return void echo json
+ */
+function ajax($code, $info = '', $data = '') {
     $re = ['code' => $code, 'info' => $info];
     if ($info !== '') {
         $re['info'] = $info;
     }
 
-    if ($more !== '') {
-        $re['more'] = $more;
-    }
-
-    if ($upd_url != 0) {
-        $re['upd_url'] = $upd_url;
+    if ($data !== '') {
+        $re['data'] = $data;
     }
 
     echo json_encode($re);
     exit;
 }
 
-// 日志
-function l($info) {\poem\log::push($info, 'DEBUG');}
+/**
+ * l 日志log缩写, 日志信息
+ * @param  string $info 日志内容
+ * @param  string $level 日志级别
+ * @return void
+ */
+function l($info, $level = 'DEBUG') {\poem\log::push($info, $level);}
 
-// Model
+/**
+ * m 模型model缩写,数据库表模型
+ * @param  string $tb     表名
+ * @param  string $config 配置信息
+ * @return class $model \poem\model
+ */
 function m($tb = '', $config = '') {
     static $model;
     if (!isset($model[$tb])) {
@@ -102,22 +141,98 @@ function m($tb = '', $config = '') {
     return $model[$tb];
 }
 
-// View
+/**
+ * v 视图view缩写,渲染并输出
+ * @param  string  $tpl 模板名
+ * @param  bool $flag 是否结束
+ * @return void
+ */
 function v($tpl = '', $flag = true) {
     \poem\load::instance('poem\view')->display($tpl);
-    $flag && exit();}
-function fetch($tpl = '') {return \poem\load::instance('poem\view')->fetch($tpl);}
-function assign($key, $value = '') {\poem\load::instance('poem\view')->assign($key, $value);}
-function ok_jump($info, $url = '', $param = '', $second = false) {\poem\load::instance('poem\view')->autoJump($info, $url, $param, $second, 1);}
-function err_jump($info, $url = '', $param = '', $second = false) {\poem\load::instance('poem\view')->autoJump($info, $url, $param, $second, 0);}
+    $flag && exit;
+}
 
-// 文件缓存 append 0覆盖  1追加 2检查 -1 字符串写和查 -2字符串追加
+/**
+ * 获取视图信息 相对于 v('index')函数会渲染并输出echo,而 fetch('index')会获取'index'渲染的结果
+ * @param  string $tpl 模板名
+ * @return string $html
+ */
+function fetch($tpl = '') {
+    return \poem\load::instance('poem\view')->fetch($tpl);
+}
+
+/**
+ * 赋值 这里assign('name','phppoem')，可以在 v()或fetch()当作变量使用 $name
+ * @param  string/array $key 数组会直接merge合并
+ * @param  string $value
+ * @return void
+ */
+function assign($key, $value = '') {
+    \poem\load::instance('poem\view')->assign($key, $value);
+}
+
+/**
+ * 成功跳转页面
+ * @param  string $info   页面展示内容
+ * @param  string $uri    展示后跳转至uri
+ * @param  string $param  url 参数,如: ?type=1
+ * @param  int $second 页面停留时间
+ * @return void
+ */
+function ok_jump($info, $uri = '', $param = '', $second = false) {
+    \poem\load::instance('poem\view')->auto_jump($info, $uri, $param, $second, 1);
+}
+
+/**
+ * 失败成功跳转页面
+ * @param  string $info   页面展示内容
+ * @param  string $uri    展示后跳转至uri
+ * @param  string $param  url 参数,如: ?type=1
+ * @param  int $second 页面停留时间
+ * @return void
+ */
+function err_jump($info, $uri = '', $param = '', $second = false) {
+    \poem\load::instance('poem\view')->auto_jump($info, $uri, $param, $second, 0);
+}
+
+/**
+ * 缓存设置
+ * @param  string $cache_type 缓存类型 redis/memcache/file
+ * @param  string $key   健
+ * @param  string $value 值
+ * @param  array $options 配置选项
+ * @return mixed
+ */
+function cache($cache_type = '', $key = '', $value = '', $options = null) {
+    // option array为配置信息， int为超时
+    $obj = \poem\cache::get_instance($cache_type, is_array($options) ? $options : null);
+    if ($key === '') {return $obj->_ins;} // 返回实例
+
+    if ($value === '') {
+        return $obj->get($key);
+    } elseif (is_null($value)) {
+        return $obj->del($key);
+    } else {
+        return $obj->set($key, $value, is_numeric($options) ? $options : null);
+    }
+}
+
+/**
+ * 文件缓存
+ * @param  string  $key    健
+ * @param  string  $value  值
+ * @param  int $append 0:覆盖  1:追加 2:检查 -1:字符串写和查 -2:字符串追加
+ * @return mixed
+ * 使用方法
+ * 1. f($key); 获取文件 $key
+ * 2. f($key,$value); 设置文件 $key值为$value
+ */
 function f($key = '', $value = '', $append = 0) {
     if (empty($key)) {
         return null;
     }
 
-    $obj = \poem\cache::getIns('file');
+    $obj = \poem\cache::get_instance('file');
     if ($append == 2) {
         return $obj->has($key);
     }
@@ -129,33 +244,60 @@ function f($key = '', $value = '', $append = 0) {
     } else {
         return $obj->set($key, $value, $append);
     }
-
 }
 
-// 缓存
-function s($cache_type = '', $key = '', $value = '', $options = null) {
-    // option array为配置信息， int为超时
-    $obj = \poem\cache::getIns($cache_type, is_array($options) ? $options : null);
-    if ($key === '') {return $obj->_ins;} // 返回实例
+/**
+ * 使用 redis
+ * @param  string $key
+ * @param  string $value
+ * @param  array $options redis配置信息
+ * @return mixed
+ * 使用方法
+ * 1. redis($key) 获取 $key
+ * 2. redis($key,$value) 设置$key为$value
+ * 3. redis($key,'',$option) 获取 $key,按$option配置
+ * 4. redis($key,$value,$option) 设置$key为$value,按$option配置
+ */
+function redis($key = '', $value = '', $options = null) {return cache('redis', $key, $value, $options);}
 
-    if ($value === '') {
-        return $obj->get($key);
-    } elseif (is_null($value)) {
-        return $obj->del($key);
-    } else {
-        return $obj->set($key, $value, is_numeric($options) ? $options : null);
-    }
+/**
+ * 使用memcache
+ * @param  string $k   [description]
+ * @param  string $v   [description]
+ * @param  [type] $opt [description]
+ * @return [type]      [description]
+ */
+function memcache($key = '', $value = '', $options = null) {return cache('memcache', $key, $value, $options);}
 
-}
-function redis($k = '', $v = '', $opt = null) {return s('redis', $k, $v, $opt);}
-function memcache($k = '', $v = '', $opt = null) {return s('memcache', $k, $v, $opt);}
-
-// 扩展包
+/**
+ * 加载扩展文件
+ * @param  string $require_class /vendor 目录下的路径名称
+ * @param  string $ext 后缀
+ * @return void
+ */
 function vendor($require_class, $ext = '.php') {
     \poem\load::vendor($require_class, $ext);
 }
 
-// cookie
+/**
+ * cookie的使用
+ * @param  string $name  cookie 健
+ * @param  string $value cookie 值
+ * @return mixed
+ * 使用方法：
+ * 1. cookie($key); 获取 cookie $key
+ * 2. cookie($key,$value); 设置cookie $key值为$value
+ * 3. cookie($key,$value,time()+10); 设置cookie $key值为$value 并只保存10s
+ * 4. cookie($key,$value,$option_arr); 设置cookie $key值为$value 并按以下option_arr条件
+ * $option_arr = array(
+ *     'prefix' => 10, // cookie前缀
+ *     'expire' => '', // 过期时间, 默认浏览器关闭过期
+ *     'path' => '/', // cookie可使用url路径
+ *     'domain' => 'phppoem.com', // cookie可使用域名
+ *     'secure' => false, // true 在https下会传输，http不会传输
+ *     'httponly' => false, // true 无法通过程序读取如 JS脚本、Applet等
+ * );
+ */
 function cookie($name = '', $value = '', $option = null) {
     if (empty($name)) {
         return $_COOKIE;
@@ -190,7 +332,17 @@ function cookie($name = '', $value = '', $option = null) {
     setcookie($name, $value, $cfg['expire'], $cfg['path'], $cfg['domain'], $cfg['secure'], $cfg['httponly']);
     $_COOKIE[$name] = $value;
 }
-// session的使用
+
+/**
+ * session的使用
+ * @param  string $name  session_Id
+ * @param  string $value session_data
+ * @return mixed
+ * 使用方法
+ * 1. session($key); 获取 session $key
+ * 2. session($key,$value); 设置session $key值为$value
+ * 3. session(); 获取所有session
+ */
 function session($name = '', $value = '') {
     static $flag = 0;
     if ($flag == 0) {
@@ -226,20 +378,29 @@ function session($name = '', $value = '') {
     }
 }
 
+/**
+ * layout布局设置
+ * @param  false/string $flag false代表关闭布局 string代表开启，并设置布局文件
+ * @return void
+ */
 function layout($flag) {
     if ($flag !== false) {
         config('layout_on', true);
         if (is_string($flag)) {
             config('layout', $flag);
         }
-
     } else {
         config('layout_on', false);
     }
-
 }
 
-// 计时函数
+/**
+ * 计时函数
+ * @param  string $key 计时的标记
+ * @param  string $end 是否结束
+ * @param  int $settime 为key设置的时间
+ * @return int/void
+ */
 function t($key, $end = '', $settime = null) {
     static $time = array(); // 计时
     if (empty($key)) {
@@ -250,49 +411,53 @@ function t($key, $end = '', $settime = null) {
         $time[$key] = $settime;
         return;
     }
+
     if ($end === -1) {
-        return $time[$key];
-    }
-    // 返回key
-    elseif ($end === 1) {
-        return microtime(1) - $time[$key];
-    }
-    // 返回上次key到这次结果
-    elseif ($end === 0) {
-        $time[$key] = microtime(1) - $time[$key];
-    }
-    // 记录上次key到这次时间
-    elseif (!empty($end)) {
+        return $time[$key]; // 返回 key
+    } elseif ($end === 1) {
+        return microtime(1) - $time[$key]; // 返回 上次key到现在的时间
+    } elseif ($end === 0) {
+        $time[$key] = microtime(1) - $time[$key]; // 记录 上次key现在的时间
+    } elseif (!empty($end)) {
         if (!isset($time[$end])) {
             $time[$end] = microtime(1);
         }
 
-        return $time[$end] - $time[$key];
+        return $time[$end] - $time[$key]; // 返回 两个key的差值
     } else {
-        $time[$key] = microtime(1);
+        $time[$key] = microtime(1); // 记录 当前key
     }
-
 }
 
-function jump($url) {
-    $url = poem_url($url);
+/**
+ * 跳转
+ * @param  string $uri
+ * @return void
+ */
+function jump($uri) {
+    $url = poem_url($uri);
     header("Location: $url");
     exit;
 }
 
-function poem_url($url) {
-    if (strpos($url, '//') !== false) {
-        return $url;
+/**
+ * 解析uri为url
+ * @param  string $uri 资源定位
+ * @return string $url
+ */
+function poem_url($uri) {
+    if (strpos($uri, '//') !== false) {
+        return $uri;
     }
 
-    if (strpos($url, '/') === 0) {
-        return $url;
+    if (strpos($uri, '/') === 0) {
+        return $uri;
     }
 
     $module = strtolower(POEM_MODULE);
     $class  = strtolower(POEM_CTRL);
     $func   = POEM_FUNC;
-    $tmp    = explode('/', trim($url, '/'));
+    $tmp    = explode('/', trim($uri, '/'));
     switch (count($tmp)) {
         case 1:$func = $tmp[0];
             break;

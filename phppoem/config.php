@@ -25,6 +25,6 @@ return array(
     'cookie_domain'   => '',
     'cookie_path'     => '/',
     'cookie_prefix'   => '',
-    'cookie_secure'   => false,
-    'cookie_httponly' => false,
+    'cookie_secure'   => false, // cookie 启用安全传输 true 在https下会传输，http不会传输
+    'cookie_httponly' => false, // true 无法通过程序读取如 JS脚本、Applet等
 );

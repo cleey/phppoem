@@ -10,11 +10,24 @@ class log {
 
     private static $info  = array(); // 日志信息
     private static $trace = array(); // 日志信息
-    static function push($info, $lvl = self::DEBUG) {
-        array_push(self::$info, "{$lvl}: {$info}");
-        self::trace($lvl, $info);
+
+    /**
+     * 插入日志队列
+     * @param string $str 日志信息
+     * @param string $lvl 日志级别
+     * @return null
+     */
+    static function push($str, $lvl = self::DEBUG) {
+        array_push(self::$info, "{$lvl}: {$str}");
+        self::trace($lvl, $str);
     }
 
+    /**
+     * 日志追踪
+     * @param string $key 键
+     * @param string $value 值
+     * @return null
+     */
     static function trace($key, $value) {
         if (!config('debug_trace')) {
             return;
@@ -27,7 +40,10 @@ class log {
         self::$trace[$key][] = $value;
     }
 
-    // 请求结束由框架保存
+    /**
+     * 请求结束,由框架保存
+     * @return null
+     */
     static function show() {
         $trace_tmp = self::$trace;
         $files     = get_included_files();

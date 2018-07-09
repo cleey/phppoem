@@ -2,17 +2,24 @@
 namespace poem;
 
 class app {
+    /**
+     * poem框架启动入口
+     * @return null
+     */
     static function start() {
-        self::boot(); // 函数库
+        // 公共函数库，公共文件
+        self::boot(); 
 
+        // 注册自动加载
         require CORE_PATH . 'load.php';
-        load::register(); // 自动加载，没有找到本地类的
+        load::register();
 
-        register_shutdown_function('\poem\app::appFatal'); // 错误和异常处理
+        // 错误和异常处理
+        register_shutdown_function('\poem\app::appFatal');
         set_error_handler('\poem\app::appError');
         set_exception_handler('\poem\app::appException');
 
-        t('POEM_TIME');
+        t('POEM_TIME'); // 计时
 
         $module = defined('NEW_MODULE') ? NEW_MODULE : 'home';
         if (!is_dir(APP_PATH . $module)) {
@@ -20,9 +27,10 @@ class app {
         }
 
         route::run(); // 路由管理
+
         self::exec(); // 执行操作
 
-        t('POEM_TIME', 0);
+        t('POEM_TIME', 0); // 计时结束
         if (!config('debug_trace') || IS_AJAX || IS_CLI) {
             exit;
         }
@@ -30,7 +38,10 @@ class app {
         log::show();
     }
 
-    // common
+    /**
+     * 加载公共函数,配置
+     * @return null
+     */
     static function boot() {
         // 加载方法
         $time = microtime(1);
@@ -51,7 +62,10 @@ class app {
         t('POEM_CONF_TIME', 0);
     }
 
-    // 加载配置
+    /**
+     * 执行用户代码
+     * @return null
+     */
     static function exec() {
         t('POEM_EXEC_TIME');
         // 非法操作
@@ -68,17 +82,17 @@ class app {
         // load::instance(POEM_MODULE.'\\controller\\'.POEM_CTRL, POEM_FUNC);
         try {
             $ctrl   = load::controller(POEM_CTRL); // 执行操作
-            $method = new \ReflectionMethod($ctrl, POEM_FUNC);
+            $method = new \reflectionMethod($ctrl, POEM_FUNC);
             if ($method->isPublic()) {
                 $method->invoke($ctrl);
             } else {
-                throw new \ReflectionException();
+                throw new \reflectionException();
             }
 
         } catch (\ReflectionException $e) {
             // 操作不存在
             if (method_exists($ctrl, '_empty')) {
-                $method = new \ReflectionMethod($ctrl, '_empty');
+                $method = new \reflectionMethod($ctrl, '_empty');
                 $method->invokeArgs($ctrl, [POEM_FUNC, '']);
             } else {
                 throw new \Exception('method [ ' . (new \ReflectionClass($ctrl))->getName() . '->' . POEM_FUNC . ' ] not exists ', 10002);
@@ -88,7 +102,11 @@ class app {
         t('POEM_EXEC_TIME', 0);
     }
 
-    // 接受PHP内部回调异常处理
+    /**
+     * 异常Exception处理
+     * @param class $e Exception
+     * @return null
+     */
     static function appException($e) {
         $err            = array();
         $err['message'] = $e->getMessage();
@@ -102,14 +120,21 @@ class app {
         }
         $err['trace'] = $e->getTraceAsString();
 
-        Log::push($err['message'], Log::ERR);
+        log::push($err['message'], log::ERR);
         self::halt($err);
     }
 
-    // 自定义错误处理
+    /**
+     * 自定义错误处理
+     * @param  int $errno 错误代码
+     * @param  string $errstr 错误信息
+     * @param  string $errfile 错误文件
+     * @param  int $errline 文件错误行号
+     * @return null
+     */
     static function appError($errno, $errstr, $errfile, $errline) {
         $errStr = "$errstr $errfile 第 $errline 行.";
-        Log::push($errStr, Log::ERR);
+        log::push($errStr, log::ERR);
 
         $haltArr = array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR);
         if (in_array($errno, $haltArr)) {
@@ -118,7 +143,10 @@ class app {
 
     }
 
-    // 致命错误捕获
+    /**
+     * 致命错误Fatal捕获
+     * @return null
+     */
     static function appFatal() {
         $e       = error_get_last();
         $haltArr = array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR);
@@ -127,7 +155,11 @@ class app {
         }
     }
 
-    // 错误输出
+    /**
+     * 异常处理并结束
+     * @param array/string $err 异常信息
+     * @return null
+     */
     static function halt($err) {
         $e = array();
         if (APP_DEBUG || IS_CLI) {

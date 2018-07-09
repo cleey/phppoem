@@ -1,7 +1,15 @@
 <?php
 namespace poem;
+/**
+ * 路由解析，支持用户自定义路由规则
+ * url中的变量，将会写入$_GET中
+ */
 class route {
 
+    /**
+     * 路由解析入口
+     * @return void
+     */
     static function run() {
         T('POEM_ROUTE_TIME');
 
@@ -28,7 +36,7 @@ class route {
             }
             // 删除url后缀
             if (is_file(APP_ROUTE)) {
-                $_URL = self::parseRule($_URL);
+                $_URL = self::parse_rule($_URL);
             }
 
             $url = explode('/', $_URL); // /home/index/index
@@ -49,7 +57,7 @@ class route {
         define('MODULE_MODEL', APP_PATH . POEM_MODULE . '/model/');
 
         if (isset($url[4])) {
-            self::parseParam(array_slice($url, 4));
+            self::parse_param(array_slice($url, 4));
         }
 
         define('POEM_URL', str_replace('/index.php', '', $_SERVER['SCRIPT_NAME'])); // 项目入口文件 */index.php
@@ -61,8 +69,12 @@ class route {
         T('POEM_ROUTE_TIME', 0);
     }
 
-    private static function parseRule($url) {
-
+    /**
+     * 规则解析
+     * @param  string $url
+     * @return void
+     */
+    private static function parse_rule($url) {
         $rule = include APP_ROUTE; // 用户自定义路由
         foreach ($rule as $pattern => $path) {
             // 匹配带{id}的参数
@@ -90,7 +102,12 @@ class route {
         return $url;
     }
 
-    private static function parseParam($param) {
+    /**
+     * 参数解析
+     * @param  string $param 
+     * @return void 写入$GET
+     */
+    private static function parse_param($param) {
         $len = floor(count($param) / 2);
         $i   = 0;
         while ($len--) {

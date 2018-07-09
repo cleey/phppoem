@@ -4,11 +4,21 @@ class view {
 
     protected $html_vars = array(); // 用户assign 变量
 
+    /**
+     * 展示页面
+     * @param  string $tpl 模板uri
+     * @return void
+     */
     function display($tpl = '') {
         echo $this->fetch($tpl);
     }
 
-    // 用户变量
+    /**
+     * 赋值 这里assign('name','phppoem')，可以在 v()或fetch()当作变量使用 $name
+     * @param  string/array $key 数组会直接merge合并
+     * @param  string $value
+     * @return void
+     */
     function assign($key, $value = '') {
         if (is_array($key)) {
             $this->html_vars = array_merge($this->html_vars, $key);
@@ -18,10 +28,15 @@ class view {
 
     }
 
+    /**
+     * 获取视图信息 相对于 v('index')函数会渲染并输出echo,而 fetch('index')会获取'index'渲染的结果
+     * @param  string $tpl 模板名
+     * @return string $html
+     */
     function fetch($tpl = '') {
         // 模板文件
         T('POEM_COMPILE_TIME');
-        $tpl = $this->parseTpl($tpl);
+        $tpl = $this->parse_tpl($tpl);
 
         $filekey   = str_replace(APP_PATH, '', $tpl); // 文件名 home/index/index.html
         $filekey   = str_replace(POEM_PATH, 'poem', $filekey); // 文件名 系统页面
@@ -30,7 +45,7 @@ class view {
             $content = file_get_contents($tpl);
             // 开启页面布局
             if (($layfile = config('layout')) && config('layout_on') === true) {
-                $layfile = $this->parseTpl($layfile);
+                $layfile = $this->parse_tpl($layfile);
 
                 $content = str_replace('{__LAYOUT__}', $content, file_get_contents($layfile));
             }
@@ -54,8 +69,12 @@ class view {
         return ob_get_clean();
     }
 
-    // 获取指定页面文件绝对路径
-    protected function parseTpl($tpl = '') {
+    /**
+     * 获取指定页面文件绝对路径
+     * @param  string $tpl 模板uri
+     * @return string $file_path
+     */
+    protected function parse_tpl($tpl = '') {
         if (is_file($tpl)) {
             return $tpl;
         }
@@ -75,12 +94,18 @@ class view {
             $file = APP_PATH . POEM_MODULE . "/view/" . POEM_CTRL . "/{$tpl}.html"; // html文件路径
         }
 
-        is_file($file) or \poem\app::halt('文件不存在' . $file);
+        if (!is_file($file)) {
+            \poem\app::halt('文件不存在' . $file);
+        }
 
         return $file;
     }
 
-    // 编辑文件
+    /**
+     * 编译渲染文件
+     * @param  string $content
+     * @return string $html
+     */
     protected function compiler($content) {
         // 添加安全代码 代表入口文件进入的
         $content = '<?php if (!defined(\'POEM_PATH\')) exit();?>' . $content;
@@ -104,24 +129,37 @@ class view {
         // 匹配 <include "Public:menu"/>
         $content = preg_replace_callback(
             '/<include[ ]+[\'"](.+)[\'"][ ]*\/>/',
-            function ($matches) {return $this->compiler(file_get_contents($this->parseTpl($matches[1])));},
+            function ($matches) {return $this->compiler(file_get_contents($this->parse_tpl($matches[1])));},
             $content);
 
         return $content;
     }
 
+    /**
+     * 模板解析 include
+     * @param  string $content
+     * @return string $content
+     */
     protected function compile_include($content) {
         // 匹配 <include file=""/>
         $flag = preg_match_all('/<include\sfile=[\'"](.+)[\'"]\s\/>/', $content, $matches);
         foreach ($matches[1] as $v) {
-            $tmp = $this->compiler(file_get_contents($this->parseTpl($matches[1])));
+            $tmp = $this->compiler(file_get_contents($this->parse_tpl($matches[1])));
             preg_replace('/<include\sfile=[\'"]' . $v . '[\'"]\s\/>/', $tmp, $content);
         }
         return $content;
     }
 
-    // 页面跳转
-    function autoJump($info, $url = '', $param = '', $second = false, $status = 1) {
+    /**
+     * 页面跳转
+     * @param  string $info   页面展示内容
+     * @param  string $url    展示后跳转至uri
+     * @param  string $param  url 参数,如: ?type=1
+     * @param  int $second 页面停留时间
+     * @param  int $status 状态 0成功 1失败
+     * @return void
+     */
+    function auto_jump($info, $url = '', $param = '', $second = 0, $status = 1) {
         $key = $status == 1 ? 'message' : 'error';
         if ($url != '') {
             $url = poem_url($url);
@@ -145,5 +183,4 @@ class view {
         $this->display($file);
         exit;
     }
-
 }
