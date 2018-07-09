@@ -4,35 +4,54 @@ namespace poem;
 class db {
 
     private static $_ins = array();
-    public $_linkid      = array();
-    public $_conn        = null;
+
+    public $_linkid = array();
+    public $_conn   = null;
+
     protected $_cfg;
     protected $options = array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::MYSQL_ATTR_MULTI_STATEMENTS => false);
 
-    static function getIns($config) {
+    /**
+     * 获取db实例
+     * @param  array $config db配置
+     * @return resource $instance db实例
+     */
+    static function get_instance($config) {
         $key = md5(is_array($config) ? serialize($config) : $config);
+
         if (!isset(self::$_ins[$key]) || !(self::$_ins[$key] instanceof self)) {
-            self::$_ins[$key]       = new self();
-            self::$_ins[$key]->_cfg = $config;
+            $db_obj = new self();
+            $db_obj->_cfg = $config;
             if (!is_string($config) && isset($config['db_deploy']) && !empty($config['db_deploy'])) {
-                self::$_ins[$key]->parseCfg();
+                $db_obj->parse_cfg();
             }
+            self::$_ins[$key] = $db_obj;
         }
+        
         return self::$_ins[$key];
     }
 
+    /**
+     * 初始化连接
+     * @param bool $master 是否连接主节点
+     * @return void
+     */
     public function init_connect($master = true) {
         if (!is_string($this->_cfg) && isset($this->_cfg['db_deploy']) && !empty($this->_cfg['db_deploy'])) {
-            $this->_conn = $this->deployConnect($master);
-        }
-        // 采用分布式数据库
-        else {
+            // 采用分布式数据库, 存在主从的区别
+            $this->_conn = $this->deploy_connect($master);
+        } else {
+            // 默认单数据库
             $this->_conn = $this->connect();
         }
-        // 默认单数据库
     }
 
-    private function parseCfg() {
+    /**
+     * 解析配置
+     * 数据配置文件，多数据库配置通过 "," 分割
+     * @return void
+     */
+    private function parse_cfg() {
         $this->_cfg['db_user']    = explode(',', $this->_cfg['db_user']);
         $this->_cfg['db_pass']    = explode(',', $this->_cfg['db_pass']);
         $this->_cfg['db_host']    = explode(',', $this->_cfg['db_host']);
@@ -41,7 +60,12 @@ class db {
         $this->_cfg['db_charset'] = explode(',', $this->_cfg['db_charset']);
     }
 
-    protected function deployConnect($master = false) {
+    /**
+     * 分布式数据配置
+     * @param  bool $master 是否连接主节点
+     * @return [type]          [description]
+     */
+    protected function deploy_connect($master = false) {
         // 分布式数据库配置解析
         $conf = $this->_cfg;
 
@@ -55,7 +79,6 @@ class db {
                 } else {
                     $id = mt_rand($conf['db_master_num'], count($conf['db_host']) - 1);
                 }
-
             }
         } else { // 读写操作不区分服务器
             $id = mt_rand(0, count($conf['db_host']) - 1); // 每次随机连接的数据库
@@ -70,20 +93,26 @@ class db {
             'db_name'    => isset($conf['db_name'][$id]) ? $conf['db_name'][$id] : $conf['db_name'][0],
             'db_charset' => isset($conf['db_charset'][$id]) ? $conf['db_charset'][$id] : $conf['db_charset'][0],
         );
-        // co($id_config,$id,$master);
         return $this->connect($id_config, $id, $master);
     }
 
+    /**
+     * 连接数据库
+     * @param  string $config 配置dsn信息
+     * @param  int $linkid 连接ID,分布式数据库时不同数据库标识
+     * @param  bool $reconnect 是否为重试
+     * @return resource PDO类资源
+     */
     private function connect($config = '', $linkid = 0, $reconnect = false) {
         if (!isset($this->_linkid[$linkid])) {
-            $dsn = $this->parseDsn($config);
+            $dsn = $this->parse_dsn($config);
             if ($dsn['char']) {
-                $this->options[\PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES '" . $dsn['char'] . "'";
+                $this->options[\pdo::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES '" . $dsn['char'] . "'";
             }
 
-            T('poem_db_exec');
+            t('poem_db_exec');
             try {
-                $this->_linkid[$linkid] = new \PDO($dsn['dsn'], $dsn['user'], $dsn['pass'], $this->options) or die('数据库连接失败');
+                $this->_linkid[$linkid] = new \pdo($dsn['dsn'], $dsn['user'], $dsn['pass'], $this->options);
                 $time                   = number_format(T('poem_db_exec', 1) * 1000, 2);
             } catch (\PDOException $e) {
                 if ($reconnect) {
@@ -98,7 +127,12 @@ class db {
         return $this->_linkid[$linkid];
     }
 
-    private function parseDsn($config = '') {
+    /**
+     * 解析数据源名称 Data Source Name, 字符串转换为数组
+     * @param  string $config dsn配置信息
+     * @return array $config
+     */
+    private function parse_dsn($config = '') {
         if ($config == '') {
             $config = $this->_cfg;
         }
@@ -125,13 +159,44 @@ class db {
         return array('user' => $user, 'pass' => $pass, 'char' => $char, 'dsn' => $dsn);
     }
 
-    function close() {$this->_conn = NULL;}
+    /**
+     * 关闭所有连接
+     * @return void
+     */
+    public function close() {
+        $this->_conn = null;
+    }
 
-    function beginTransaction() {return $this->_conn->beginTransaction();}
-    function rollBack() {return $this->_conn->rollBack();}
-    function commit() {return $this->_conn->commit();}
+    /**
+     * 开启事务
+     * @return bool 成功/失败
+     */
+    public function begin_transaction() {
+        return $this->_conn->begintransaction();
+    }
 
-    function exec($sql) {
+    /**
+     * 回滚
+     * @return void
+     */
+    public function roll_back() {
+        return $this->_conn->rollback();
+    }
+
+    /**
+     * 提交事务
+     * @return void
+     */
+    public function commit() {
+        return $this->_conn->commit();
+    }
+
+    /**
+     * 执行sql语句
+     * @param  string $sql
+     * @return bool
+     */
+    public function exec($sql) {
         T('poem_db_exec');
         try {
             $re = $this->_conn->exec($sql);
@@ -141,11 +206,54 @@ class db {
             $this->error($e, $sql);
         }
     }
-    function select($sql, $bind) {return $this->execute($sql, $bind, 'select');}
-    function insert($sql, $bind) {return $this->execute($sql, $bind, 'insert');}
-    function update($sql, $bind) {return $this->execute($sql, $bind, 'update');}
-    function delete($sql, $bind) {return $this->execute($sql, $bind, 'delete');}
 
+    /**
+     * 执行sql查询
+     * @param  string $sql
+     * @param  array $bind 参数绑定
+     * @return array $ret 二维查询结果
+     */
+    public function select($sql, $bind) {
+        return $this->execute($sql, $bind, 'select');
+    }
+
+    /**
+     * 执行sql插入
+     * @param  string $sql
+     * @param  array $bind 参数绑定
+     * @return int $id 主键ID
+     */
+    public function insert($sql, $bind) {
+        return $this->execute($sql, $bind, 'insert');
+    }
+
+    /**
+     * 执行sql更新
+     * @param  string $sql
+     * @param  array $bind 参数绑定
+     * @return int $count 影响行数
+     */
+    public function update($sql, $bind) {
+        return $this->execute($sql, $bind, 'update');
+    }
+
+    /**
+     * 执行sql删除
+     * @param  string $sql
+     * @param  array $bind 参数绑定
+     * @return int $count 影响行数
+     */
+    public function delete($sql, $bind) {
+        return $this->execute($sql, $bind, 'delete');
+    }
+
+    /**
+     * 执行sql语句
+     * @param  string $sql
+     * @param  array $bind 参数绑定
+     * @param  string $flag 增删改查标记
+     * @return mixed 查为数组/增为bool/删该为影响行数
+     */
     private function execute($sql, $bind, $flag = '') {
         T('poem_db_exec');
         try {
@@ -179,10 +287,22 @@ class db {
             $this->error($e, $sql);
         }
     }
+
+    /**
+     * 抛出异常
+     * @param class $e PDOException
+     * @param string $sql
+     * @return class $Exception
+     */
     private function error($e, $sql) {
         throw new \Exception(implode(', ', $e->errorInfo) . "\n [SQL 语句]：" . $sql);
     }
-    function __destruct() {
+
+    /**
+     * 析构函数
+     * @return void
+     */
+    public function __destruct() {
         $this->_linkid = null;
         $this->_conn   = null;
     }

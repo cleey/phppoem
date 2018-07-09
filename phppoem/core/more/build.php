@@ -1,13 +1,22 @@
 <?php
 namespace poem\more;
+/**
+ * 自动构建初始化APP 框架代码
+ */
 class build {
-    protected static $m = '<?php
+
+    // 模型文件
+    protected static $model = '<?php
 namespace [MODULE]\model;
 use poem\model;
 class [MODEL] extends model {
 }';
-    protected static $v = '<h3>{$varname}</h3>';
-    protected static $c = '<?php
+
+    // 视图文件
+    protected static $view = '<h3>{$varname}</h3>';
+
+    // 控制器文件
+    protected static $controller = '<?php
 namespace [MODULE]\controller;
 class [CTRL]{
     public function index(){
@@ -23,14 +32,28 @@ class [CTRL]{
     	v();
     }
 }';
-    static function checkModule($module) {
+    
+    /**
+     * 检查模块 如果不存在则创建
+     * @param  string $module 模块名
+     * @return void
+     */
+    public static function checkModule($module) {
         if (!is_dir(APP_PATH . $module)) {
             $ctrls  = defined('NEW_CTRL') ? explode(',', NEW_CTRL) : array('index');
             $models = defined('NEW_MODEL') ? explode(',', NEW_MODEL) : array();
             self::initApp(strtolower($module), $ctrls, $models);
         }
     }
-    static function initApp($module, $ctrls = array(), $models = array()) {
+
+    /**
+     * 初始化创建 app
+     * @param  string $module 模块名
+     * @param  array  $ctrls  控制器名列表
+     * @param  array  $models 模型名列表
+     * @return void
+     */
+    public static function initApp($module, $ctrls = array(), $models = array()) {
         if (!is_dir(APP_PATH)) {
             $re = mkdir(APP_PATH, 0755, true);
             if (!$re) {
@@ -53,10 +76,6 @@ class [CTRL]{
                 'function.php' => '<?php ',
                 'route.php'    => $route,
             ),
-            // APP_PATH.$module.'/boot' => array(
-            //     'config.php'  => $cfg,
-            //     'function.php'=> '<?php '
-            //     ),
             $v_path             => array(),
             $c_path             => array(),
         );
@@ -79,17 +98,17 @@ class [CTRL]{
         foreach ($ctrls as $ctrl) {
             $ctrl = strtolower($ctrl);
             mkdir("$v_path/$ctrl", 0755, true);
-            $html_fn = "$v_path/$ctrl/viewtest.html";
-            !is_file($html_fn) && file_put_contents($html_fn, self::$v);
-            $data    = str_replace(array('[MODULE]', '[CTRL]'), array($module, $ctrl), self::$c);
+            $html_demo = "$v_path/$ctrl/viewtest.html";
+            !is_file($html_demo) && file_put_contents($html_demo, self::$view);
+            $data    = str_replace(array('[MODULE]', '[CTRL]'), array($module, $ctrl), self::$controller);
             $ctrl_fn = "$c_path/$ctrl.php";
             !is_file($ctrl_fn) && file_put_contents($ctrl_fn, $data);
         }
         foreach ($models as $model) {
             $model    = strtolower($model);
-            $data     = str_replace(array('[MODULE]', '[MODEL]'), array($module, $model), self::$m);
-            $model_fn = "$m_path/$model.php";
-            !is_file($model_fn) && file_put_contents($model_fn, self::$m);
+            $data     = str_replace(array('[MODULE]', '[MODEL]'), array($module, $model), self::$model);
+            $model_demo = "$m_path/$model.php";
+            !is_file($model_demo) && file_put_contents($model_demo, self::$model);
         }
     }
 }

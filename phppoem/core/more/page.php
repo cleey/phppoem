@@ -2,6 +2,14 @@
 namespace poem\more;
 class page {
 
+    /**
+     * 分页
+     * @param  [type]  $m         [description]
+     * @param  string  $url       [description]
+     * @param  integer $page_size [description]
+     * @param  integer $show_nums [description]
+     * @return [type]             [description]
+     */
     static function run($m, $url = '', $page_size = 15, $show_nums = 5) {
         $page               = intval(I('p')) ? intval(I('p')) : 1;
         $total              = $m->noclear()->count(); // 总记录数
@@ -15,7 +23,15 @@ class page {
         return $info;
     }
 
-    // $np 当前页 $tp 总页数
+    /**
+     * 分页页码HTML
+     * @param  int  $np    当前页
+     * @param  int  $tp    总页数
+     * @param  string  $url  
+     * @param  int $num  页码展示数量
+     * @param  int $total 总条数
+     * @return string
+     */
     static function pagehtml($np, $tp, $url, $num = 5, $total) {
         $up   = $np - 1; // 上一页
         $dp   = $np + 1; // 下一页
@@ -52,6 +68,12 @@ class page {
         return $html;
     }
 
+    /**
+     * [geturl description]
+     * @param  [type] $url  [description]
+     * @param  [type] $page [description]
+     * @return [type]       [description]
+     */
     static function geturl($url, $page) {
         static $var;
         if (!$var) {
