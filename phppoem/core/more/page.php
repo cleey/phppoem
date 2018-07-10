@@ -11,8 +11,8 @@ class page {
      * @return [type]             [description]
      */
     static function run($m, $url = '', $page_size = 15, $show_nums = 5) {
-        $page               = intval(I('p')) ? intval(I('p')) : 1;
-        $total              = $m->noclear()->count(); // 总记录数
+        $page               = intval(i('p')) ? intval(i('p')) : 1;
+        $total              = $m->no_clear()->count(); // 总记录数
         $list               = $m->limit(($page - 1) * $page_size, $page_size)->select(); // 结果列表
         $info['list']       = $list;
         $info['total']      = $total; // 总记录数
