@@ -109,13 +109,14 @@ class view {
     protected function compiler($content) {
         // 添加安全代码 代表入口文件进入的
         $content = '<?php if (!defined(\'POEM_PATH\')) exit();?>' . $content;
-        $content = preg_replace(
+         $content = preg_replace(
             array(
                 '/{\$([\w\[\]\'"\$]+)}/s', // 匹配 {$vo['info']}
                 '/{\:([^\}]+)}/s', // 匹配 {:func($vo['info'])}
-                '/<each[ ]+[\'"](.+)[\'"][ ]*>/', // 匹配 <each "$list as $v"></each>
-                '/<if[ ]*[\'"](.+)[\'"][ ]*>/', // 匹配 <if "$key == 1"></if>
-                '/<elseif[ ]*[\'"](.+)[\'"][ ]*>/',
+                '/<each[ ]*[\'"](.+?)[\'"][ ]*>/', // 匹配 <each "$list as $v"></each>
+                '/<if[ ]*[\'"](.+?)[\'"][ ]*>/', // 匹配 <if "$key == 1"></if>
+                '/<elseif[ ]*[\'"](.+?)[\'"][ ]*>/',
+                '/<else[ ]*[\/]?>/',
             ),
             array(
                 '<?php echo $\\1;?>',
@@ -123,9 +124,10 @@ class view {
                 '<?php foreach( \\1 ){ ?>',
                 '<?php if( \\1 ){ ?>',
                 '<?php }elseif( \\1 ){ ?>',
+                '<?php }else{ ?>',
             ),
             $content);
-        $content = str_replace(array('</if>', '<else />', '</each>', 'POEM_URL', 'POEM_MODULE_URL', 'POEM_CTRL_URL', 'POEM_FUNC_URL'), array('<?php } ?>', '<?php }else{ ?>', '<?php } ?>', POEM_URL, POEM_MODULE_URL, POEM_CTRL_URL, POEM_FUNC_URL), $content);
+        $content = str_replace(array('</if>',  '</each>', 'POEM_URL', 'POEM_MODULE_URL', 'POEM_CTRL_URL', 'POEM_FUNC_URL'), array('<?php } ?>','<?php } ?>', POEM_URL, POEM_MODULE_URL, POEM_CTRL_URL, POEM_FUNC_URL), $content);
         // 匹配 <include "Public:menu"/>
         $content = preg_replace_callback(
             '/<include[ ]+[\'"](.+)[\'"][ ]*\/>/',

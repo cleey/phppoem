@@ -37,7 +37,7 @@ class redis {
      * @return mixed redis return
      */
     public function __call($name, $args){
-        return call_user_func(array($this->_ins, $args);
+        return call_user_func(array($this->_ins, $name), $args);
     }
 
     /**
