@@ -100,8 +100,12 @@ function co() {
  * @param  string  $data  数据信息
  * @return void echo json
  */
-function ajax($code, $info = '', $data = '') {
+function ajax($code, $info = '', $data = '',$trans_unicode = 0) {
+
+	header("Content-Type:application/json;charset=utf-8");
+
     $re = ['code' => $code, 'info' => $info];
+
     if ($info !== '') {
         $re['info'] = $info;
     }
@@ -110,7 +114,12 @@ function ajax($code, $info = '', $data = '') {
         $re['data'] = $data;
     }
 
-    echo json_encode($re);
+    if($trans_unicode == 1) {
+	    echo json_encode($re,true);
+    }else {
+	    echo json_encode($re,JSON_UNESCAPED_UNICODE);
+    }
+
     exit;
 }
 
