@@ -18,7 +18,7 @@ class model {
     protected $_comment  = '';
     protected $_force    = '';
     protected $_ismaster = false; // 针对查询，手动选择主库
-    protected $_noclear  = false; // 针对count，不用清空
+    protected $_enable_clear = true; // 是否清理所有条件，如果使用count 想保留条件继续查询就设为false
 
     protected $_bind = array();
     protected $_sql  = '';
@@ -117,7 +117,7 @@ class model {
      * @return class $this 类自身
      */
     public function no_clear() {
-        $this->_noclear = true;
+        $this->_enable_clear = false;
         return $this;
     }
 
@@ -155,8 +155,8 @@ class model {
      * @param int $num 自增数
      * @return int $count 返回影响的函数
      */
-    public function set_increace($field, $num) {
-        return $this->update("{$field}={$field}+" . intval($num));
+    public function set_increase($field, $num) {
+        return $this->update("`{$field}`=`{$field}`+" . intval($num));
     }
 
     /**
@@ -165,8 +165,8 @@ class model {
      * @param int $num 自增数
      * @return int $count 返回影响的函数
      */
-    public function set_decreace($field, $num) {
-        return $this->update("{$field}={$field}-" . intval($num));
+    public function set_decrease($field, $num) {
+        return $this->update("`{$field}`=`{$field}`-" . intval($num));
     }
 
     /**
@@ -180,13 +180,22 @@ class model {
     }
 
     /**
-     * sql select file
+     * sql select field
      * @param string $str 表字段 多个使用逗号隔开 'id,name,old'
      * @return class $this 类自身
      */
     public function field($str) {
         $this->_field = $str;
         return $this;
+    }
+
+    /**
+     * get select field
+     * @param string $str 返回 field() 设置的值
+     * @return string select field
+     */
+    public function get_field() {
+        return $this->_field;
     }
 
     /**
@@ -440,7 +449,7 @@ class model {
     }
 
     /**
-     * 执行sql后，清理所有条件
+     * 执行sql后，记录sql 并清理所有条件
      * @return void
      */
     protected function after_sql() {
@@ -450,10 +459,18 @@ class model {
         $time = number_format(T('poem_db_exec', -1) * 1000, 2);
         Log::trace('SQL', $this->_sql . "[{$time}ms]");
         $this->_bind = array();
-        if ($this->_noclear) {
-            $this->_noclear = false;
+        if (!$this->_enable_clear) {
+            $this->_enable_clear = true;
             return;
         }
+        $this->clear();
+    }
+
+    /**
+     * 清理所有条件
+     * @return void
+     */
+    public function clear(){
         $this->_distinct = '';
         $this->_field    = '*';
         $this->_join     = array();
