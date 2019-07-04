@@ -42,7 +42,7 @@ function gp($param, $allow_null = false) {
             $more = isset($k[1]) ? $k[1] : $k[0];
             $tmp  = "{$more} , 不能为空";
             if (IS_AJAX) {ajax(0, $tmp, 'param cannot be null');}
-            jump_err($tmp);
+            err_jump($tmp);
         }
         $args[$k[0]] = $v;
     }
