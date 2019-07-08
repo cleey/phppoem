@@ -22,21 +22,29 @@ class log {
     protected $log_dir;
     protected $log_file;
 
-
     private static $trace = array(); // 页面展示日志信息
 
+    /**
+     * 构造文件
+     * @param array $cfg log_* 配置
+     */
     function __construct($cfg) {
         $this->log_level = $cfg['log_level'];
         $this->log_remain_days = $cfg['log_remain_days'];
         $this->set_log_file($cfg['log_path']);
     }
 
+    /**
+     * 单例模式使用log
+     * @return log类
+     */
     static function get_instance() {
         if (is_null(self::$instance)) {
             self::$instance = new \poem\log(config());
         }
         return self::$instance;
     }
+
     /**
      * 写入日志
      * @param string $str 日志信息
