@@ -19,17 +19,18 @@ function i($key, $is_array = false) {
 }
 
 /**
- * 获取参数 gp, get post缩写, 获取参数Get 和 Post
+ * 获取参数 gp, get param缩写, 获取参数Get 和 Post
  * @param  string $param 参数
- * @param  bool $allow_null 默认不允许
+ * @param  bool $allow_null 是否允许空，默认不允许，不允许时空参数会抛出异常
  * @return mixed
- * 使用方法
- * gp('name,age') 或
- * gp('name|姓名,age|年龄') 即如下
+ * 使用方法： gp('name,age') 或 gp('name|姓名,age|年龄') 
+ * 返回值为：
  * array(
  *     'name' => i('name'),
  *     'age' => i('age'),
  * )
+ * 
+ * “,” 分割多个字段
  * “|” 后面是提示内容，如果参数为name空,则会提示 "姓名, 不能为空."
  */
 function gp($param, $allow_null = false) {
@@ -120,7 +121,7 @@ function ajax($code, $info = '', $data = '') {
  * @param  string $level 日志级别
  * @return void
  */
-function l($info, $level = 'DEBUG') {\poem\log::push($info, $level);}
+function l($info, $level = \poem\log::INFO, $depth = 0) {\poem\log::get_instance()->write($info, $level, $depth + 1);}
 
 /**
  * m 模型model缩写,数据库表模型
@@ -149,7 +150,7 @@ function m($tb = '', $config = '') {
  */
 function v($tpl = '', $flag = true) {
     \poem\load::instance('poem\view')->display($tpl);
-    $flag && exit;
+    \poem\app::end();
 }
 
 /**

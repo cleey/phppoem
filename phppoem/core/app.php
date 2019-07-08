@@ -15,9 +15,9 @@ class app {
         load::register();
 
         // 错误和异常处理
-        register_shutdown_function('\poem\app::appFatal');
-        set_error_handler('\poem\app::appError');
-        set_exception_handler('\poem\app::appException');
+        register_shutdown_function('\poem\app::app_fatal');
+        set_error_handler('\poem\app::app_error');
+        set_exception_handler('\poem\app::app_exception');
 
         t('POEM_TIME'); // 计时
 
@@ -28,14 +28,23 @@ class app {
 
         route::run(); // 路由管理
 
+        t('POEM_EXEC_TIME');
         self::exec(); // 执行操作
 
-        t('POEM_TIME', 0); // 计时结束
-        if (!config('debug_trace') || IS_AJAX || IS_CLI) {
-            exit;
-        }
+        self::end();
+    }
 
-        log::show();
+    /**
+     * 结束统计时间，以及展示日志等
+     * @return void
+     */
+    static function end(){
+        t('POEM_EXEC_TIME', 0);
+        t('POEM_TIME', 0); // 计时结束
+        if (config('debug_trace') && !IS_AJAX && !IS_CLI) {
+            log::show();
+        }
+        exit;
     }
 
     /**
@@ -67,7 +76,6 @@ class app {
      * @return null
      */
     static function exec() {
-        t('POEM_EXEC_TIME');
         // 非法操作
         if (!preg_match('/^[A-Za-z](\w)*$/', POEM_FUNC)) {throw new \Exception('function: [' . htmlspecialchars(POEM_FUNC) . '] not exists');}
 
@@ -98,8 +106,6 @@ class app {
                 throw new \Exception('method [ ' . (new \ReflectionClass($ctrl))->getName() . '->' . POEM_FUNC . ' ] not exists ', 10002);
             }
         }
-
-        t('POEM_EXEC_TIME', 0);
     }
 
     /**
@@ -107,7 +113,7 @@ class app {
      * @param class $e Exception
      * @return null
      */
-    static function appException($e) {
+    static function app_exception($e) {
         $err            = array();
         $err['message'] = $e->getMessage();
         $trace          = $e->getTrace();
@@ -120,7 +126,7 @@ class app {
         }
         $err['trace'] = $e->getTraceAsString();
 
-        log::push($err['message'], log::ERR);
+        l($err['message'], log::FATAL, 1);
         self::halt($err);
     }
 
@@ -132,22 +138,20 @@ class app {
      * @param  int $errline 文件错误行号
      * @return null
      */
-    static function appError($errno, $errstr, $errfile, $errline) {
+    static function app_error($errno, $errstr, $errfile, $errline) {
         $errStr = "$errstr $errfile 第 $errline 行.";
-        log::push($errStr, log::ERR);
 
         $haltArr = array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR);
         if (in_array($errno, $haltArr)) {
             self::halt($errStr);
         }
-
     }
 
     /**
      * 致命错误Fatal捕获
      * @return null
      */
-    static function appFatal() {
+    static function app_fatal() {
         $e       = error_get_last();
         $haltArr = array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR);
         if ($e && in_array($e['type'], $haltArr)) {
