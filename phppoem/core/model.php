@@ -81,18 +81,18 @@ class model {
      * 开始事务
      * @return void
      */
-    public function begin_transaction() {
+    public function begintransaction() {
         db::get_instance($this->db_cfg)->init_connect(true);
 
-        db::get_instance($this->db_cfg)->begin_transaction();
+        db::get_instance($this->db_cfg)->begintransaction();
     }
 
     /**
      * 回滚
      * @return void
      */
-    public function roll_back() {
-        db::get_instance($this->db_cfg)->roll_back();
+    public function rollback() {
+        db::get_instance($this->db_cfg)->rollback();
     }
 
     /**

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * i , input缩写, 获取参数Get 和 Post
  * @param  string $key 参数
@@ -113,6 +114,22 @@ function ajax($code, $info = '', $data = '') {
 
     echo json_encode($re);
     exit;
+}
+
+/**
+ * 封装返回值
+ * @param  string  $code  提示码
+ * @param  string  $info  提示信息
+ * @param  string  $data  数据信息
+ * @return array
+ */
+function ret($code, $info = '', $data = '') {
+    return ['code' => $code, 'info' => $info, 'data' => $data];
+} 
+
+function ajax_obj($ret){
+	echo json_encode($ret);
+	exit;
 }
 
 /**
