@@ -171,7 +171,7 @@ class db {
      * 开启事务
      * @return bool 成功/失败
      */
-    public function begin_transaction() {
+    public function begintransaction() {
         return $this->_conn->begintransaction();
     }
 
@@ -179,7 +179,7 @@ class db {
      * 回滚
      * @return void
      */
-    public function roll_back() {
+    public function rollback() {
         return $this->_conn->rollback();
     }
 
