@@ -17,7 +17,7 @@ define('CORE_CONF', POEM_PATH . 'config.php'); // Framework核心代码库
 define('CORE_FUNC', POEM_PATH . 'function.php'); // Framework核心代码库
 
 
-define('IS_AJAX', ((isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')) ? true : false);
+define('IS_AJAX', ( (isset($_SERVER['HTTP_CONTENT_TYPE']) && strtolower($_SERVER['HTTP_CONTENT_TYPE']) == 'application/json') || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')) ? true : false);
 define('IS_CLI', PHP_SAPI == 'cli' ? 1 : 0);
 
 require CORE_PATH . 'app.php';
