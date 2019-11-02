@@ -63,7 +63,7 @@ class log {
             $trace = debug_backtrace();
         }
 
-        $cur_file= isset($trace[$depth]['file']) ? $trace[$depth]['file'] : '';
+        $cur_file = isset($trace[$depth]['file']) ? $trace[$depth]['file'] : '';
         $cur_line = isset($trace[$depth]['line']) ? $trace[$depth]['line'] : '';
         
         $level = $this->levels[$lvl];

@@ -126,7 +126,7 @@ class app {
         }
         $err['trace'] = $e->getTraceAsString();
 
-        l($err['message'], log::FATAL, 1);
+        l("${err['file']}:${err['line']} ${err['message']}", log::FATAL, 1);
         self::halt($err);
     }
 
