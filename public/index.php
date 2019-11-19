@@ -1,4 +1,4 @@
-php
+<?php
 define('APP_PATH', realpath('../').'/app/');
 // 调试模式 上线关闭  off while online
 // 调试模式会每次重新编译view模板文件，关闭后只编译一次将提高性能
