@@ -71,7 +71,7 @@ class [CTRL]{
         $v_path = APP_PATH . $module . '/view';
         $c_path = APP_PATH . $module . '/controller';
         $app    = array(
-            trim(APP_PATH, '/') => array(
+            APP_PATH => array(
                 'config.php'   => $cfg,
                 'function.php' => '<?php ',
                 'route.php'    => $route,
