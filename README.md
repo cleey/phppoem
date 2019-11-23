@@ -12,17 +12,7 @@ QQ Group: 137951449
 >站点根目录shell输入`git clone https://github.com/cleey/phppoem`部署框架代码  
 >配置Hosts如下,并添加本地测试域
 ~~~
-##
-# Host Database
-#
-# localhost is used to configure the loopback interface
-# when the system is booting.  Do not change this entry.
-##
-127.0.0.1       localhost
-255.255.255.255 broadcasthost
-::1             localhost
-
-127.0.0.1       dev.phppoem.com
+echo "127.0.0.1 dev.phppoem.com" >> /etc/hosts
 ~~~
 >配置Nginx rewrite及path,如下
 ~~~
@@ -57,7 +47,7 @@ server {
 ~~~
 nginx -s reload
 ~~~
->浏览器输入`http://dev.phppoem.com`, 框架会自动为您在根部录下构建测试项目目录`/app`，并在浏览器为您呈现Success!  
+>浏览器输入`http://dev.phppoem.com`, 框架会自动为您在目部录下构建测试项目`/app`，并在浏览器为您呈现Success!  
 >现在！ 开始感受PhpPoem诗般的优雅吧！
 
 
