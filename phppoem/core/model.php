@@ -17,8 +17,10 @@ class model {
     protected $_lock     = '';
     protected $_comment  = '';
     protected $_force    = '';
+
     protected $_ismaster = false; // 针对查询，手动选择主库
     protected $_enable_clear = true; // 是否清理所有条件，如果使用count 想保留条件继续查询就设为false
+    protected $_empty_exception = false; // select/find 没有数据时抛出异常
 
     protected $_bind = array();
     protected $_sql  = '';
@@ -119,6 +121,14 @@ class model {
     public function no_clear() {
         $this->_enable_clear = false;
         return $this;
+    }
+
+    /**
+     * 开启/关闭抛出异常，当select/find没有选出数据的时候
+     * @return empty
+     */
+    public function empty_exception($enable=true) {
+        $this->_empty_exception = $enable;
     }
 
     /**
@@ -409,6 +419,9 @@ class model {
 
         $info = db::get_instance($this->db_cfg)->select($this->_sql, $this->_bind);
         $this->after_sql();
+        if (empty($info) && $this->_empty_exception) {
+            throw new \exception('empty data: '.$this->_sql);
+        }
         return $info;
     }
 

@@ -92,7 +92,7 @@ function co() {
         highlight_string("<?php\n" . var_export($var, true));
         echo '<hr />';
     }
-    exit;
+    \poem\app::end(false);
 }
 
 /**
@@ -110,7 +110,7 @@ function ajax($code, $info = '', $data = '') {
     }
 
     echo json_encode($re);
-    exit;
+    \poem\app::end();
 }
 
 /**
@@ -125,8 +125,8 @@ function ret($code, $info = '', $data = '') {
 } 
 
 function ajax_obj($ret){
-	echo json_encode($ret);
-	exit;
+    echo json_encode($ret);
+    \pome\app::end();
 }
 
 /**
@@ -163,6 +163,7 @@ function m($tb = '', $config = '') {
  */
 function v($tpl = '') {
     \poem\load::instance('poem\view')->display($tpl);
+
     \poem\app::end();
 }
 
@@ -451,7 +452,7 @@ function t($key, $end = '', $settime = null) {
 function jump($uri) {
     $url = poem_url($uri);
     header("Location: $url");
-    exit;
+    \poem\app::end(false);
 }
 
 /**
