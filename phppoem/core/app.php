@@ -38,10 +38,12 @@ class app {
      * 结束统计时间，以及展示日志等
      * @return void
      */
-    static function end(){
+    static function end($show_log=true){
+        log::get_instance()->clean_log();
+
         t('POEM_EXEC_TIME', 0);
         t('POEM_TIME', 0); // 计时结束
-        if (config('debug_trace') && !IS_AJAX && !IS_CLI) {
+        if ($show_log && config('debug_trace') && !IS_AJAX && !IS_CLI) {
             log::show();
         }
         exit;

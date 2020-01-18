@@ -100,7 +100,7 @@ class log {
      * 通过 config.php 'log_remain_days' 设置日志保留天数
      * @return void
      */
-    private function clean_log() {
+    public function clean_log() {
         $dh = opendir($this->log_dir);
         if (!$dh) {
             return;
@@ -147,8 +147,6 @@ class log {
      * @return null
      */
     static function show() {
-        self::get_instance()->clean_log();
-
         $trace_tmp = self::$trace;
         $files     = get_included_files();
         foreach ($files as $key => $file) {
