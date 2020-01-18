@@ -43,7 +43,7 @@ function gp($param, $allow_null = false) {
         if ($allow_null == false && (is_null($v) || $v === '')) {
             $more = isset($k[1]) ? $k[1] : $k[0];
             $tmp  = "{$more} , 不能为空";
-            if (IS_AJAX) {ajax(1, $tmp, 'param cannot be null');}
+            if (IS_AJAX) {ajax(config('default_errcode'), $tmp, 'param cannot be null');}
             err_jump($tmp);
         }
         $args[$k[0]] = $v;
@@ -104,9 +104,6 @@ function co() {
  */
 function ajax($code, $info = '', $data = '') {
     $re = ['code' => $code, 'info' => $info];
-    if ($info !== '') {
-        $re['info'] = $info;
-    }
 
     if ($data !== '') {
         $re['data'] = $data;
@@ -162,10 +159,9 @@ function m($tb = '', $config = '') {
 /**
  * v 视图view缩写,渲染并输出
  * @param  string  $tpl 模板名
- * @param  bool $flag 是否结束
  * @return void
  */
-function v($tpl = '', $flag = true) {
+function v($tpl = '') {
     \poem\load::instance('poem\view')->display($tpl);
     \poem\app::end();
 }
