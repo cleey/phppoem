@@ -20,6 +20,8 @@ return array(
     
     'session_type'    => '',
     'session_prefix'  => '',
+    'default_module'   => 'home', // 默认模块
+    'default_errcode'   => 1, // 默认ajax 错误码，gp()使用
 
     'cookie_expire'   => 0,
     'cookie_domain'   => '',
@@ -31,4 +33,6 @@ return array(
     'log_path'        => '', // 日志路径
     'log_level'       => 5,
     'log_remain_days'  => 1, // 日志保留天数
+
+    'debug_trace'  => false, // 页面右下角展示调试信息
 );

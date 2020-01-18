@@ -12,6 +12,7 @@ class route {
      */
     static function run() {
         T('POEM_ROUTE_TIME');
+        $default_module = config('default_module');
 
         $url = array();
         if (IS_CLI) {
@@ -39,25 +40,27 @@ class route {
                 $_URL = self::parse_rule($_URL);
             }
 
-            $url = explode('/', $_URL); // /home/index/index
-            // 获取地址栏中的/参数
-            if (($n = count($url)) >= 5) {
-                $i = 4;
-                while ($i + 1 <= $n) {
-                    $_GET[$url[$i]]     = $url[$i + 1];
-                    $_REQUEST[$url[$i]] = $url[$i + 1];
-                    $i += 2;
+            $url = explode('/', trim($_URL, '/')); // home/index/index
+
+            // 当只有两级uri时，加上默认模块：如 /user/login 的默认模块为 home
+            $file = APP_PATH . $url[0] . '/controller/'.$url[1].'.php';
+            if (!is_file($file)) {
+                $file = APP_PATH . $default_module . '/controller/'.$url[0].'.php';
+                if (is_file($file)) {
+                    array_unshift($url, $default_module);
                 }
             }
         }
-        define('POEM_MODULE', !empty($url[1]) ? strtolower($url[1]) : 'home');
-        define('POEM_CTRL', !empty($url[2]) ? strtolower($url[2]) : 'index');
-        define('POEM_FUNC', !empty($url[3]) ? strtolower($url[3]) : 'index');
+
+        define('POEM_MODULE', !empty($url[0]) ? strtolower($url[0]) : $default_module);
+        define('POEM_CTRL', !empty($url[1]) ? strtolower($url[1]) : 'index');
+        define('POEM_FUNC', !empty($url[2]) ? strtolower($url[2]) : 'index');
 
         define('MODULE_MODEL', APP_PATH . POEM_MODULE . '/model/');
 
-        if (isset($url[4])) {
-            self::parse_param(array_slice($url, 4));
+        // 获取地址栏中的/参数
+        if (isset($url[3])) {
+            self::parse_param(array_slice($url, 3));
         }
 
         define('POEM_URL', str_replace('/index.php', '', $_SERVER['SCRIPT_NAME'])); // 项目入口文件 */index.php
@@ -93,6 +96,7 @@ class route {
             if ($flag) {
                 foreach ($vars as $k => $name) {
                     $_GET[$name] = $values[$k + 1][0];
+                    $_REQUEST[$name] = $_GET[$name];
                 }
 
                 $url = $path;
@@ -112,6 +116,8 @@ class route {
         $i   = 0;
         while ($len--) {
             $_GET[$param[$i]] = $param[$i + 1];
-            $i += 2;}
+            $_REQUEST[$param[$i]] = $param[$i + 1];
+            $i += 2;
+        }
     }
 }

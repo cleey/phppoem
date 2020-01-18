@@ -59,7 +59,6 @@ class view {
             extract($this->html_vars);
         }
 
-        $this->html_vars = array(); // 清空
         // 缓冲区
         ob_start();
         ob_implicit_flush(0);

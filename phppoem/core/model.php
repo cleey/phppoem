@@ -435,7 +435,7 @@ class model {
      * @return array $data 一维数组表字段键值对
      */
     public function find() {
-        $info = $this->select();
+        $info = $this->limit(1)->select();
         return $info[0];
     }
 
