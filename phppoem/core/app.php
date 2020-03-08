@@ -128,7 +128,6 @@ class app {
         }
         $err['trace'] = $e->getTraceAsString();
 
-        l("${err['file']}:${err['line']} ${err['message']}", log::FATAL, 1);
         self::halt($err);
     }
 
@@ -185,6 +184,7 @@ class app {
             $err          = is_array($err) ? $err['message'] : $err;
             $e['message'] = config('sys_error_msg') ?: $err;
         }
+        l("${e['file']}:${e['line']} ${e['message']}", log::FATAL, 2);
 
         if (IS_CLI) {
             exit(iconv('UTF-8', 'gbk', $e['message']) . PHP_EOL . 'File: ' . $e['file'] . '(' . $e['line'] . ')' . PHP_EOL . $e['trace']);

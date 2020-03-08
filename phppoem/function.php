@@ -140,20 +140,22 @@ function l($info, $level = \poem\log::INFO, $depth = 0) {\poem\log::get_instance
 /**
  * m 模型model缩写,数据库表模型
  * @param  string $tb     表名
- * @param  string $config 配置信息
+ * @param  string/array $config 配置信息
  * @return class $model \poem\model
  */
 function m($tb = '', $config = '') {
     static $model;
-    if (!isset($model[$tb])) {
+    $uniq_str = is_array($config) ? $tb.join(',', $config) : $tb.$config;
+    $key = md5($uniq_str);
+    if (!isset($model[$key])) {
         $class = 'poem\\model';
         if ($tb && is_file($file = MODULE_MODEL . strtolower($tb) . '.php')) {
             include $file;
             $class = POEM_MODULE . '\\model\\' . $tb;
         }
-        $model[$tb] = new $class($tb, $config);
+        $model[$key] = new $class($tb, $config);
     }
-    return $model[$tb];
+    return $model[$key];
 }
 
 /**
