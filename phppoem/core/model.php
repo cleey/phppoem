@@ -33,33 +33,28 @@ class model {
      * @return void
      */
     public function __construct($tb_name = '', $config = '') {
-        if ($tb_name != '') {
-            $tb_name      = config('db_prefix') . $tb_name;
-            $this->_table = $this->parse_tbname($tb_name);
-        }
 
-        if ($config === '') {
-            // 配置文件
-            if ($dsn = config('db_dsn')) {
-                $this->db_cfg = $dsn;
-            } else {
-                $this->db_cfg = array(
-                    'db_type'        => config('db_type'),
-                    'db_host'        => config('db_host'),
-                    'db_name'        => config('db_name'),
-                    'db_user'        => config('db_user'),
-                    'db_pass'        => config('db_pass'),
-                    'db_port'        => config('db_port'),
-                    'db_charset'     => config('db_charset'),
-                    'db_deploy'      => config('db_deploy'),
-                    'db_rw_separate' => config('db_rw_separate'),
-                    'db_master_num'  => config('db_master_num'),
-                    'db_slave_no'    => config('db_slave_no'),
-                );
-            }
-        } else {
-            // 用户指定配置
-            $this->db_cfg = $config;
+        if (empty($config)) {
+            $config = config();
+        }
+            
+        $this->db_cfg = array(
+            'db_type'        => $config['db_type'],
+            'db_host'        => $config['db_host'],
+            'db_name'        => $config['db_name'],
+            'db_user'        => $config['db_user'],
+            'db_pass'        => $config['db_pass'],
+            'db_port'        => $config['db_port'],
+            'db_charset'     => $config['db_charset'],
+            'db_deploy'      => $config['db_deploy'],
+            'db_rw_separate' => $config['db_rw_separate'],
+            'db_master_num'  => $config['db_master_num'],
+            'db_slave_no'    => $config['db_slave_no'],
+        );
+        
+        if ($tb_name != '') {
+            $tb_name      = $config['db_prefix'] . $tb_name;
+            $this->_table = $this->parse_tbname($tb_name);
         }
     }
 
