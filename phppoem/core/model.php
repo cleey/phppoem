@@ -81,7 +81,7 @@ class model {
     public function begintransaction() {
         db::get_instance($this->db_cfg)->init_connect(true);
 
-        db::get_instance($this->db_cfg)->begintransaction();
+        return db::get_instance($this->db_cfg)->begintransaction();
     }
 
     /**
