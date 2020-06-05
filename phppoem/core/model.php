@@ -28,7 +28,7 @@ class model {
     /**
      * 构造函数
      * @param string $tb_name 表名
-     * @param string/array $config 数据连接配置 
+     * @param string/array $config 数据连接配置
      * string mysql://username:passwd@localhost:3306/DbName?param1=val1&param2=val2#utf8
      * @return void
      */
@@ -37,7 +37,7 @@ class model {
         if (empty($config)) {
             $config = config();
         }
-            
+
         $this->db_cfg = array(
             'db_type'        => $config['db_type'],
             'db_host'        => $config['db_host'],
@@ -51,7 +51,7 @@ class model {
             'db_master_num'  => $config['db_master_num'],
             'db_slave_no'    => $config['db_slave_no'],
         );
-        
+
         if ($tb_name != '') {
             $tb_name      = $config['db_prefix'] . $tb_name;
             $this->_table = $this->parse_tbname($tb_name);
@@ -230,6 +230,24 @@ class model {
     }
 
     /**
+     * sql set where
+     * @param array/string $arr where条件
+     * @return class $this 类自身
+     */
+    public function set_where($where) {
+        $this->_where = $where;
+        return $this;
+    }
+
+    /**
+     * sql get where
+     * @return array/string $arr where条件
+     */
+    public function get_where() {
+        return $this->_where;
+    }
+
+    /**
      * sql having
      * @param  string $str 字符串
      * @return class $this 类自身
@@ -248,7 +266,8 @@ class model {
     public function limit($begin = 0, $end = 0) {
         if ($end == 0) {
             $end   = $begin;
-            $begin = 0;}
+            $begin = 0;
+        }
         $this->_limit = $begin;
         if ($end) {
             $this->_limit .= ",$end";
@@ -367,7 +386,7 @@ class model {
         }
 
         $this->_sql = 'UPDATE ' . $this->_table . " SET {$keys}";
-        $this->set_where($this->_where);
+        $this->parse_where($this->_where);
         $info = db::get_instance($this->db_cfg)->update($this->_sql, $this->_bind);
         $this->after_sql();
         return $info;
@@ -384,9 +403,9 @@ class model {
 
         // 防止误删
         if (empty($this->_where)) {
-            throw \Exception('delete sql need where:' . $this->_sql);
+            throw new \Exception('delete sql need where:' . $this->_sql);
         }
-        $this->set_where($this->_where);
+        $this->parse_where($this->_where);
         $ret = db::get_instance($this->db_cfg)->delete($this->_sql, $this->_bind);
         $this->after_sql();
         return $ret;
@@ -402,7 +421,7 @@ class model {
         // $selectSql = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%%LIMIT% %UNION%%LOCK%%COMMENT%';
         $this->_sql = 'SELECT ' . $this->_distinct . $this->_field . ' FROM ' . $this->_table;
         $this->set_join($this->_join);
-        $this->set_where($this->_where);
+        $this->parse_where($this->_where);
         $this->set_group($this->_group);
         $this->set_having($this->_having);
         $this->set_order($this->_order);
@@ -429,7 +448,7 @@ class model {
 
         $this->_sql = 'SELECT count(*) as num FROM ' . $this->_table;
         $this->set_join($this->_join);
-        $this->set_where($this->_where);
+        $this->parse_where($this->_where);
         $this->set_group($this->_group);
         $this->set_order($this->_order);
         $this->set_limit($this->_limit);
@@ -500,7 +519,7 @@ class model {
      * @param bool $return_flag 是否换位
      * @return void/string
      */
-    protected function set_where($_where = null, $return_flag = false) {
+    protected function parse_where($_where = null, $return_flag = false) {
         if ($_where == null) {
             return '';
         }
@@ -514,7 +533,7 @@ class model {
         $item = array();
         foreach ($_where as $k => $v) {
             if ($k == '_complex') {
-                $item[] = substr($this->set_where($v, true), 7);
+                $item[] = substr($this->parse_where($v, true), 7);
             } elseif (is_array($v)) {
                 $k   = $this->parse_key($k);
                 $exp = strtoupper($v[0]); //  in like
