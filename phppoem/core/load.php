@@ -74,6 +74,10 @@ class load {
      */
     static function controller($class, $module = POEM_MODULE) {
         $name = "$module\\controller\\$class";
+        $file = APP_PATH . "$module/controller/$class.php";
+        if(!is_file($file)){
+            throw new \ReflectionException("module($module) controller($class) not found");
+        }
         return self::instance($name);
     }
 }

@@ -313,7 +313,7 @@ class model {
                 continue;
             }
 
-            $keys .= "$k,";
+            $keys .= "`$k`,";
             $vals .= ":$k,";
             $this->_bind[":$k"] = $v;
         }
