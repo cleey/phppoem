@@ -8,7 +8,7 @@ class app {
      */
     static function start() {
         // 公共函数库，公共文件
-        self::boot(); 
+        self::boot();
 
         // 注册自动加载
         require CORE_PATH . 'load.php';
@@ -23,7 +23,7 @@ class app {
 
         $module = defined('NEW_MODULE') ? NEW_MODULE : 'home';
         if (!is_dir(APP_PATH . $module)) {
-            \poem\more\Build::checkModule($module);
+            \poem\more\build::checkModule($module);
         }
 
         route::run(); // 路由管理
@@ -91,7 +91,7 @@ class app {
         // 请求模块
         // load::instance(POEM_MODULE.'\\controller\\'.POEM_CTRL, POEM_FUNC);
         try {
-            $ctrl   = load::controller(POEM_CTRL); // 执行操作
+            $ctrl = load::controller(POEM_CTRL); // 执行操作
             $method = new \reflectionMethod($ctrl, POEM_FUNC);
             if ($method->isPublic()) {
                 $method->invoke($ctrl);
@@ -101,11 +101,11 @@ class app {
 
         } catch (\ReflectionException $e) {
             // 操作不存在
-            if (method_exists($ctrl, '_empty')) {
-                $method = new \reflectionMethod($ctrl, '_empty');
-                $method->invokeArgs($ctrl, [POEM_FUNC, '']);
+            if (function_exists('_app_empty_call')) {
+                _app_empty_call($e);
             } else {
-                throw new \Exception('method [ ' . (new \ReflectionClass($ctrl))->getName() . '->' . POEM_FUNC . ' ] not exists ', 10002);
+                // 不存在的ctrl/func抛出异常, 不写日志
+                self::app_exception($e, false);
             }
         }
     }
@@ -113,9 +113,10 @@ class app {
     /**
      * 异常Exception处理
      * @param class $e Exception
+     * @param bool $is_write_log 是否写日志，默认写
      * @return null
      */
-    static function app_exception($e) {
+    static function app_exception($e, $is_write_log = true) {
         $err            = array();
         $err['message'] = $e->getMessage();
         $trace          = $e->getTrace();
@@ -128,7 +129,7 @@ class app {
         }
         $err['trace'] = $e->getTraceAsString();
 
-        self::halt($err);
+        self::halt($err, $is_write_log);
     }
 
     /**
@@ -163,9 +164,10 @@ class app {
     /**
      * 异常处理并结束
      * @param array/string $err 异常信息
+     * @param bool $is_write_log 是否写日志，默认写
      * @return null
      */
-    static function halt($err) {
+    static function halt($err, $is_write_log = true) {
         $e = array();
         if (APP_DEBUG || IS_CLI) {
             if (!is_array($err)) {
@@ -184,9 +186,10 @@ class app {
             $err          = is_array($err) ? $err['message'] : $err;
             $e['message'] = config('sys_error_msg') ?: $err;
         }
-        l("${e['file']}:${e['line']} ${e['message']}", log::FATAL, 2);
 
-        if (IS_CLI) {
+        $is_write_log && l("${e['file']}:${e['line']} ${e['message']}", log::FATAL, 2);
+
+        if (IS_CLI || IS_AJAX) {
             exit(iconv('UTF-8', 'gbk', $e['message']) . PHP_EOL . 'File: ' . $e['file'] . '(' . $e['line'] . ')' . PHP_EOL . $e['trace']);
         }
 
