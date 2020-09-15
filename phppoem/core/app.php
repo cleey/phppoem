@@ -79,7 +79,10 @@ class app {
      */
     static function exec() {
         // 非法操作
-        if (!preg_match('/^[A-Za-z](\w)*$/', POEM_FUNC)) {throw new \Exception('function: [' . htmlspecialchars(POEM_FUNC) . '] not exists');}
+        if (!preg_match('/^[A-Za-z](\w)*$/', POEM_FUNC)) {
+            $e =new \Exception('function: [' . htmlspecialchars(POEM_FUNC) . '] not exists');
+            self::app_exception($e, false);
+        }
 
         if (is_file($file = APP_PATH . POEM_MODULE . '/boot/function.php')) {
             include $file;
@@ -96,7 +99,7 @@ class app {
             if ($method->isPublic()) {
                 $method->invoke($ctrl);
             } else {
-                throw new \reflectionException();
+                throw new \reflectionException('module('.POEM_MODULE.') controller('.POEM_CTRL.') func('.POEM_FUNC.') not found');
             }
 
         } catch (\ReflectionException $e) {
