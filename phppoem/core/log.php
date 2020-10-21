@@ -169,7 +169,6 @@ class log {
         $arr = array(
             'SYS'  => '基本',
             'FILE' => '文件',
-            'ERR'  => '错误',
             'SQL'  => '数据库',
             'LOG'  => '日志',
         );
