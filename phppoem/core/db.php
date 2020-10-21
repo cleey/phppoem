@@ -10,6 +10,8 @@ class db {
 
     protected $_cfg;
     protected $options = array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::MYSQL_ATTR_MULTI_STATEMENTS => false);
+    // 统计事务次数，用于支持嵌套事务
+    protected $transaction_times = 0; 
 
     /**
      * 获取db实例
@@ -116,7 +118,7 @@ class db {
                 $time                   = number_format(T('poem_db_exec', 1) * 1000, 2);
             } catch (\PDOException $e) {
                 if ($reconnect) {
-                    Log::trace('ERR', $e->getMessage());
+                    l($e->getMessage(), \poem\log::FATAL);
                     $this->connect($config, $linkid);
                 } else {
                     throw new \Exception($e->getMessage());
@@ -171,7 +173,13 @@ class db {
      * 开启事务
      * @return bool 成功/失败
      */
-    public function begintransaction() {
+    public function begintransaction($name) {
+        $this->transaction_times ++;
+        l($name.' begintransaction: '.$this->transaction_times);
+        if($this->transaction_times > 1){
+            return true;
+        }
+
         return $this->_conn->begintransaction();
     }
 
@@ -179,7 +187,9 @@ class db {
      * 回滚
      * @return void
      */
-    public function rollback() {
+    public function rollback($name) {
+        l($name . ' rollback success: ' . $this->transaction_times);
+        $this->transaction_times = 0;
         return $this->_conn->rollback();
     }
 
@@ -187,8 +197,15 @@ class db {
      * 提交事务
      * @return void
      */
-    public function commit() {
-        return $this->_conn->commit();
+    public function commit($name) {
+        l($name.' commit: '.$this->transaction_times);
+        $this->transaction_times --;
+        if($this->transaction_times == 0) {
+            l($name.' commit success: '.$this->transaction_times);
+            return $this->_conn->commit();
+        } else if($this->transaction_times < 0) {
+            throw new \exception('commit count > begintransaction count');
+        }
     }
 
     /**

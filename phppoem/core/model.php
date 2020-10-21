@@ -78,26 +78,26 @@ class model {
      * 开始事务
      * @return void
      */
-    public function begintransaction() {
+    public function begintransaction($name) {
         db::get_instance($this->db_cfg)->init_connect(true);
 
-        return db::get_instance($this->db_cfg)->begintransaction();
+        return db::get_instance($this->db_cfg)->begintransaction($name);
     }
 
     /**
      * 回滚
      * @return void
      */
-    public function rollback() {
-        db::get_instance($this->db_cfg)->rollback();
+    public function rollback($name) {
+        db::get_instance($this->db_cfg)->rollback($name);
     }
 
     /**
      * 提交事务
      * @return void
      */
-    public function commit() {
-        db::get_instance($this->db_cfg)->commit();
+    public function commit($name) {
+        db::get_instance($this->db_cfg)->commit($name);
     }
 
     /**
@@ -160,7 +160,7 @@ class model {
      * @param int $num 自增数
      * @return int $count 返回影响的函数
      */
-    public function set_increase($field, $num) {
+    public function set_increase($field, $num = 1) {
         return $this->update("`{$field}`=`{$field}`+" . intval($num));
     }
 
@@ -170,7 +170,7 @@ class model {
      * @param int $num 自增数
      * @return int $count 返回影响的函数
      */
-    public function set_decrease($field, $num) {
+    public function set_decrease($field, $num = 1) {
         return $this->update("`{$field}`=`{$field}`-" . intval($num));
     }
 
@@ -485,6 +485,7 @@ class model {
         }
         $time = number_format(T('poem_db_exec', -1) * 1000, 2);
         Log::trace('SQL', $this->_sql . "[{$time}ms]");
+        l('SQL: '. $this->_sql . "[{$time}ms]");
         $this->_bind = array();
         if (!$this->_enable_clear) {
             $this->_enable_clear = true;

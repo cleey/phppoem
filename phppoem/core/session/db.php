@@ -85,7 +85,8 @@ class db extends \sessionhandler {
      * @return bool
      */
     public function gc($maxlifetime) {
-        $re      = m($this->table)->where(['session_expire' => ['<', time()]])->delete();
+        $maxtime = time() + $maxlifetime;
+        $re      = m($this->table)->where(['session_expire' => ['<', $maxtime]])->delete();
         return $re ? true : false;
     }
 }
