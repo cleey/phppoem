@@ -62,3 +62,7 @@ Time per request:       0.128 [ms] (mean, across all concurrent requests)
 Transfer rate:          1642.15 [Kbytes/sec] received  
 ~~~
 PhpPoem 2.0 并发 7500 持续10s，结果  7836.84 req/s
+
+如何成为PhpPoem贡献者   
+-----------------
+PhpPoem 的源码托管在 GitHub，你可以进行派生（fork）、修改，最后发起 Pull Request 请求。我们会在最短的时间内对您提交的代码进行 Review，并反馈给您。
