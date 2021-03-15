@@ -9,6 +9,7 @@ hr{margin: 20px 0;}
     <h1 style="color:#F37F7F;">>_<</h1>
     <p class="error"><?php echo $e['message']; ?></p>
     <p class="jump"><?php echo "File: {$e['file']} (Line: {$e['line']})"; ?></p>
+    <p class="jump"><?php echo "LogID: {$log_id}"; ?></p>
     <hr>
     <div class="detail"> <?php echo nl2br($e['trace']); ?> </div>
 </div>

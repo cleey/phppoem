@@ -191,9 +191,14 @@ class app {
         }
 
         $is_write_log && l("${e['file']}:${e['line']} ${e['message']}", log::FATAL, 2);
-
+        
+        $log_id = log::get_instance()->get_log_id();
         if (IS_CLI || IS_AJAX) {
-            exit(iconv('UTF-8', 'gbk', $e['message']) . PHP_EOL . 'File: ' . $e['file'] . '(' . $e['line'] . ')' . PHP_EOL . $e['trace']);
+            $log_str = iconv('UTF-8', 'gbk', $e['message']) . PHP_EOL .
+                'File: ' . $e['file'] . ':' . $e['line'] . PHP_EOL .
+                'LogID:'. $log_id . PHP_EOL .
+                $e['trace'];
+            exit($log_str);
         }
 
         include CORE_PATH . 'tpl/exception.php';

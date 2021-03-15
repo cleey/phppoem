@@ -173,9 +173,9 @@ class db {
      * 开启事务
      * @return bool 成功/失败
      */
-    public function begintransaction($name) {
+    public function begintransaction($name = '') {
         $this->transaction_times ++;
-        l($name.' begintransaction: '.$this->transaction_times);
+        $name && l($name.' begintransaction: '.$this->transaction_times, \poem\log::INFO, 2);
         if($this->transaction_times > 1){
             return true;
         }
@@ -187,9 +187,9 @@ class db {
      * 回滚
      * @return void
      */
-    public function rollback($name) {
-        l($name . ' rollback success: ' . $this->transaction_times);
-        $this->transaction_times = 0;
+    public function rollback($name = '') {
+        $name && l($name . ' rollback success: ' . $this->transaction_times, \poem\log::INFO, 2);
+        $this->transaction_times --;
         return $this->_conn->rollback();
     }
 
@@ -197,11 +197,11 @@ class db {
      * 提交事务
      * @return void
      */
-    public function commit($name) {
-        l($name.' commit: '.$this->transaction_times);
+    public function commit($name = '') {
+        $name && l($name.' commit: '.$this->transaction_times, \poem\log::INFO, 2);
         $this->transaction_times --;
         if($this->transaction_times == 0) {
-            l($name.' commit success: '.$this->transaction_times);
+            $name && l($name.' commit success: '.$this->transaction_times, \poem\log::INFO, 2);
             return $this->_conn->commit();
         } else if($this->transaction_times < 0) {
             throw new \exception('commit count > begintransaction count');

@@ -19,6 +19,7 @@ class log {
 
     protected $log_level;
     protected $log_remain_days;
+    protected $log_id;
     protected $log_dir;
     protected $log_file;
 
@@ -32,6 +33,14 @@ class log {
         $this->log_level = $cfg['log_level'];
         $this->log_remain_days = $cfg['log_remain_days'];
         $this->set_log_file($cfg['log_path']);
+        
+        $arr = gettimeofday();
+        $log_id = ($arr['sec']*100000 + $arr['usec']/10) & 0x7FFFFFFF;
+        $this->log_id = $log_id;
+    }
+
+    public function get_log_id(){
+        return $this->log_id;
     }
 
     /**
@@ -68,7 +77,7 @@ class log {
         
         $level = $this->levels[$lvl];
         $time = date('Y-m-d H:i:s');
-        $log = "[$level] $time $cur_file:$cur_line $str" . PHP_EOL;
+        $log = "[$level] $time $cur_file:$cur_line {$this->log_id} $str" . PHP_EOL;
 
         self::trace('LOG', $log);
         file_put_contents($this->log_file, $log, FILE_APPEND);

@@ -78,7 +78,7 @@ class model {
      * 开始事务
      * @return void
      */
-    public function begintransaction($name) {
+    public function begintransaction($name = '') {
         db::get_instance($this->db_cfg)->init_connect(true);
 
         return db::get_instance($this->db_cfg)->begintransaction($name);
@@ -88,7 +88,7 @@ class model {
      * 回滚
      * @return void
      */
-    public function rollback($name) {
+    public function rollback($name = '') {
         db::get_instance($this->db_cfg)->rollback($name);
     }
 
@@ -96,7 +96,7 @@ class model {
      * 提交事务
      * @return void
      */
-    public function commit($name) {
+    public function commit($name = '') {
         db::get_instance($this->db_cfg)->commit($name);
     }
 
