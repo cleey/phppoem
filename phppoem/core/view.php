@@ -41,7 +41,7 @@ class view {
         $filekey   = str_replace(APP_PATH, '', $tpl); // 文件名 home/index/index.html
         $filekey   = str_replace(POEM_PATH, 'poem', $filekey); // 文件名 系统页面
         $c_w_v_tpl = f($filekey, '', 2); // 判断是否存在
-        if (APP_DEBUG || $c_w_v_tpl === false) {
+        if (APP_DEBUG || $c_w_v_tpl === false || config('view_debug')) {
             $content = file_get_contents($tpl);
             // 开启页面布局
             if (($layfile = config('layout')) && config('layout_on') === true) {
