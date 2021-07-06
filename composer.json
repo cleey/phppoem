@@ -1,8 +1,8 @@
 {
-    "name": "phppoem",
+    "name": "cleey/phppoem",
     "type": "library",
     "description": "如诗一般简洁、优美的PHP框架,PhpPoem is a poetic , simple and beautiful php framework, write php as a poem.",
-    "keywords": ["log","logging"],
+    "keywords": ["phppoem","framework","poem"],
     "homepage": "https://github.com/cleey/phppoem",
     "license": "MIT",
     "authors": [
