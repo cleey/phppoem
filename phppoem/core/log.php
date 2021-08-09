@@ -33,7 +33,7 @@ class log {
         $this->log_level = $cfg['log_level'];
         $this->log_remain_days = $cfg['log_remain_days'];
         $this->set_log_file($cfg['log_path']);
-
+        
         $arr = gettimeofday();
         $log_id = ($arr['sec']*100000 + $arr['usec']/10) & 0x7FFFFFFF;
         $this->log_id = $log_id;
@@ -74,13 +74,13 @@ class log {
 
         $cur_file = isset($trace[$depth]['file']) ? $trace[$depth]['file'] : '';
         $cur_line = isset($trace[$depth]['line']) ? $trace[$depth]['line'] : '';
-
+        
         $level = $this->levels[$lvl];
         $time = date('Y-m-d H:i:s');
         $log = "[$level] $time $cur_file:$cur_line {$this->log_id} $str" . PHP_EOL;
 
         self::trace('LOG', $log);
-        file_put_contents($this->log_file.".{$level}", $log, FILE_APPEND);
+        file_put_contents($this->log_file.'.'.$level, $log, FILE_APPEND);
     }
 
     /**
@@ -98,7 +98,7 @@ class log {
         if (!is_dir($log_dir)) {
             mkdir($log_dir, 0755, true);
         }
-
+        
         $this->log_dir = $log_dir;
         $filename = date('YmdH') . '.log';
         $this->log_file = $log_dir . '/' . $filename;
@@ -118,19 +118,19 @@ class log {
             if ($file == '.' || $file == '..') {
                 continue;
             }
-            $fullpath = $this->log_dir . '/' . $file;
-            if (is_dir($fullpath)) {
+            $full_path = $this->log_dir . '/' . $file;
+            if (is_dir($full_path)) {
                 continue;
             }
-            $file_date = substr($file, 0, -6); // date('YmdH').log
+            $file_date = substr($file, 0, 8); // date('YmdH').log
             $cur_date = date('Ymd');
 
             $days = $cur_date - $file_date;
             if ($this->log_remain_days < $days) {
-                unlink($fullpath);  ////删除文件
+                unlink($full_path);  ////删除文件
             }
         }
-        closedir($dh);
+        closedir($dh); 
     }
 
     /**
