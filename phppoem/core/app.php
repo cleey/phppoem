@@ -46,6 +46,7 @@ class app {
         if ($show_log && config('debug_trace') && !IS_AJAX && !IS_CLI) {
             log::show();
         }
+        l($_SERVER['REQUEST_URI'] . ' '. T('POEM_TIME', -1));
         exit;
     }
 
@@ -103,6 +104,7 @@ class app {
             }
 
         } catch (\ReflectionException $e) {
+            log::get_instance()->set_switch(false);
             // 操作不存在
             if (function_exists('_app_empty_call')) {
                 _app_empty_call($e);
@@ -191,6 +193,11 @@ class app {
         }
 
         $is_write_log && l("${e['file']}:${e['line']} ${e['message']}", log::FATAL, 2);
+
+        if(function_exists('_app_halt')){
+            _app_halt($e);
+            exit;
+        }
         
         if (IS_CLI || IS_AJAX) {
             $log_id = log::get_instance()->get_log_id();

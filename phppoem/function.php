@@ -86,6 +86,20 @@ function config($name = null, $value = null) {
  * @param mixed  multi 任意类型/数目
  * @return void
  */
+function cc() {
+    $vars = func_get_args();
+    foreach ($vars as $var) {
+        highlight_string("<?php\n" . var_export($var, true));
+        echo '<hr />';
+    }
+}
+
+
+/**
+ * 调试输出
+ * @param mixed  multi 任意类型/数目
+ * @return void
+ */
 function co() {
     $vars = func_get_args();
     foreach ($vars as $var) {

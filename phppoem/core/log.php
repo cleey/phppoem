@@ -23,6 +23,8 @@ class log {
     protected $log_dir;
     protected $log_file;
 
+    protected $log_switch = true; // 日志开关
+
     private static $trace = array(); // 页面展示日志信息
 
     /**
@@ -41,6 +43,10 @@ class log {
 
     public function get_log_id(){
         return $this->log_id;
+    }
+
+    public function set_switch($flag){
+        $this->log_switch = $flag;
     }
 
     /**
@@ -62,9 +68,9 @@ class log {
      * @return null
      */
     public function write($str, $lvl, $depth = 0) {
-        if ($lvl > $this->log_level) {
-            return;
-        }
+        if(!$this->log_switch) return;
+        
+        if ($lvl > $this->log_level) return;
         // 减少内存消耗，忽略参数
         if (defined('DEBUG_BACKTRACE_IGNORE_ARGS')) {
             $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $depth + 2);
@@ -80,6 +86,10 @@ class log {
         $log = "[$level] $time $cur_file:$cur_line {$this->log_id} $str" . PHP_EOL;
 
         self::trace('LOG', $log);
+
+        if (!is_dir($this->log_dir)) {
+            mkdir($this->log_dir, 0755, true);
+        }
         file_put_contents($this->log_file.'.'.$level, $log, FILE_APPEND);
     }
 
@@ -95,9 +105,6 @@ class log {
             $log_dir = APP_RUNTIME_PATH . 'log';
         }
         $log_dir .= '/' . POEM_MODULE;
-        if (!is_dir($log_dir)) {
-            mkdir($log_dir, 0755, true);
-        }
         
         $this->log_dir = $log_dir;
         $filename = date('YmdH') . '.log';
@@ -126,7 +133,7 @@ class log {
             $cur_date = date('Ymd');
 
             $days = $cur_date - $file_date;
-            if ($this->log_remain_days < $days) {
+            if ($this->log_remain_days <= $days) {
                 unlink($full_path);  ////删除文件
             }
         }

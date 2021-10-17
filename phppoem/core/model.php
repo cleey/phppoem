@@ -332,10 +332,11 @@ class model {
      * @return int $id 最后一次插入id
      */
     public function insert_multi($data = null, $num = 1000) {
-        if (!is_array($data[0])) {return false;}
+        $first_row = current($data);
+        if (!is_array($first_row)) {throw new \exception('insert_multi data must be array');}
         db::get_instance($this->db_cfg)->init_connect(true);
 
-        $keys = implode(',', array_keys($data[0]));
+        $keys = implode(',', array_keys($first_row));
         $sql  = "insert into " . $this->_table . " ($keys) values";
         $vals = array();
         foreach ($data as $v) {
