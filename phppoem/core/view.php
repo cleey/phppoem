@@ -67,6 +67,7 @@ class view {
         // 获取并清空缓存
         return ob_get_clean();
     }
+    
 
     /**
      * 获取指定页面文件绝对路径
@@ -77,20 +78,23 @@ class view {
         if (is_file($tpl)) {
             return $tpl;
         }
-
-        // list($module,$class,$func) = explode('\\', get_class($this) );
+        $module = POEM_MODULE;
         $tpl = $tpl != '' ? $tpl : POEM_FUNC;
 
         if (strpos($tpl, '@') !== false) {
             // 模块 Home@Index/index
             list($module, $tpl) = explode('@', $tpl);
-            $file               = APP_PATH . "{$module}/view/{$tpl}.html"; // html文件路径
         } elseif (strpos($tpl, ':') !== false) {
-            // 指定文件夹 Index/index
+            // 指定文件夹 Index:index
             $tpl  = str_replace(':', '/', $tpl);
-            $file = APP_PATH . POEM_MODULE . "/view/{$tpl}.html"; // html文件路径
         } else {
-            $file = APP_PATH . POEM_MODULE . "/view/" . POEM_CTRL . "/{$tpl}.html"; // html文件路径
+            $tpl = POEM_CTRL. "/{$tpl}";
+        }
+
+        $file = APP_PATH . "$module/view/{$tpl}.html"; // html文件路径
+        $view_path = config('view_path');
+        if($view_path) {
+            $file = $view_path . "/$module/{$tpl}.html"; // html文件路径
         }
 
         if (!is_file($file)) {

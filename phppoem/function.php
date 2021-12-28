@@ -122,8 +122,20 @@ function ajax($code, $info = '', $data = '') {
     if ($data !== '') {
         $re['data'] = $data;
     }
-
     echo json_encode($re);
+    \poem\app::end();
+}
+
+/**
+ * ajax返回值
+ * @param  string  $code  提示码
+ * @param  string  $info  提示信息
+ * @param  string  $data  数据信息
+ * @return void echo json
+ */
+function json($arr) {
+    header('Content-Type: application/json');
+    echo json_encode($arr);
     \poem\app::end();
 }
 
@@ -170,6 +182,20 @@ function m($tb = '', $config = '') {
         $model[$key] = new $class($tb, $config);
     }
     return $model[$key];
+}
+
+/**
+ * lib service
+ * @param array $name
+ * @return service
+ */
+function service($name){
+    static $service;
+    if (!isset($service[$name])) {
+        $class = '\\lib\\service\\'.$name;
+        $service[$name] = new $class();
+    }
+    return $service[$name];
 }
 
 /**

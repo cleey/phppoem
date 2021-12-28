@@ -358,15 +358,16 @@ class model {
     /**
      * 更新
      * @param  array $data 更新的表字段键值一维数组
+     * @param  array $pk 主键字段
      * @return int $count 影响的行
      */
-    public function update($data = null) {
+    public function update($data = null, $pk='id') {
         if ($data == null) {return;}
         db::get_instance($this->db_cfg)->init_connect(true);
 
-        if (isset($data['id'])) {
-            $this->where(array('id' => $data['id']));
-            unset($data['id']);
+        if (isset($data[$pk])) {
+            $this->where(array($pk => $data[$pk]));
+            unset($data[$pk]);
         }
         if (empty($this->_where)) {
             return false;

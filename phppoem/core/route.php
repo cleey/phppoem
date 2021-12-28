@@ -87,7 +87,7 @@ class route {
             $pos  = 0;
             $vars = array();
             foreach ($matchs as $match) {
-                $tmp .= preg_quote(substr($pattern, $pos, $match[0][1] - $pos), '/') . '(\w+)';
+                $tmp .= preg_quote(substr($pattern, $pos, $match[0][1] - $pos), '/') . '([,\w]+)';
                 $pos    = $match[0][1] + strlen($match[0][0]); // offset + var_len
                 $vars[] = $match[1][0]; // varname
             }
