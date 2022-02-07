@@ -276,7 +276,7 @@ class db {
         try {
             $pre = $this->_conn->prepare($sql);
             if (!$pre) {
-                $this->error($this->_conn, $sql);
+                $this->error($this->_conn, $sql, $bind);
             }
 
             foreach ($bind as $k => $v) {
@@ -285,7 +285,7 @@ class db {
 
             $re = $pre->execute();
             if (!$re) {
-                $this->error($pre, $sql);
+                $this->error($pre, $sql, $bind);
             }
 
             T('poem_db_exec', 0);
@@ -301,7 +301,7 @@ class db {
                 default:break;
             }
         } catch (\PDOException $e) {
-            $this->error($e, $sql);
+            $this->error($e, $sql, $bind);
         }
     }
 
@@ -311,8 +311,10 @@ class db {
      * @param string $sql
      * @return class $Exception
      */
-    private function error($e, $sql) {
-        throw new \Exception(implode(', ', $e->errorInfo) . "\n [SQL 语句]：" . $sql);
+    private function error($e, $sql, $bind=array()) {
+        $info =  implode(', ', $e->errorInfo) . "\n [SQL 语句]：" . $sql;
+        if(config('db_debug')) $info .= ', [Bind Data]: ' . json_encode($bind);
+        throw new \exception($info);
     }
 
     /**

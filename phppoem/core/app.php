@@ -79,22 +79,21 @@ class app {
      * @return null
      */
     static function exec() {
-        // 非法操作
-        if (!preg_match('/^[A-Za-z](\w)*$/', POEM_FUNC)) {
-            $e =new \Exception('function: [' . htmlspecialchars(POEM_FUNC) . '] not exists');
-            self::app_exception($e, false);
-        }
-
-        if (is_file($file = APP_PATH . POEM_MODULE . '/boot/function.php')) {
-            include $file;
-        }
-        // 请求模块
-        if (is_file($file = APP_PATH . POEM_MODULE . '/boot/config.php')) {
-            config(include $file);
-        }
-        // 请求模块
-        // load::instance(POEM_MODULE.'\\controller\\'.POEM_CTRL, POEM_FUNC);
         try {
+            // 非法操作
+            if (!preg_match('/^[A-Za-z](\w)*$/', POEM_FUNC)) {
+                throw new \reflectionException('function: [' . htmlspecialchars(POEM_FUNC) . '] not exists');
+            }
+
+            if (is_file($file = APP_PATH . POEM_MODULE . '/boot/function.php')) {
+                include $file;
+            }
+            // 请求模块
+            if (is_file($file = APP_PATH . POEM_MODULE . '/boot/config.php')) {
+                config(include $file);
+            }
+            // 请求模块
+            // load::instance(POEM_MODULE.'\\controller\\'.POEM_CTRL, POEM_FUNC);
             $ctrl = load::controller(POEM_CTRL); // 执行操作
             $method = new \reflectionMethod($ctrl, POEM_FUNC);
             if ($method->isPublic()) {
@@ -102,7 +101,6 @@ class app {
             } else {
                 throw new \reflectionException('module('.POEM_MODULE.') controller('.POEM_CTRL.') func('.POEM_FUNC.') not found');
             }
-
         } catch (\ReflectionException $e) {
             log::get_instance()->set_switch(false);
             // 操作不存在
@@ -110,7 +108,7 @@ class app {
                 _app_empty_call($e);
             } else {
                 // 不存在的ctrl/func抛出异常, 不写日志
-                self::app_exception($e, false);
+                self::app_exception($e);
             }
         }
     }
@@ -121,7 +119,7 @@ class app {
      * @param bool $is_write_log 是否写日志，默认写
      * @return null
      */
-    static function app_exception($e, $is_write_log = true) {
+    static function app_exception($e) {
         $err            = array();
         $err['message'] = $e->getMessage();
         $trace          = $e->getTrace();
@@ -134,7 +132,7 @@ class app {
         }
         $err['trace'] = $e->getTraceAsString();
 
-        self::halt($err, $is_write_log);
+        self::halt($err);
     }
 
     /**
@@ -172,7 +170,7 @@ class app {
      * @param bool $is_write_log 是否写日志，默认写
      * @return null
      */
-    static function halt($err, $is_write_log = true) {
+    static function halt($err) {
         $e = array();
         if (APP_DEBUG || IS_CLI) {
             if (!is_array($err)) {
@@ -192,13 +190,12 @@ class app {
             $e['message'] = config('sys_error_msg') ?: $err;
         }
 
-        $is_write_log && l("${e['file']}:${e['line']} ${e['message']}", log::FATAL, 2);
-
+        l("${e['file']}:${e['line']} ${e['message']}", log::FATAL, 2);
         if(function_exists('_app_halt')){
             _app_halt($e);
             exit;
         }
-        
+
         if (IS_CLI || IS_AJAX) {
             $log_id = log::get_instance()->get_log_id();
             $log_str = iconv('UTF-8', 'gbk', $e['message']) . PHP_EOL .
