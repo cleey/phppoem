@@ -16,7 +16,7 @@ class db {
     /**
      * 获取db实例
      * @param  array $config db配置
-     * @return resource $instance db实例
+     * @return object $instance db实例
      */
     static function get_instance($config) {
         $key = md5(is_array($config) ? serialize($config) : $config);

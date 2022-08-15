@@ -19,6 +19,7 @@ class model {
     protected $_force    = '';
 
     protected $_ismaster = false; // 针对查询，手动选择主库
+    protected $_enable_cache = false; // 开启缓存
     protected $_enable_clear = true; // 是否清理所有条件，如果使用count 想保留条件继续查询就设为false
     protected $_empty_exception = false; // select/find 没有数据时抛出异常
 
@@ -126,6 +127,10 @@ class model {
         $this->_empty_exception = $enable;
     }
 
+    public function cache($enable_cache=true){
+        $this->_enable_cache = $enable_cache;
+    }
+
     /**
      * 执行sql查询
      * @param  string $sql
@@ -133,10 +138,44 @@ class model {
      * @return array $ret 二维查询结果
      */
     public function query($sql, $bind = array()) {
+        return $this->query_with_cache($sql, $bind);
+    }
+
+    /**
+     * query with cache check
+     *
+     * @param string $sql
+     * @param array $bind
+     * @return void
+     */
+    private function query_with_cache($sql, $bind) {
+        $cache_file = '';
+        // 1. check cache
+        if($this->_enable_cache){
+            $cache_key = md5($sql).md5(serialize($bind));
+            $cache_file = '/dbcache/'.$cache_key;
+            $exist = f($cache_file);
+            if($exist){
+                l('get from cache: '.$sql);
+                return $exist;
+            }
+        }
+
+        // 2. query db
         db::get_instance($this->db_cfg)->init_connect($this->_ismaster);
         $this->_sql = $sql;
         $info       = db::get_instance($this->db_cfg)->select($sql, $bind);
         $this->after_sql();
+        if (empty($info) && $this->_empty_exception) {
+            throw new \exception('empty data: '.$this->_sql);
+        }
+
+        // 3. cache data
+        if($this->_enable_cache){
+            f($cache_file, $info, \poem\cache\file::OPT_SERIALIZE_WRITE);
+            $this->_enable_cache = false;
+        }
+
         return $info;
     }
 
@@ -418,8 +457,6 @@ class model {
      * @return array $data 二维数组对应表行
      */
     public function select() {
-        db::get_instance($this->db_cfg)->init_connect($this->_ismaster);
-
         // $selectSql = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%%LIMIT% %UNION%%LOCK%%COMMENT%';
         $this->_sql = 'SELECT ' . $this->_distinct . $this->_field . ' FROM ' . $this->_table;
         $this->set_join($this->_join);
@@ -433,12 +470,7 @@ class model {
         $this->set_comment($this->_comment);
         $this->set_force($this->_force);
 
-        $info = db::get_instance($this->db_cfg)->select($this->_sql, $this->_bind);
-        $this->after_sql();
-        if (empty($info) && $this->_empty_exception) {
-            throw new \exception('empty data: '.$this->_sql);
-        }
-        return $info;
+        return $this->query_with_cache($this->_sql, $this->_bind);
     }
 
     /**

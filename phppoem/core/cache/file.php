@@ -4,6 +4,11 @@ namespace poem\cache;
  * 文件存储键值对
  */
 class file {
+    const OPT_SERIALIZE_WRITE = 0;
+    const OPT_SERIALIZE_APPEND = 1;
+    const OPT_CHECK_EXIST = 2;
+    const OPT_DIRECT_WRITE = -1;
+    const OPT_DIRECT_APPEND = -2;
 
     /**
      * 检查key是否存在
@@ -40,7 +45,7 @@ class file {
      * 设置键值
      * @param string $key 键
      * @param string $value 值
-     * @param integer $option 选项 0:序列化写文件 -1:直接写文件 -2:追加文件 否则序列化追加文件
+     * @param integer $option 选项 0:序列化写文件 -1:直接写文件 -2:直接追加文件 否则序列化追加文件
      * @return 返回设置的文件路径
      */
     public function set($key, $value, $option = 0) {
@@ -50,13 +55,13 @@ class file {
             mkdir($dir, 0775, true);
         }
 
-        if ($option === -1) {
+        if ($option === self::OPT_DIRECT_WRITE) {
             $re = file_put_contents($key, $value);
-        } elseif ($option === -2) {
+        } elseif ($option === self::OPT_DIRECT_APPEND) {
             $re = file_put_contents($key, $value, FILE_APPEND);
         } else {
             $value = serialize($value);
-            if ($option == 0) {
+            if ($option == self::OPT_SERIALIZE_WRITE) {
                 $re = file_put_contents($key, $value);
             } else {
                 $re = file_put_contents($key, $value, FILE_APPEND);
