@@ -19,7 +19,7 @@ class model {
     protected $_force    = '';
 
     protected $_ismaster = false; // 针对查询，手动选择主库
-    protected $_enable_cache = false; // 开启缓存
+    protected $_enable_cache_time = false; // 开启缓存
     protected $_enable_clear = true; // 是否清理所有条件，如果使用count 想保留条件继续查询就设为false
     protected $_empty_exception = false; // select/find 没有数据时抛出异常
 
@@ -127,8 +127,15 @@ class model {
         $this->_empty_exception = $enable;
     }
 
-    public function cache($enable_cache=true){
-        $this->_enable_cache = $enable_cache;
+    /**
+     * 开启sql缓存
+     *
+     * @param integer $cache_time 缓存时间默认 3600s
+     * @return void
+     */
+    public function cache($cache_time=3600){
+        $this->_enable_cache_time = $cache_time;
+        return $this;
     }
 
     /**
@@ -151,13 +158,16 @@ class model {
     private function query_with_cache($sql, $bind) {
         $cache_file = '';
         // 1. check cache
-        if($this->_enable_cache){
+        if($this->_enable_cache_time){
             $cache_key = md5($sql).md5(serialize($bind));
             $cache_file = '/dbcache/'.$cache_key;
             $exist = f($cache_file);
             if($exist){
-                l('get from cache: '.$sql);
-                return $exist;
+                $timeout = $exist['time'] + $this->_enable_cache_time;
+                if($timeout >= time()){
+                    l('get from cache('.date('Y-m-d H:i:s',$exist['time']).'): :'.$sql);
+                    return $exist['data'];
+                }
             }
         }
 
@@ -171,9 +181,10 @@ class model {
         }
 
         // 3. cache data
-        if($this->_enable_cache){
-            f($cache_file, $info, \poem\cache\file::OPT_SERIALIZE_WRITE);
-            $this->_enable_cache = false;
+        if($this->_enable_cache_time){
+            $data = ['time'=>time(),'data'=>$info];
+            f($cache_file, $data, \poem\cache\file::OPT_SERIALIZE_WRITE);
+            $this->_enable_cache_time = false;
         }
 
         return $info;
