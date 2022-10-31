@@ -39,7 +39,7 @@ class [CTRL]{
      * @return void
      */
     public static function checkModule($module) {
-        if (!is_dir(APP_PATH . $module)) {
+        if (!is_dir(APP_PATH . '/' . $module)) {
             $ctrls  = defined('NEW_CTRL') ? explode(',', NEW_CTRL) : array('index');
             $models = defined('NEW_MODEL') ? explode(',', NEW_MODEL) : array();
             self::initApp(strtolower($module), $ctrls, $models);
@@ -67,9 +67,9 @@ class [CTRL]{
 
         $cfg    = "<?php\nreturn array(\n\t//'key'=>'value'\n);\n";
         $route  = "<?php\nreturn array(\n\t//'key'=>'value'\n);\n";
-        $m_path = APP_PATH . $module . '/model';
-        $v_path = APP_PATH . $module . '/view';
-        $c_path = APP_PATH . $module . '/controller';
+        $m_path = APP_PATH . '/' . $module . '/model';
+        $v_path = APP_PATH . '/' . $module . '/view';
+        $c_path = APP_PATH . '/' . $module . '/controller';
         $app    = array(
             APP_PATH => array(
                 'config.php'   => $cfg,

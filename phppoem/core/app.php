@@ -22,7 +22,7 @@ class app {
         t('POEM_TIME'); // 计时
 
         $module = defined('NEW_MODULE') ? NEW_MODULE : 'home';
-        if (!is_dir(APP_PATH . $module)) {
+        if (!is_dir(APP_PATH . '/' . $module)) {
             \poem\more\build::checkModule($module);
         }
 
@@ -85,11 +85,11 @@ class app {
                 throw new \reflectionException('function: [' . htmlspecialchars(POEM_FUNC) . '] not exists');
             }
 
-            if (is_file($file = APP_PATH . POEM_MODULE . '/boot/function.php')) {
+            if (is_file($file = APP_PATH . '/' . POEM_MODULE . '/boot/function.php')) {
                 include $file;
             }
             // 请求模块
-            if (is_file($file = APP_PATH . POEM_MODULE . '/boot/config.php')) {
+            if (is_file($file = APP_PATH . '/' . POEM_MODULE . '/boot/config.php')) {
                 config(include $file);
             }
             // 请求模块

@@ -159,16 +159,7 @@ class model {
         $cache_file = '';
         // 1. check cache
         if($this->_enable_cache_time){
-            $cache_key = md5($sql).md5(serialize($bind));
-            $cache_file = '/dbcache/'.$cache_key;
-            $exist = f($cache_file);
-            if($exist){
-                $timeout = $exist['time'] + $this->_enable_cache_time;
-                if($timeout >= time()){
-                    l('get from cache('.date('Y-m-d H:i:s',$exist['time']).'): :'.$sql);
-                    return $exist['data'];
-                }
-            }
+            $data = $this->get_db_cache($sql, $bind);
         }
 
         // 2. query db
@@ -182,12 +173,64 @@ class model {
 
         // 3. cache data
         if($this->_enable_cache_time){
-            $data = ['time'=>time(),'data'=>$info];
-            f($cache_file, $data, \poem\cache\file::OPT_SERIALIZE_WRITE);
-            $this->_enable_cache_time = false;
+            $this->set_db_cache($sql, $bind, $info);
         }
 
         return $info;
+    }
+
+    /**
+     * get db cache
+     *
+     * @param string $sql
+     * @param mixed $bind
+     * @return mixed
+     */
+    private function get_db_cache($sql, $bind){
+        $real_uniq = $sql . serialize($bind);
+        $cache_file = $this->get_db_cache_key($real_uniq);
+        $cache_str = storage($cache_file);
+        if(empty($cache_str)){ return false; }
+
+        $split_pos = strrpos($cache_str,PHP_EOL);
+        $cache_real_uniq = substr($cache_str, 0, $split_pos);
+        if($real_uniq == $cache_real_uniq){
+            $data_str = substr($cache_str, $split_pos+1);
+            $data = unserialize($data_str);
+            if(!empty($data)){
+                l('get from dbcache: '.$sql);
+                return $data;
+            }
+            l('dbcache empty: '.$real_uniq);
+        }else{
+            l('dbcache key conflict: '.$real_uniq.' | '.$cache_real_uniq);
+        }
+        return false;
+    }
+
+    private function get_db_cache_key($real_uniq){
+        if(config('storage_type') == \poem\cache\storage::TYPE_REDIS){
+            return 'dbcache'.md5($real_uniq);
+        }else{
+            return '/dbcache/'.date('YmdH').'/'.md5($real_uniq);
+        }
+    }
+
+    /**
+     * set db cache
+     *
+     * @param strin $sql
+     * @param mixed $bind
+     * @param mixed $info
+     * @return void
+     */
+    private function set_db_cache($sql, $bind, $info){
+        $real_uniq = $sql . serialize($bind);
+        $cache_file = $this->get_db_cache_key($real_uniq);
+
+        $data = $real_uniq.PHP_EOL.serialize($info);
+        storage($cache_file, $data, $this->_enable_cache_time );
+        $this->_enable_cache_time = false;
     }
 
     /**

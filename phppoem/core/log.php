@@ -102,7 +102,7 @@ class log {
      */
     private function set_log_file($log_dir) {
         if (empty($log_dir)) {
-            $log_dir = APP_RUNTIME_PATH . 'log';
+            $log_dir = config('runtime_path') . '/' . 'log';
         }
         $log_dir .= '/' . POEM_MODULE;
         

@@ -1,13 +1,11 @@
 <?php
 header("Content-Type: text/html;charset=utf-8");
-header("X-Powered-By: PhpPoem_v2.0");
 
 // APP配置
 defined('APP_DEBUG') || define('APP_DEBUG', false);
-define('APP_RUNTIME_PATH', APP_PATH . 'runtime/'); // 运行时临时文件目录
-define('APP_CONF', APP_PATH . 'config.php'); // 运行目录配置
-define('APP_FUNC', APP_PATH . 'function.php');
-define('APP_ROUTE', APP_PATH . 'route.php');
+define('APP_CONF', APP_PATH . '/config.php'); // 运行目录配置
+define('APP_FUNC', APP_PATH . '/function.php');
+define('APP_ROUTE', APP_PATH . '/route.php');
 
 // 系统配置
 define('POEM_PATH', __DIR__ . DIRECTORY_SEPARATOR); // phppoem目录

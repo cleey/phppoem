@@ -38,19 +38,20 @@ class view {
         T('POEM_COMPILE_TIME');
         $tpl = $this->parse_tpl($tpl);
 
-        $filekey   = str_replace(APP_PATH, '', $tpl); // 文件名 home/index/index.html
-        $filekey   = str_replace(POEM_PATH, 'poem', $filekey); // 文件名 系统页面
-        $c_w_v_tpl = f($filekey, '', 2); // 判断是否存在
+        $filekey = str_replace(APP_PATH, '', $tpl); // 文件名 home/index/index.html
+        $filekey = str_replace(POEM_PATH, 'poem', $filekey); // 文件名 系统页面
+        $filekey = 'view/'.$filekey;
+
+        $c_w_v_tpl = poem_ins('\poem\cache\file')->has($filekey); // 判断是否存在
         if (APP_DEBUG || $c_w_v_tpl === false || config('view_debug')) {
             $content = file_get_contents($tpl);
             // 开启页面布局
             if (($layfile = config('layout')) && config('layout_on') === true) {
                 $layfile = $this->parse_tpl($layfile);
-
                 $content = str_replace('{__LAYOUT__}', $content, file_get_contents($layfile));
             }
             $content   = $this->compiler($content); // 模板编译
-            $c_w_v_tpl = f($filekey, $content, -1);
+            $c_w_v_tpl = poem_ins('\poem\cache\file')->set($filekey, $content);
         }
         T('POEM_COMPILE_TIME', 0);
 
@@ -91,7 +92,7 @@ class view {
             $tpl = POEM_CTRL. "/{$tpl}";
         }
 
-        $file = APP_PATH . "$module/view/{$tpl}.html"; // html文件路径
+        $file = APP_PATH . "/$module/view/{$tpl}.html"; // html文件路径
         $view_path = config('view_path');
         if($view_path) {
             $file = $view_path . "/$module/{$tpl}.html"; // html文件路径

@@ -43,9 +43,9 @@ class route {
             $url = explode('/', trim($_URL, '/')); // home/index/index
 
             // 当只有两级uri时，加上默认模块：如 /user/login 的默认模块为 home
-            $file = APP_PATH . $url[0] . '/controller/'.$url[1].'.php';
+            $file = APP_PATH . '/' . $url[0] . '/controller/'.$url[1].'.php';
             if (!is_file($file)) {
-                $file = APP_PATH . $default_module . '/controller/'.$url[0].'.php';
+                $file = APP_PATH . '/' . $default_module . '/controller/'.$url[0].'.php';
                 if (is_file($file)) {
                     array_unshift($url, $default_module);
                 }
@@ -56,7 +56,7 @@ class route {
         define('POEM_CTRL', !empty($url[1]) ? strtolower($url[1]) : 'index');
         define('POEM_FUNC', !empty($url[2]) ? strtolower($url[2]) : 'index');
 
-        define('MODULE_MODEL', APP_PATH . POEM_MODULE . '/model/');
+        define('MODULE_MODEL', APP_PATH . '/' . POEM_MODULE . '/model/');
 
         // 获取地址栏中的/参数
         if (isset($url[3])) {

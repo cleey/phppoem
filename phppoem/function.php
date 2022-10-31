@@ -278,28 +278,20 @@ function cache($cache_type = '', $key = '', $value = '', $options = null) {
  * 文件缓存
  * @param  string  $key    健
  * @param  string  $value  值
- * @param  int $append 0:覆盖  1:追加 2:检查 -1:字符串写和查 -2:字符串追加
+ * @param  int  $expire  值
  * @return mixed
  * 使用方法
- * 1. f($key); 获取文件 $key
- * 2. f($key,$value); 设置文件 $key值为$value
+ * 1. s($key); 获取文件 $key
+ * 2. s($key,$value); 设置文件 $key值为$value
  */
-function f($key = '', $value = '', $append = 0) {
-    if (empty($key)) {
-        return null;
-    }
-
-    $obj = \poem\cache::get_instance('file');
-    if ($append == 2) {
-        return $obj->has($key);
-    }
-
+function storage($key = '', $value = '', $expire = null) {
+    $obj = poem_ins('\poem\cache\storage');
     if ($value === '') {
-        return $obj->get($key, $append);
+        return $obj->get($key);
     } elseif (is_null($value)) {
         return $obj->del($key);
     } else {
-        return $obj->set($key, $value, $append);
+        return $obj->set_expire($key, $value, $expire);
     }
 }
 
@@ -527,4 +519,18 @@ function poem_url($uri) {
             break;
     }
     return POEM_URL . "/$module/$class/$func"; // html文件路径
+}
+
+/**
+ * 单例模式
+ *
+ * @param string $class_name
+ * @return class
+ */
+function poem_ins($class_name){
+    static $singleton;
+    if(!isset($singleton[$class_name])){
+        $singleton[$class_name] = new $class_name;
+    }
+    return $singleton[$class_name];
 }

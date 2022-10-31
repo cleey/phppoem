@@ -4,11 +4,6 @@ namespace poem\cache;
  * 文件存储键值对
  */
 class file {
-    const OPT_SERIALIZE_WRITE = 0;
-    const OPT_SERIALIZE_APPEND = 1;
-    const OPT_CHECK_EXIST = 2;
-    const OPT_DIRECT_WRITE = -1;
-    const OPT_DIRECT_APPEND = -2;
 
     /**
      * 检查key是否存在
@@ -16,64 +11,57 @@ class file {
      * @return boolean 存在true,否则false
      */
     public function has($key) {
-        $key = APP_RUNTIME_PATH . $key . '.php';
+        $key = config('runtime_path') . '/' . $key;
         return is_file($key) ? $key : false;
     }
 
     /**
      * 获取key的值
      * @param string $key 键
-     * @param string $append -1 代表只获取值，不做序列化
      * @return string 值
      */
-    public function get($key, $append) {
-        $key = APP_RUNTIME_PATH . $key . '.php';
-        if (!is_file($key)) {
-            return false;
+    public function get($key) {
+        $file = config('runtime_path') . '/' . $key;
+        $file_timeout = $file.'.t';
+        if (!is_file($file)) return false;
+
+        // 超时
+        if(is_file($file_timeout)){
+            $time = file_get_contents($file_timeout);
+            if($time < time()){
+                $this->del($file);
+                $this->del($file_timeout);
+                return false;
+            }
         }
 
-        if ($append === -1) {
-            return file_get_contents($key);
-        }
-
-        $data = file_get_contents($key);
-        $json = unserialize($data);
-        return $json === null ? $data : $json;
+        return file_get_contents($file);
     }
 
     /**
      * 设置键值
      * @param string $key 键
      * @param string $value 值
-     * @param integer $option 选项 0:序列化写文件 -1:直接写文件 -2:直接追加文件 否则序列化追加文件
      * @return 返回设置的文件路径
      */
-    public function set($key, $value, $option = 0) {
-        $key = APP_RUNTIME_PATH . $key . '.php';
+    public function set($key, $value) {
+        $key = config('runtime_path') . '/' . $key;
         $dir = dirname($key);
         if (!is_dir($dir)) {
             mkdir($dir, 0775, true);
         }
 
-        if ($option === self::OPT_DIRECT_WRITE) {
-            $re = file_put_contents($key, $value);
-        } elseif ($option === self::OPT_DIRECT_APPEND) {
-            $re = file_put_contents($key, $value, FILE_APPEND);
-        } else {
-            $value = serialize($value);
-            if ($option == self::OPT_SERIALIZE_WRITE) {
-                $re = file_put_contents($key, $value);
-            } else {
-                $re = file_put_contents($key, $value, FILE_APPEND);
-            }
-
-        }
-
+        $re = file_put_contents($key, $value);
+      
         if (!$re) {
-            throw new \Exception('文件写入失败：' . $key);
+            throw new \exception('storage cache write failed：' . $key);
         }
-
         return $key;
+    }
+
+    public function set_expire($key, $value, $expire) {
+        $this->set($key, $value);
+        $this->set($key.'.t',time()+$expire);
     }
 
     /**
@@ -82,11 +70,13 @@ class file {
      * @return null
      */
     public function del($key) {
-        $key = APP_RUNTIME_PATH . $key . '.php';
-        if (!is_file($key)) {
-            return false;
+        $file = config('runtime_path') . '/' . $key;
+        $file_tiemout = config('runtime_path') . '/' . $key;
+        if (is_file($file)) {
+            unlink($file);
         }
-
-        unlink($key);
+        if (is_file($file_tiemout)) {
+            unlink($file_tiemout);
+        }
     }
 }

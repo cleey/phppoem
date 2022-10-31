@@ -21,9 +21,9 @@ class load {
         if (strstr($class, '/', true) == 'poem') {
             $file = CORE_PATH . trim(strstr($class, '/'), '/') . '.php';
         } elseif (strstr($class, '/', true) == 'lib') {
-            $file = APP_PATH . '../' . $class . '.php';
+            $file = APP_PATH . '/../' . $class . '.php';
         } else {
-            $file = APP_PATH . $class . '.php';
+            $file = APP_PATH . '/' . $class . '.php';
         }
 
         if (!is_file($file)) {
@@ -74,7 +74,7 @@ class load {
      */
     static function controller($class, $module = POEM_MODULE) {
         $name = "$module\\controller\\$class";
-        $file = APP_PATH . "$module/controller/$class.php";
+        $file = APP_PATH . "/$module/controller/$class.php";
         if(!is_file($file)){
             throw new \ReflectionException("module($module) controller($class) not found");
         }

@@ -17,11 +17,17 @@ return array(
     'db_rw_separate'  => false, // 数据库读写是否分离 主从式有效
     'db_master_num'   => 1, // 读写分离后 主服务器数量
     'db_slave_no'     => '', // 指定从服务器序号
+
+    'runtime_path'    => APP_PATH . '/runtime/', // 运行目录
     
     'session_type'    => '',
     'session_prefix'  => '',
-    'default_module'   => 'home', // 默认模块
-    'default_errcode'   => 1, // 默认ajax 错误码，gp()使用
+    'default_module'  => 'home', // 默认模块
+    'default_errcode' => 1, // 默认ajax 错误码，gp()使用
+
+    'storage_type'  => 'file',
+    'storage_expire'=> 86400, // 1day
+    'storage_compress'=> false, // 缓存压缩
 
     'cookie_expire'   => 0,
     'cookie_domain'   => '',
@@ -32,7 +38,7 @@ return array(
 
     'log_path'        => '', // 日志路径
     'log_level'       => 5,
-    'log_remain_days'  => 1, // 日志保留天数
+    'log_remain_days' => 1, // 日志保留天数
 
-    'debug_trace'  => false, // 页面右下角展示调试信息
+    'debug_trace'     => false, // 页面右下角展示调试信息
 );

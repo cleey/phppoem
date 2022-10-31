@@ -66,6 +66,18 @@ class redis {
     }
 
     /**
+     * 设置过期时间
+     *
+     * @param string $key
+     * @param string $value
+     * @param int $expire
+     * @return void
+     */
+    public function set_expire($key, $value, $expire) {
+        return $this->_ins->setex($key, $expire, $value);
+    }
+
+    /**
      * 删除键值
      * @param string $key 键
      * @return bool 
