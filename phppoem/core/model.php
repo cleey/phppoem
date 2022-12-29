@@ -103,7 +103,7 @@ class model {
 
     /**
      * 使用master
-     * @return class $this 类自身
+     * @return self
      */
     public function use_master() {
         $this->_ismaster = true;
@@ -112,7 +112,7 @@ class model {
 
     /**
      * 不清理查询数据
-     * @return class $this 类自身
+     * @return self
      */
     public function no_clear() {
         $this->_enable_clear = false;
@@ -131,7 +131,7 @@ class model {
      * 开启sql缓存
      *
      * @param integer $cache_time 缓存时间默认 3600s
-     * @return void
+     * @return self
      */
     public function cache($cache_time=3600){
         $this->_enable_cache_time = $cache_time;
@@ -160,6 +160,7 @@ class model {
         if($this->_enable_cache_time){
             $data = $this->get_db_cache($sql, $bind);
             if(!empty($data)){
+                $this->after_sql('Cached');
                 return $data;
             }
         }
@@ -168,6 +169,7 @@ class model {
         db::get_instance($this->db_cfg)->init_connect($this->_ismaster);
         $this->_sql = $sql;
         $info       = db::get_instance($this->db_cfg)->select($sql, $bind);
+
         $this->after_sql();
         if (empty($info) && $this->_empty_exception) {
             throw new \exception('empty data: '.$this->_sql);
@@ -200,7 +202,6 @@ class model {
             $data_str = substr($cache_str, $split_pos+1);
             $data = unserialize($data_str);
             if(!empty($data)){
-                l('get from dbcache: '.$sql,\poem\log::INFO, \poem\log::DEPTH_FILTER_POEM);
                 return $data;
             }
             l('dbcache empty: '.$real_uniq);
@@ -272,7 +273,7 @@ class model {
     /**
      * sql distinct
      * @param  boolean $flag 是否开启distinct
-     * @return class $this 类自身
+     * @return self
      */
     public function distinct($flag = true) {
         $this->_distinct = $flag ? 'DISTINCT ' : '';
@@ -282,7 +283,7 @@ class model {
     /**
      * sql select field
      * @param string $str 表字段 多个使用逗号隔开 'id,name,old'
-     * @return class $this 类自身
+     * @return self
      */
     public function field($str) {
         $this->_field = $str;
@@ -302,7 +303,7 @@ class model {
      * sql join
      * @param  string $str 表名
      * @param  string $type join类型
-     * @return class $this 类自身
+     * @return self
      */
     public function join($str, $type = 'INNER') {
         $this->_join[] = stristr($str, 'JOIN') ? $str : $type . ' JOIN ' . $str;
@@ -312,7 +313,7 @@ class model {
     /**
      * sql where
      * @param array/string $arr where条件
-     * @return class $this 类自身
+     * @return self
      */
     public function where($arr) {
         if (is_string($arr)) {
@@ -327,7 +328,7 @@ class model {
     /**
      * sql set where
      * @param array/string $arr where条件
-     * @return class $this 类自身
+     * @return self
      */
     public function set_where($where) {
         $this->_where = $where;
@@ -345,7 +346,7 @@ class model {
     /**
      * sql having
      * @param  string $str 字符串
-     * @return class $this 类自身
+     * @return self
      */
     public function having($str) {
         $this->_having = $str;
@@ -356,7 +357,7 @@ class model {
      * sql limit
      * @param  int $begin 开始
      * @param  int $end 结束
-     * @return class $this 类自身
+     * @return self
      */
     public function limit($begin = 0, $end = 0) {
         if ($end == 0) {
@@ -374,7 +375,7 @@ class model {
     /**
      * sql order
      * @param  string $str 表字段
-     * @return class $this 类自身
+     * @return self
      */
     public function order($str) {
         $this->_order = $str;
@@ -384,7 +385,7 @@ class model {
     /**
      * sql group
      * @param  string $str 表字段
-     * @return class $this 类自身
+     * @return self
      */
     public function group($str) {
         $this->_group = $str;
@@ -468,6 +469,7 @@ class model {
             return false;
         }
 
+        $keys = '';
         if (is_array($data)) {
             foreach ($data as $k => $v) {
                 $kt = $this->parse_key($k);
@@ -569,13 +571,13 @@ class model {
      * 执行sql后，记录sql 并清理所有条件
      * @return void
      */
-    protected function after_sql() {
+    protected function after_sql($prefix='') {
         foreach ($this->_bind as $key => $value) {
             $this->_sql = str_replace($key, db::get_instance($this->db_cfg)->_conn->quote($value), $this->_sql);
         }
         $time = number_format(T('poem_db_exec', -1) * 1000, 2);
         Log::trace('SQL', $this->_sql . "[{$time}ms]");
-        l('SQL: '. $this->_sql . "[{$time}ms]", \poem\log::INFO, \poem\log::DEPTH_FILTER_POEM);
+        l($prefix.'SQL: '. $this->_sql . "[{$time}ms]", \poem\log::INFO, \poem\log::DEPTH_FILTER_POEM);
         $this->_bind = array();
         if (!$this->_enable_clear) {
             $this->_enable_clear = true;
@@ -608,7 +610,7 @@ class model {
      * sql设置where
      * @param string $_where
      * @param bool $return_flag 是否换位
-     * @return void/string
+     * @return mixed
      */
     protected function parse_where($_where = null, $return_flag = false) {
         if ($_where == null) {
@@ -684,7 +686,7 @@ class model {
 
     /**
      * sql设置join
-     * @param string $_join
+     * @param array $_join
      * @return void
      */
     public function set_join($_join) {

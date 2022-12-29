@@ -89,8 +89,13 @@ function config($name = null, $value = null) {
 function cc() {
     $vars = func_get_args();
     foreach ($vars as $var) {
-        highlight_string("<?php\n" . var_export($var, true));
-        echo '<hr />';
+        if(IS_CLI){
+            var_export($var);
+            echo PHP_EOL.'----------------------'.PHP_EOL;
+        }else{
+            highlight_string("<?php\n" . var_export($var, true));
+            echo '<hr />';
+        }
     }
 }
 
@@ -103,8 +108,13 @@ function cc() {
 function co() {
     $vars = func_get_args();
     foreach ($vars as $var) {
-        highlight_string("<?php\n" . var_export($var, true));
-        echo '<hr />';
+        if(IS_CLI){
+            var_export($var);
+            echo PHP_EOL.'----------------------'.PHP_EOL;
+        }else{
+            highlight_string("<?php\n" . var_export($var, true));
+            echo '<hr />';
+        }
     }
     \poem\app::end(false);
 }
@@ -171,7 +181,7 @@ function l($info, $level = \poem\log::INFO, $depth = 0) {
  * m 模型model缩写,数据库表模型
  * @param  string $tb     表名
  * @param  string/array $config 配置信息
- * @return class $model \poem\model
+ * @return \poem\model
  */
 function m($tb = '', $config = '') {
     static $model;

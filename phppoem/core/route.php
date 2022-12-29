@@ -25,6 +25,7 @@ class route {
                 $_GET[$k]    = $v;
             }
         }
+        // co($_SERVER, defined('NEW_MODULE'));
         if (defined('NEW_MODULE')) {
             $_SERVER['PATH_INFO'] = "/" . NEW_MODULE;
         }

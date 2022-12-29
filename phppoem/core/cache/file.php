@@ -54,7 +54,9 @@ class file {
         $re = file_put_contents($key, $value);
       
         if (!$re) {
-            throw new \exception('storage cache write failed：' . $key);
+            $str = 'storage cache write failed：' . $key;
+            l($str, \poem\log::INFO, \poem\log::DEPTH_FILTER_POEM);
+            throw new \exception($str);
         }
         return $key;
     }
