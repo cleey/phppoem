@@ -6,6 +6,7 @@ class log {
     const WARN  = 3;
     const INFO  = 4;
     const DEBUG = 5;
+    const DEPTH_FILTER_POEM = -1; // 过滤poem_path
 
     private $levels = array(
         self::FATAL => 'FATAL',
@@ -22,6 +23,8 @@ class log {
     protected $log_id;
     protected $log_dir;
     protected $log_file;
+    private $log_relative_path; // 相对地址则需要清理项目路径前缀
+    private $project_path;
 
     protected $log_switch = true; // 日志开关
 
@@ -35,6 +38,10 @@ class log {
         $this->log_level = $cfg['log_level'];
         $this->log_remain_days = $cfg['log_remain_days'];
         $this->set_log_file($cfg['log_path']);
+        $this->log_relative_path = $cfg['log_relative_path'];
+        if($this->log_relative_path){
+            $this->project_path = realpath(APP_PATH.'/../').'/';
+        }
         
         $arr = gettimeofday();
         $log_id = ($arr['sec']*100000 + $arr['usec']/10) & 0x7FFFFFFF;
@@ -51,7 +58,7 @@ class log {
 
     /**
      * 单例模式使用log
-     * @return log类
+     * @return self
      */
     static function get_instance() {
         if (is_null(self::$instance)) {
@@ -71,26 +78,52 @@ class log {
         if(!$this->log_switch) return;
         
         if ($lvl > $this->log_level) return;
-        // 减少内存消耗，忽略参数
-        if (defined('DEBUG_BACKTRACE_IGNORE_ARGS')) {
-            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $depth + 2);
-        }else{
-            $trace = debug_backtrace();
-        }
-
-        $cur_file = isset($trace[$depth]['file']) ? $trace[$depth]['file'] : '';
-        $cur_line = isset($trace[$depth]['line']) ? $trace[$depth]['line'] : '';
+        list($cur_file, $cur_line) = $this->get_trace_info($depth);
         
-        $level = $this->levels[$lvl];
         $time = date('Y-m-d H:i:s');
-        $log = "[$level] $time $cur_file:$cur_line {$this->log_id} $str" . PHP_EOL;
+        $log = "$time {$this->log_id} $cur_file:$cur_line $str" . PHP_EOL;
 
         self::trace('LOG', $log);
 
         if (!is_dir($this->log_dir)) {
             mkdir($this->log_dir, 0755, true);
         }
-        file_put_contents($this->log_file.'.'.$level, $log, FILE_APPEND);
+        $lvl_name = $this->levels[$lvl];
+        $lvl_info = $this->levels[self::INFO];
+        file_put_contents($this->log_file.'.'.$lvl_info, $lvl_name.' '.$log, FILE_APPEND);
+        if($lvl != self::INFO){
+            file_put_contents($this->log_file.'.'.$lvl_name, $lvl_name.' '.$log, FILE_APPEND);
+        }
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param int $depth
+     * @param bool $filter_poem_path
+     * @return array
+     */
+    private function get_trace_info($depth){
+        if($depth == self::DEPTH_FILTER_POEM){
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10);
+            foreach($trace as $v)
+                if(stripos($v['file'], POEM_PATH)===false){
+                    $cur_trace = $v;
+                    break;
+                }
+        }else{
+            $depth ++;
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $depth + 1);
+            $cur_trace = isset($trace[$depth]) ? $trace[$depth] : array('file'=>'','line'=>'');
+        }
+
+        $cur_file = $cur_trace['file'];
+        $cur_line = $cur_trace['line'];
+        if($this->log_relative_path){
+            $cur_file = str_replace($this->project_path, '', $cur_file);
+        }
+
+        return array($cur_file, $cur_line);
     }
 
     /**

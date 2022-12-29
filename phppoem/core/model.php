@@ -156,10 +156,12 @@ class model {
      * @return void
      */
     private function query_with_cache($sql, $bind) {
-        $cache_file = '';
         // 1. check cache
         if($this->_enable_cache_time){
             $data = $this->get_db_cache($sql, $bind);
+            if(!empty($data)){
+                return $data;
+            }
         }
 
         // 2. query db
@@ -198,7 +200,7 @@ class model {
             $data_str = substr($cache_str, $split_pos+1);
             $data = unserialize($data_str);
             if(!empty($data)){
-                l('get from dbcache: '.$sql);
+                l('get from dbcache: '.$sql,\poem\log::INFO, \poem\log::DEPTH_FILTER_POEM);
                 return $data;
             }
             l('dbcache empty: '.$real_uniq);
@@ -573,7 +575,7 @@ class model {
         }
         $time = number_format(T('poem_db_exec', -1) * 1000, 2);
         Log::trace('SQL', $this->_sql . "[{$time}ms]");
-        l('SQL: '. $this->_sql . "[{$time}ms]");
+        l('SQL: '. $this->_sql . "[{$time}ms]", \poem\log::INFO, \poem\log::DEPTH_FILTER_POEM);
         $this->_bind = array();
         if (!$this->_enable_clear) {
             $this->_enable_clear = true;

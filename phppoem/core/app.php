@@ -46,7 +46,8 @@ class app {
         if ($show_log && config('debug_trace') && !IS_AJAX && !IS_CLI) {
             log::show();
         }
-        l($_SERVER['REQUEST_URI'] . ' '. T('POEM_TIME', -1));
+        $time = number_format(t('POEM_TIME', -1), 5);
+        l($_SERVER['REQUEST_URI'] . ' '. $time. 's');
         exit;
     }
 

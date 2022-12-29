@@ -159,9 +159,13 @@ function ajax_obj($ret){
  * l 日志log缩写, 日志信息
  * @param  string $info 日志内容
  * @param  string $level 日志级别
+ * @param  int $depth 调用
  * @return void
  */
-function l($info, $level = \poem\log::INFO, $depth = 0) {\poem\log::get_instance()->write($info, $level, $depth + 1);}
+function l($info, $level = \poem\log::INFO, $depth = 0) {
+    if($depth != \poem\log::DEPTH_FILTER_POEM) $depth = $depth + 1;
+    \poem\log::get_instance()->write($info, $level, $depth);
+}
 
 /**
  * m 模型model缩写,数据库表模型
@@ -448,7 +452,7 @@ function layout($flag) {
  * @param  string $key 计时的标记
  * @param  string $end 是否结束
  * @param  int $settime 为key设置的时间
- * @return int/void
+ * @return mixed
  */
 function t($key, $end = '', $settime = null) {
     static $time = array(); // 计时

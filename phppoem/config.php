@@ -39,6 +39,7 @@ return array(
     'log_path'        => '', // 日志路径
     'log_level'       => 5,
     'log_remain_days' => 1, // 日志保留天数
+    'log_relative_path' => true, // 相对路径日志还是全路径日志
 
     'debug_trace'     => false, // 页面右下角展示调试信息
 );

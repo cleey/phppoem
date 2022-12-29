@@ -314,6 +314,7 @@ class db {
     private function error($e, $sql, $bind=array()) {
         $info =  implode(', ', $e->errorInfo) . "\n [SQL 语句]：" . $sql;
         if(config('db_debug')) $info .= ', [Bind Data]: ' . json_encode($bind);
+        l($info, \poem\log::FATAL, \poem\log::DEPTH_FILTER_POEM);
         throw new \exception($info);
     }
 
